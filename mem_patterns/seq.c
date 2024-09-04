@@ -10,11 +10,16 @@ int main() {
 
   // Sample from buffer
   size_t i;
+
+#ifndef CONTROL
+
   for (i = 0; i < NUM_SAMPLES; ++i) {
     // TODO: make sure that this actually accesses the memory
     // access should not be optimized away at any level
     volatile uint64_t access = buf[i % BUF_LEN];
   }
+
+#endif
 
   return 0;
 }

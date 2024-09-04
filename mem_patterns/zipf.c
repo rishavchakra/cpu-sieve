@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -39,8 +38,10 @@ int main() {
   // Generate order of samples
   // Separate from accesses to prevent zipf from interfering with cache
   for (i = 0; i < NUM_SAMPLES; ++i) {
-    samples[i] = zipf(1.0, BUF_LEN);
+    samples[i] = zipf(1.0, BUF_LEN) - 1;
   }
+
+#ifndef CONTROL
 
   // Sample from buffer
   for (i = 0; i < NUM_SAMPLES; ++i) {
@@ -50,6 +51,8 @@ int main() {
     // access should not be optimized away at any level
     volatile uint64_t access = *ptr_to_access;
   }
+
+#endif
 
   return 0;
 }
@@ -96,9 +99,6 @@ int zipf(double alpha, int n) {
       low = mid + 1;
     }
   } while (low <= high);
-
-  // Assert that zipf_value is between 1 and N
-  assert((zipf_value >= 1) && (zipf_value <= n));
 
   return (zipf_value);
 }
