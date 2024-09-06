@@ -1,6 +1,8 @@
 import subprocess
 import os
 
+NUM_TRIALS = 24
+
 access_patterns = [
     'seq',
     'seq-control',
@@ -25,17 +27,18 @@ SIEVE SIMULATION\n\
 Access pattern:{mem_pat}\n\
 Replacement Policy:{repl_policy}')
 
-        if os.path.exists(f'out/miss-ratio/{mem_pat}/{repl_policy}'):
-            print('\nSimulation already completed!')
-            continue
+        # if os.path.exists(f'out/miss-ratio/{mem_pat}/{repl_policy}'):
+        #     print('\nSimulation already completed!')
+        #     continue
 
-        _ = subprocess.run([
-            'gem5/build/ALL/gem5.opt',
-            '-d',
-            f'out/miss-ratio/{mem_pat}/{repl_policy}',
-            'gem5/configs/research/sieve/miss-ratio.py',
-            '-m',
-            mem_pat,
-            '-r',
-            repl_policy
-        ])
+        for trial in range(NUM_TRIALS):
+            _ = subprocess.run([
+                'gem5/build/ALL/gem5.opt',
+                '-d',
+                f'out/miss-ratio/{mem_pat}/{repl_policy}/{trial}',
+                'gem5/configs/research/sieve/miss-ratio.py',
+                '-m',
+                mem_pat,
+                '-r',
+                repl_policy
+            ])
