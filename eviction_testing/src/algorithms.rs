@@ -1,8 +1,10 @@
 mod fifo;
+mod lru;
 mod sieve;
 mod treeplru;
 
 pub use fifo::Fifo;
+pub use lru::Lru;
 pub use sieve::Sieve;
 
 pub trait CacheSet<T>

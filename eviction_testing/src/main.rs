@@ -1,5 +1,5 @@
 use access_patterns::AccessPattern;
-use algorithms::{Fifo, Sieve};
+use algorithms::{Fifo, Lru, Sieve};
 use cache::Cache;
 
 mod access_patterns;

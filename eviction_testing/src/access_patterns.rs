@@ -74,6 +74,7 @@ impl Iterator for Sequential {
             addr: self.cur_pointer,
             num_access: self.num_accesses,
         };
+        self.num_accesses += 1;
         self.cur_pointer = (self.cur_pointer + 1) % self.num_addresses;
         Some(access)
     }

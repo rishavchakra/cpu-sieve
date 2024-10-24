@@ -46,13 +46,13 @@ impl CacheSet<Fifo> for Vec<Option<Fifo>> {
             return i;
         }
 
-        let (evict_id, _) = self
-            .iter()
+        let (evict_id, evict_elem) = self
+            .iter_mut()
             .enumerate()
             .min_by_key(|line| line.1.as_ref().unwrap().time_added)
             .unwrap();
 
-        self[evict_id] = None;
+        *evict_elem = None;
         evict_id
     }
 }
