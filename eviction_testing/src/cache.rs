@@ -34,7 +34,7 @@ pub trait CacheLineMetadata<S> {
 }
 
 pub trait CacheMetadata {
-    fn new() -> Self;
+    fn new(assoc: usize) -> Self;
 }
 
 impl<T, S> Cache<T, S>
@@ -47,7 +47,7 @@ where
         for _ in 0..assoc {
             lines.push(None);
         }
-        let metadata = S::new();
+        let metadata = S::new(assoc);
         Self { lines, metadata }
     }
 
@@ -83,7 +83,7 @@ impl<S> CacheLineMetadata<S> for () {
 }
 
 impl CacheMetadata for () {
-    fn new() -> Self {
+    fn new(_: usize) -> Self {
         ()
     }
 }

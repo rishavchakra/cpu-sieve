@@ -25,7 +25,7 @@ impl CacheLineMetadata<LruMetadata> for LruLineMetadata {
 }
 
 impl CacheMetadata for LruMetadata {
-    fn new() -> Self {
+    fn new(_: usize) -> Self {
         LruMetadata { time: 0 }
     }
 }

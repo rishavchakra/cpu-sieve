@@ -24,7 +24,7 @@ impl CacheLineMetadata<FifoMetadata> for FifoLineMetadata {
 }
 
 impl CacheMetadata for FifoMetadata {
-    fn new() -> Self {
+    fn new(_: usize) -> Self {
         FifoMetadata { time: 0 }
     }
 }
