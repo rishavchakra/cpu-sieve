@@ -31,7 +31,7 @@ impl Iterator for Random {
         Some(Access {
             id: self.id,
             addr,
-            num_access: self.num_accesses - 1,
+            num_access: self.num_accesses,
         })
     }
 }

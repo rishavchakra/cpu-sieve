@@ -1,9 +1,10 @@
+mod double;
 mod random;
 mod sequential;
-
-use rand::{distributions::Uniform, prelude::*};
 pub use random::Random;
 pub use sequential::Sequential;
+pub use double::Double;
+use strum_macros::EnumIter;
 
 #[derive(Debug)]
 pub struct Access {
@@ -13,5 +14,25 @@ pub struct Access {
 }
 
 pub trait AccessPattern {
-    fn new(id: usize, assoc: usize, num_addresses: usize) -> Self;
+    fn new(id: usize, assoc: usize, num_addresses: usize) -> Self
+    where
+        Self: Sized;
+}
+
+#[derive(EnumIter)]
+pub enum AccessPatternType {
+    Sequential,
+    Random,
+    Double,
+}
+
+impl AccessPatternType {
+    pub fn name(&self) -> String {
+        match self {
+            AccessPatternType::Sequential => "sequential",
+            AccessPatternType::Random => "random",
+            AccessPatternType::Double => "double",
+        }
+        .to_owned()
+    }
 }
