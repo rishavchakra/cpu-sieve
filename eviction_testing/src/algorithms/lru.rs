@@ -1,4 +1,5 @@
-use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheMetadata, CacheTrait};
+use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheMetadata, CacheType};
+use rand::prelude::*;
 
 pub type LruCache = Cache<LruLineMetadata, LruMetadata>;
 
@@ -30,8 +31,28 @@ impl CacheMetadata for LruMetadata {
     }
 }
 
-impl CacheTrait for Cache<LruLineMetadata, LruMetadata> {
-    fn touch(&mut self, id: usize, address: usize) {
+impl Cache<LruLineMetadata, LruMetadata> {
+    pub fn new_random(assoc: usize, id: usize) -> Self {
+        let mut lines: CacheLines<LruLineMetadata, LruMetadata> = Vec::with_capacity(assoc);
+        for i in 0..assoc {
+            let line_metadata = LruLineMetadata { time_updated: i };
+            let line = CacheLineData {
+                id,
+                addr: i,
+                metadata: line_metadata,
+                cache_metadata: std::marker::PhantomData,
+            };
+            lines.push(Some(line));
+        }
+        lines.shuffle(&mut rand::thread_rng());
+        let cache_metadata = LruMetadata { time: assoc };
+        Self {
+            lines,
+            metadata: cache_metadata,
+        }
+    }
+
+    pub fn touch(&mut self, id: usize, address: usize) {
         if let Some(line_ind) = self.find(id, address) {
             let line = &mut self.lines[line_ind];
             line.as_mut().unwrap().metadata.touch(&mut self.metadata);
@@ -49,7 +70,7 @@ impl CacheTrait for Cache<LruLineMetadata, LruMetadata> {
         self.lines[evict_id] = Some(cache_line);
     }
 
-    fn evict(&mut self) -> usize {
+    pub fn evict(&mut self) -> usize {
         if let Some(i) = self.find_empty() {
             // There's already an empty space, no need to evict
             return i;
@@ -64,5 +85,9 @@ impl CacheTrait for Cache<LruLineMetadata, LruMetadata> {
 
         *evict_elem = None;
         evict_id
+    }
+
+    pub fn name(&self) -> String {
+        "LRU".to_string()
     }
 }

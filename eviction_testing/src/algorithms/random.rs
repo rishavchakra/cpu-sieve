@@ -1,6 +1,6 @@
 use rand::prelude::*;
 
-use crate::cache::{Cache, CacheLineData, CacheMetadata, CacheTrait};
+use crate::cache::{Cache, CacheLineData, CacheLines, CacheMetadata, CacheType};
 
 pub type RandomCache = Cache<RandomLineMetadata, RandomMetadata>;
 
@@ -20,8 +20,29 @@ impl CacheMetadata for RandomMetadata {
     }
 }
 
-impl CacheTrait for Cache<RandomLineMetadata, RandomMetadata> {
-    fn touch(&mut self, id: usize, address: usize) {
+impl Cache<RandomLineMetadata, RandomMetadata> {
+    pub fn new_random(assoc: usize, id: usize) -> Self {
+        let mut lines: CacheLines<RandomLineMetadata, RandomMetadata> = Vec::with_capacity(assoc);
+        for i in 0..assoc {
+            let line = CacheLineData {
+                id,
+                addr: i,
+                metadata: (),
+                cache_metadata: std::marker::PhantomData,
+            };
+            lines.push(Some(line));
+        }
+        lines.shuffle(&mut rand::thread_rng());
+        let cache_metadata = RandomMetadata {
+            rng: rand::thread_rng(),
+        };
+        Self {
+            lines,
+            metadata: cache_metadata,
+        }
+    }
+
+    pub fn touch(&mut self, id: usize, address: usize) {
         if let Some(_) = self.find(id, address) {
             return;
         }
@@ -36,7 +57,7 @@ impl CacheTrait for Cache<RandomLineMetadata, RandomMetadata> {
         self.lines[evict_id] = Some(cache_line);
     }
 
-    fn evict(&mut self) -> usize {
+    pub fn evict(&mut self) -> usize {
         if let Some(i) = self.find_empty() {
             return i;
         }
@@ -44,5 +65,9 @@ impl CacheTrait for Cache<RandomLineMetadata, RandomMetadata> {
         let evict_id = self.metadata.rng.gen_range(0..self.lines.len());
         self.lines[evict_id] = None;
         evict_id
+    }
+
+    pub fn name(&self) -> String {
+        "Random".to_string()
     }
 }

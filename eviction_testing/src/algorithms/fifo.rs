@@ -1,4 +1,5 @@
-use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheMetadata, CacheTrait};
+use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheMetadata, CacheType};
+use rand::prelude::*;
 
 pub type FifoCache = Cache<FifoLineMetadata, FifoMetadata>;
 
@@ -18,8 +19,8 @@ impl CacheLineMetadata<FifoMetadata> for FifoLineMetadata {
         }
     }
 
-    fn touch(&mut self, cache_metadata: &mut FifoMetadata) {
-        todo!()
+    fn touch(&mut self, _: &mut FifoMetadata) {
+        // No update logic on touch
     }
 }
 
@@ -29,8 +30,28 @@ impl CacheMetadata for FifoMetadata {
     }
 }
 
-impl CacheTrait for Cache<FifoLineMetadata, FifoMetadata> {
-    fn touch(&mut self, id: usize, address: usize) {
+impl Cache<FifoLineMetadata, FifoMetadata> {
+    pub fn new_random(assoc: usize, id: usize) -> Self {
+        let mut lines: CacheLines<FifoLineMetadata, FifoMetadata> = Vec::with_capacity(assoc);
+        for i in 0..assoc {
+            let line_metadata = FifoLineMetadata { time_added: i };
+            let line = CacheLineData {
+                id,
+                addr: i,
+                metadata: line_metadata,
+                cache_metadata: std::marker::PhantomData,
+            };
+            lines.push(Some(line));
+        }
+        lines.shuffle(&mut rand::thread_rng());
+        let cache_metadata = FifoMetadata { time: assoc };
+        Self {
+            lines,
+            metadata: cache_metadata,
+        }
+    }
+
+    pub fn touch(&mut self, id: usize, address: usize) {
         // If the line is already in the cache, no need to do anything
         if let Some(_) = self.find(id, address) {
             return;
@@ -47,7 +68,7 @@ impl CacheTrait for Cache<FifoLineMetadata, FifoMetadata> {
         self.lines[evict_id] = Some(cache_line);
     }
 
-    fn evict(&mut self) -> usize {
+    pub fn evict(&mut self) -> usize {
         if let Some(i) = self.find_empty() {
             // There's already an empty space, no need to evict
             return i;
@@ -62,5 +83,9 @@ impl CacheTrait for Cache<FifoLineMetadata, FifoMetadata> {
 
         *evict_elem = None;
         evict_id
+    }
+
+    pub fn name(&self) -> String {
+        "FIFO".to_string()
     }
 }

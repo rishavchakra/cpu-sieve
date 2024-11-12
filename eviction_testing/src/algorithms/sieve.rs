@@ -1,7 +1,9 @@
-use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheTrait};
+use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheType};
+use rand::prelude::*;
 
 pub type SieveCache = Cache<SieveLineMetadata, SieveMetadata>;
 
+#[derive(Debug)]
 pub struct SieveLineMetadata {
     safe: bool,
     stale: bool,
@@ -22,36 +24,61 @@ impl CacheLineMetadata<SieveMetadata> for SieveLineMetadata {
     }
 }
 
-impl CacheTrait for Cache<SieveLineMetadata, SieveMetadata> {
-    fn touch(&mut self, id: usize, address: usize) {
+impl Cache<SieveLineMetadata, SieveMetadata> {
+    pub fn new_random(assoc: usize, id: usize) -> Self {
+        let mut lines: CacheLines<SieveLineMetadata, SieveMetadata> = Vec::with_capacity(assoc);
+        let mut rng = rand::thread_rng();
+        for i in 0..assoc {
+            let line_metadata = SieveLineMetadata {
+                safe: rng.gen(),
+                stale: rng.gen(),
+            };
+            let line = CacheLineData {
+                id,
+                addr: i,
+                metadata: line_metadata,
+                cache_metadata: std::marker::PhantomData,
+            };
+            lines.push(Some(line));
+        }
+
+        Self {
+            lines,
+            metadata: (),
+        }
+    }
+
+    pub fn touch(&mut self, id: usize, address: usize) {
         if let Some(line_ind) = self.find(id, address) {
             let line = &mut self.lines[line_ind];
             line.as_mut().unwrap().metadata.touch(&mut ());
+        } else {
+            let evict_id = self.evict();
+            let cache_line_metadata = SieveLineMetadata::new(&mut ());
+            let cache_line = CacheLineData {
+                id,
+                addr: address,
+                metadata: cache_line_metadata,
+                cache_metadata: std::marker::PhantomData,
+            };
+            self.lines[evict_id] = Some(cache_line);
         }
-
-        let evict_id = self.evict();
-        let cache_line_metadata = SieveLineMetadata::new(&mut ());
-        let cache_line = CacheLineData {
-            id,
-            addr: address,
-            metadata: cache_line_metadata,
-            cache_metadata: std::marker::PhantomData,
-        };
-        self.lines[evict_id] = Some(cache_line);
     }
 
-    fn evict(&mut self) -> usize {
+    pub fn evict(&mut self) -> usize {
         if let Some(i) = self.find_empty() {
             // There's already an empty space, no need to evict
             return i;
         }
 
         let all_safe = self.lines.iter().all(|l| l.as_ref().unwrap().metadata.safe);
-        let all_unsafe_are_visited = self
-            .lines
-            .iter()
-            .filter(|l| !l.as_ref().unwrap().metadata.safe) // all unsafe lines
-            .all(|l| !l.as_ref().unwrap().metadata.stale); // are also not stale (visited)
+        let mut all_unsafe_are_visited = true;
+        for line in self.lines.iter() {
+            let meta = &line.as_ref().unwrap().metadata;
+            if !meta.safe && meta.stale {
+                all_unsafe_are_visited = false;
+            }
+        }
 
         // If all lines are marked safe, reorganize!
         // Any unsafe lines are made safe if visited, so if this is true for all lines then all
@@ -62,6 +89,7 @@ impl CacheTrait for Cache<SieveLineMetadata, SieveMetadata> {
                 if line.metadata.safe {
                     // Move the lines in the safe set to the unsafe set
                     line.metadata.safe = false;
+                    line.metadata.stale = true;
                 } else {
                     // Mark the lines in the unsafe set as stale
                     line.metadata.stale = true;
@@ -84,5 +112,9 @@ impl CacheTrait for Cache<SieveLineMetadata, SieveMetadata> {
 
         // If we don't find an eviction candidate, something is wrong. It always should
         unreachable!("SIEVE could not find an eviction candidate!")
+    }
+
+    pub fn name(&self) -> String {
+        "SIEVE".to_string()
     }
 }

@@ -1,5 +1,8 @@
 use std::marker::PhantomData;
 
+use crate::algorithms::{FifoCache, LruCache, RandomCache, SieveCache, TreePlruCache};
+
+#[derive(Debug)]
 pub struct CacheLineData<T, S>
 where
     T: CacheLineMetadata<S>,
@@ -21,10 +24,12 @@ where
     pub metadata: S,
 }
 
-pub trait CacheTrait {
-    fn touch(&mut self, id: usize, address: usize);
-
-    fn evict(&mut self) -> usize;
+pub enum CacheType {
+    Fifo(FifoCache),
+    Lru(LruCache),
+    Sieve(SieveCache),
+    Random(RandomCache),
+    TreePlru(TreePlruCache),
 }
 
 pub trait CacheLineMetadata<S> {
@@ -35,6 +40,48 @@ pub trait CacheLineMetadata<S> {
 
 pub trait CacheMetadata {
     fn new(assoc: usize) -> Self;
+}
+
+impl CacheType {
+    pub fn touch(&mut self, id: usize, address: usize) {
+        match self {
+            CacheType::Fifo(c) => c.touch(id, address),
+            CacheType::Lru(c) => c.touch(id, address),
+            CacheType::Sieve(c) => c.touch(id, address),
+            CacheType::Random(c) => c.touch(id, address),
+            CacheType::TreePlru(c) => c.touch(id, address),
+        }
+    }
+
+    pub fn evict(&mut self) -> usize {
+        match self {
+            CacheType::Fifo(c) => c.evict(),
+            CacheType::Lru(c) => c.evict(),
+            CacheType::Sieve(c) => c.evict(),
+            CacheType::Random(c) => c.evict(),
+            CacheType::TreePlru(c) => c.evict(),
+        }
+    }
+
+    pub fn name(&self) -> String {
+        match self {
+            CacheType::Fifo(c) => c.name(),
+            CacheType::Lru(c) => c.name(),
+            CacheType::Sieve(c) => c.name(),
+            CacheType::Random(c) => c.name(),
+            CacheType::TreePlru(c) => c.name(),
+        }
+    }
+
+    pub fn is_eviction_set(&self, id: usize) -> bool {
+        match self {
+            CacheType::Fifo(c) => c.is_eviction_set(id),
+            CacheType::Lru(c) => c.is_eviction_set(id),
+            CacheType::Sieve(c) => c.is_eviction_set(id),
+            CacheType::Random(c) => c.is_eviction_set(id),
+            CacheType::TreePlru(c) => c.is_eviction_set(id),
+        }
+    }
 }
 
 impl<T, S> Cache<T, S>
@@ -66,10 +113,9 @@ where
     }
 
     pub fn is_eviction_set(&self, id: usize) -> bool {
-        self.lines.iter().all(|line| match line {
-            Some(l) => l.id == id,
-            None => false,
-        })
+        self.lines
+            .iter()
+            .all(|line| line.as_ref().is_some_and(|l| l.id == id))
     }
 }
 
