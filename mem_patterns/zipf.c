@@ -2,9 +2,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define BUF_LEN 4096
-#define NUM_SAMPLES 8192 * 4
+#define NUM_SAMPLES 4096
 
 typedef uint64_t *ptr_t;
 
@@ -21,6 +22,8 @@ int main() {
   ptr_t ptrs[BUF_LEN];
 
   size_t samples[NUM_SAMPLES];
+
+  srand(time(NULL));
 
   // Initialize the pointers array
   for (i = 0; i < BUF_LEN; ++i) {
