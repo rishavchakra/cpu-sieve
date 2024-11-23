@@ -114,7 +114,7 @@ class MMUCache(Cache):
         """
         self.mmubus = L2XBar()
         self.cpu_side = self.mmubus.mem_side_ports
-        for tlb in [cpu.itb, cpu.dtb]:
+        for tlb in [cpu.mmu.itb, cpu.mmu.dtb]:
             self.mmubus.cpu_side_ports = tlb.walker.port
 
     def connectBus(self, bus):
