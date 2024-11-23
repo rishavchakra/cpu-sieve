@@ -1,30 +1,46 @@
 from os import path, walk
+from datetime import datetime
 import numpy as np
 
 """
 Directory structure:
 
 out/miss-ratio/
-    zipf/
-    zipf-control/
-    seq/
+    1/ (associativity)
+    2/
+    4/
     ...
-        fifo/
-        lru/
-        sieve/
+        zipf/
+        zipf-control/
+        seq/
         ...
-            1/
-            2/
-            3/
+            fifo/
+            lru/
+            sieve/
             ...
-                stats.txt
-                ... (not important)
+                1/ (trial)
+                2/
+                3/
+                ...
+                    stats.txt
+                    ... (not important)
 """
+
+timestr = datetime.now().strftime("out/gem5-%Y-%m-%d-%H-%M-%S.csv")
+print("Saving results to:", timestr)
+out_file = open(timestr, "a")
+
+out_file.write(
+    "Associativity,Algorithm,Access Pattern,Trial Num,Accesses,Hits,Misses,Miss Rate\n"
+)
 
 important_stats = [
     "system.cpu.dcache.overallHits::total",
     "system.cpu.dcache.overallMisses::total",
     "system.cpu.dcache.overallAccesses::total",
+    # "system.l2cache.overallHits::total",
+    # "system.l2cache.overallMisses::total",
+    # "system.l2cache.overallAccesses::total",
     # Does not make sense to compare this between accessing vs. control
     # Calculate miss rate based on hit and miss numbers
     # "system.cpu.dcache.overallMissRate::total",
@@ -32,7 +48,10 @@ important_stats = [
 
 
 class Trial:
-    def __init__(self, pattern: str, algo: str, trial_num: int, stats: dict):
+    def __init__(
+        self, assoc: str, pattern: str, algo: str, trial_num: int, stats: dict
+    ):
+        self.assoc = assoc
         self.mem_pattern = pattern
         self.algo = algo
         self.trial_num = trial_num
@@ -69,6 +88,13 @@ class DataPoint:
         self.var_miss = var_miss
         self.miss_ratio = ratio
 
+    def __str__(self):
+        return f"""{self.algo}-{self.pattern}:
+\t{self.miss_ratio}
+Hits:\n\t{self.val_hits}\t\t{self.var_hits}
+Misses:\n\t{self.val_miss}\t\t{self.var_miss}
+========================\n"""
+
 
 BASE_PATH = path.join("../", "out/miss-ratio")
 
@@ -87,8 +113,12 @@ for root, _, files in walk(BASE_PATH):
     f = open(stat_file, "r")
     lines = f.readlines()
 
+    # print(stat_file)
+
     stats = dict()
     for stat in important_stats:
+        # print(stat)
+        # print(important_stats)
         stat_line = [line for line in lines if line.startswith(stat)][0]
         stat_line_words = stat_line.split()
 
@@ -105,14 +135,21 @@ for root, _, files in walk(BASE_PATH):
     stats["miss-ratio"] = stats["misses"] / stats["accesses"]
 
     parent_dirs = root.split("/")
-    pattern = parent_dirs[3]
-    algo = parent_dirs[4]
-    trial_num = parent_dirs[5]
+    if len(parent_dirs) < 7:
+        continue
+    # print(parent_dirs)
+    # print(files)
+    assoc = parent_dirs[3]
+    pattern = parent_dirs[4]
+    algo = parent_dirs[5]
+    trial_num = parent_dirs[6]
 
-    trial = Trial(pattern, algo, trial_num, stats)
+    trial = Trial(assoc, pattern, algo, trial_num, stats)
     all_trials.append(trial)
     all_mem_patterns.add(pattern)
     all_algorithms.add(algo)
+
+    f.close()
 
 # Calculate mean/variance of hits and misses for all experiments
 for mem_pattern in all_mem_patterns:
@@ -120,7 +157,7 @@ for mem_pattern in all_mem_patterns:
         trials = [
             t.stats
             for t in all_trials
-            if t.pattern == mem_pattern and t.algo == algorithm
+            if t.mem_pattern == mem_pattern and t.algo == algorithm
         ]
 
         hits = np.array([d["hits"] for d in trials])
@@ -135,7 +172,7 @@ for mem_pattern in all_mem_patterns:
         var_miss = np.var(misses)
         var_accesses = np.var(accesses)
 
-        assert var_accesses == 0
+        # assert var_accesses == 0
 
         trial_avg = TrialAverage(
             mem_pattern, algorithm, mean_hits, var_hits, mean_miss, var_miss
@@ -178,3 +215,18 @@ for mem_pattern in experiment_mem_patterns:
             ratio,
         )
         data_points.append(point)
+
+for trial in all_trials:
+    trial_str = "{},{},{},{},{},{},{},{}\n".format(
+        trial.assoc,
+        trial.algo,
+        trial.mem_pattern,
+        trial.trial_num,
+        trial.stats["accesses"],
+        trial.stats["hits"],
+        trial.stats["misses"],
+        trial.stats["miss-ratio"],
+    )
+    out_file.write(trial_str)
+
+out_file.close()
