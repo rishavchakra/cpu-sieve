@@ -1,6 +1,4 @@
 {
-    "_author": "Hoa Nguyen <hoanguyen@ucdavis.edu>, Ayaz Akram <yazakram@ucdavis.edu>",
-    "_license": "Copyright (c) 2020 The Regents of the University of California. SPDX-License-Identifier: BSD 3-Clause",
     "builders":
     [
         {
@@ -31,11 +29,12 @@
                 "shared/{{ user `preseed` }}"
             ],
             "headless": "{{ user `headless` }}",
-            "http_directory": "shared",
-            "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
+            "http_directory": "shared/",
+            "iso_checksum": "{{ user `iso_checksum` }}",
+            "iso_checksum_type": "{{ user `iso_checksum_type` }}",
             "iso_urls": [ "{{ user `iso_url` }}" ],
             "memory": "{{ user `vm_memory`}}",
-            "output_directory": "spec-2017/{{ user `image_name` }}-image",
+            "output_directory": "parsec/{{ user `image_name` }}-image",
             "qemuargs":
             [
                 [ "-cpu", "host" ],
@@ -63,12 +62,12 @@
         },
         {
             "type": "file",
-            "source": "spec-2017/runscript.sh",
+            "source": "parsec/runscript.sh",
             "destination": "/home/gem5/"
         },
         {
             "type": "file",
-            "source": "spec-2017/cpu2017-1.1.9.iso",
+            "source": "parsec/parsec-benchmark/",
             "destination": "/home/gem5/"
         },
         {
@@ -77,7 +76,7 @@
             "scripts":
             [
                 "shared/post-installation.sh",
-                "spec-2017/install-spec2017.sh"
+                "parsec/parsec-install.sh"
             ]
         }
     ],
@@ -97,10 +96,9 @@
         "ssh_fullname": "gem5",
         "ssh_password": "12345",
         "ssh_username": "gem5",
-        "vm_cpus": "4",
+        "vm_cpus": "16",
         "vm_memory": "8192",
-        "image_name": "spec-2017"
+        "image_name": "parsec"
   }
 
 }
-
