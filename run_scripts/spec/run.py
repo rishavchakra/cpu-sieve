@@ -86,66 +86,85 @@ def writeBenchScript(dir, benchmark_name, size, output_path):
     passed to the simulated system (to run a specific benchmark
     at bootup).
     """
-    input_file_name = '{}/run_{}_{}'.format(dir, benchmark_name, size)
-    with open(input_file_name,"w") as f:
-        f.write('{} {} {}'.format(benchmark_name, size, output_path))
+    input_file_name = "{}/run_{}_{}".format(dir, benchmark_name, size)
+    with open(input_file_name, "w") as f:
+        f.write("{} {} {}".format(benchmark_name, size, output_path))
     return input_file_name
 
+
 def parse_arguments():
-    parser = argparse.ArgumentParser(description=
-                                "gem5 config file to run SPEC benchmarks")
-    parser.add_argument("kernel", type = str, help = "Path to vmlinux")
-    parser.add_argument("disk", type = str,
-                  help = "Path to the disk image containing SPEC benchmarks")
-    parser.add_argument("cpu", type = str, help = "Name of the detailed CPU")
-    parser.add_argument("benchmark", type = str,
-                        help = "Name of the SPEC benchmark")
-    parser.add_argument("size", type = str,
-                        help = "Available sizes: test, train, ref")
-    parser.add_argument("-k", "--kernel", type = str,
-                        default = "linux-4.19.83/vmlinux-4.19.83",
-                        help = "Path to vmlinux")
-    parser.add_argument("-l", "--no-copy-logs", default = False,
-                        action = "store_true",
-                        help = "Not copy SPEC run logs to the host system;"
-                               "Logs are copied by default")
-    parser.add_argument("-z", "--allow-listeners", default = False,
-                        action = "store_true",
-                        help = "Turn on ports;"
-                               "The ports are off by default")
+    parser = argparse.ArgumentParser(
+        description="gem5 config file to run SPEC benchmarks"
+    )
+    parser.add_argument("kernel", type=str, help="Path to vmlinux")
+    parser.add_argument(
+        "disk", type=str, help="Path to the disk image containing SPEC benchmarks"
+    )
+    parser.add_argument("cpu", type=str, help="Name of the detailed CPU")
+    parser.add_argument("benchmark", type=str, help="Name of the SPEC benchmark")
+    parser.add_argument("size", type=str, help="Available sizes: test, train, ref")
+    parser.add_argument(
+        "-k",
+        "--kernel",
+        type=str,
+        default="linux-4.19.83/vmlinux-4.19.83",
+        help="Path to vmlinux",
+    )
+    parser.add_argument(
+        "-l",
+        "--no-copy-logs",
+        default=False,
+        action="store_true",
+        help="Not copy SPEC run logs to the host system;" "Logs are copied by default",
+    )
+    parser.add_argument(
+        "-z",
+        "--allow-listeners",
+        default=False,
+        action="store_true",
+        help="Turn on ports;" "The ports are off by default",
+    )
     return parser.parse_args()
 
+
 def getDetailedCPUModel(cpu_name):
-    '''
+    """
     Return the CPU model corresponding to the cpu_name.
-    '''
-    available_models = {"kvm": X86KvmCPU,
-                        "o3": DerivO3CPU,
-                        "atomic": AtomicSimpleCPU,
-                        "timing": TimingSimpleCPU
-                       }
+    """
+    available_models = {
+        "kvm": X86KvmCPU,
+        "o3": DerivO3CPU,
+        "atomic": AtomicSimpleCPU,
+        "timing": TimingSimpleCPU,
+    }
     try:
         available_models["FlexCPU"] = FlexCPU
     except NameError:
         # FlexCPU is not defined
         pass
-    # https://docs.python.org/3/library/stdtypes.html#dict.get 
+    # https://docs.python.org/3/library/stdtypes.html#dict.get
     # dict.get() returns None if the key does not exist
     return available_models.get(cpu_name)
+
 
 def getBenchmarkName(benchmark_name):
     if benchmark_name.endswith("(base)"):
         benchmark_name = benchmark_name[:-6]
     return benchmark_name
 
-def create_system(linux_kernel_path, disk_image_path, detailed_cpu_model):
+
+def create_system(linux_kernel_path, disk_image_path, detailed_cpu_model, assoc, repl):
     # create the system we are going to simulate
-    system = MySystem(kernel = linux_kernel_path,
-                      disk = disk_image_path,
-                      num_cpus = 1, # run the benchmark in a single thread
-                      no_kvm = False,
-                      TimingCPUModel = detailed_cpu_model)
-    
+    system = MySystem(
+        kernel=linux_kernel_path,
+        disk=disk_image_path,
+        num_cpus=1,  # run the benchmark in a single thread
+        no_kvm=False,
+        TimingCPUModel=detailed_cpu_model,
+        assoc=assoc,
+        repl=repl,
+    )
+
     # For workitems to work correctly
     # This will cause the simulator to exit simulation when the first work
     # item is reached and when the first work item is finished.
@@ -153,22 +172,22 @@ def create_system(linux_kernel_path, disk_image_path, detailed_cpu_model):
     system.work_end_exit_count = 1
 
     # set up the root SimObject and start the simulation
-    root = Root(full_system = True, system = system)
+    root = Root(full_system=True, system=system)
 
     if system.getHostParallel():
         # Required for running kvm on multiple host cores.
         # Uses gem5's parallel event queue feature
         # Note: The simulator is quite picky about this number!
-        root.sim_quantum = int(1e9) # 1 ms
+        root.sim_quantum = int(1e9)  # 1 ms
 
     return root, system
 
 
 def boot_linux():
-    '''
+    """
     Output 1: False if errors occur, True otherwise
     Output 2: exit cause
-    '''
+    """
     print("Booting Linux")
     exit_event = m5.simulate()
     exit_cause = exit_event.getCause()
@@ -179,11 +198,12 @@ def boot_linux():
     print("Booting done")
     return success, exit_cause
 
+
 def run_spec_benchmark():
-    '''
+    """
     Output 1: False if errors occur, True otherwise
     Output 2: exit cause
-    '''
+    """
     print("Start running benchmark")
     exit_event = m5.simulate()
     exit_cause = exit_event.getCause()
@@ -194,11 +214,12 @@ def run_spec_benchmark():
     print("Benchmark done")
     return success, exit_cause
 
+
 def copy_spec_logs():
-    '''
+    """
     Output 1: False if errors occur, True otherwise
     Output 2: exit cause
-    '''
+    """
     print("Copying SPEC logs")
     exit_event = m5.simulate()
     exit_cause = exit_event.getCause()
@@ -208,6 +229,7 @@ def copy_spec_logs():
         exit(1)
     print("Copying done")
     return success, exit_cause
+
 
 if __name__ == "__m5_main__":
     args = parse_arguments()
@@ -230,22 +252,23 @@ if __name__ == "__m5_main__":
     # Get the DetailedCPU class from its name
     detailed_cpu = getDetailedCPUModel(cpu_name)
     if detailed_cpu == None:
-        print("'{}' is not define in the config script.".format(cpu_name))
-        print("Change getDeatiledCPUModel() in run_spec.py "
-              "to add more CPU Models.")
+        print("'{}' is not defined in the config script.".format(cpu_name))
+        print("Change getDeatiledCPUModel() in run_spec.py " "to add more CPU Models.")
         exit(1)
 
-    if not benchmark_size in ["ref", "train", "test"]:
+    if benchmark_size not in ["ref", "train", "test"]:
         print("Benchmark size must be one of the following: ref, train, test")
         exit(1)
 
-    root, system = create_system(linux_kernel_path, disk_image_path,
-                                 detailed_cpu)
+    root, system = create_system(
+        linux_kernel_path, disk_image_path, detailed_cpu, assoc, repl
+    )
 
     # Create and pass a script to the simulated system to run the reuired
     # benchmark
-    system.readfile = writeBenchScript(m5.options.outdir, benchmark_name,
-                                       benchmark_size, output_dir)
+    system.readfile = writeBenchScript(
+        m5.options.outdir, benchmark_name, benchmark_size, output_dir
+    )
 
     # needed for long running jobs
     if not allow_listeners:
@@ -268,7 +291,11 @@ if __name__ == "__m5_main__":
         print("Switching done")
 
     # running benchmark
-    print("Benchmark: {}; Size: {}\nEviction: {}; {}-way assoc".format(benchmark_name, benchmark_size, repl, assoc))
+    print(
+        "Benchmark: {}; Size: {}\nEviction: {}; {}-way assoc".format(
+            benchmark_name, benchmark_size, repl, assoc
+        )
+    )
     success, exit_cause = run_spec_benchmark()
 
     # output the stats after the benchmark is complete
@@ -284,6 +311,6 @@ if __name__ == "__m5_main__":
             print("Switching to KVM")
             system.switchCpus(system.detailed_cpu, system.cpu)
             print("Switching done")
-        
+
         # copying logs
         success, exit_cause = copy_spec_logs()

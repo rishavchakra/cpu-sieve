@@ -34,12 +34,13 @@ gem5 configuration script.
 """
 
 import m5
-from m5.objects import Cache, L2XBar, StridePrefetcher, SubSystem
+from m5.objects import *
 from m5.params import AddrRange, AllMemory, MemorySize
 from m5.util.convert import toMemorySize
 
 # Some specific options for caches
 # For all options see src/mem/cache/BaseCache.py
+
 
 class L1Cache(Cache):
     """Simple L1 Cache with default values"""
@@ -62,14 +63,15 @@ class L1Cache(Cache):
 
     def connectCPU(self, cpu):
         """Connect this cache's port to a CPU-side port
-           This must be defined in a subclass"""
+        This must be defined in a subclass"""
         raise NotImplementedError
+
 
 class L1ICache(L1Cache):
     """Simple L1 instruction cache with default values"""
 
     # Set the default size
-    size = '32kB'
+    size = "32kB"
 
     def __init__(self):
         super(L1ICache, self).__init__()
@@ -78,11 +80,12 @@ class L1ICache(L1Cache):
         """Connect this cache's port to a CPU icache port"""
         self.cpu_side = cpu.icache_port
 
+
 class L1DCache(L1Cache):
     """Simple L1 data cache with default values"""
 
     # Set the default size
-    size = '32kB'
+    size = "32kB"
 
     def __init__(self):
         super(L1DCache, self).__init__()
@@ -91,9 +94,10 @@ class L1DCache(L1Cache):
         """Connect this cache's port to a CPU dcache port"""
         self.cpu_side = cpu.dcache_port
 
+
 class MMUCache(Cache):
     # Default parameters
-    size = '8kB'
+    size = "8kB"
     assoc = 4
     tag_latency = 1
     data_latency = 1
@@ -107,7 +111,7 @@ class MMUCache(Cache):
 
     def connectCPU(self, cpu):
         """Connect the CPU itb and dtb to the cache
-           Note: This creates a new crossbar
+        Note: This creates a new crossbar
         """
         self.mmubus = L2XBar()
         self.cpu_side = self.mmubus.master
@@ -118,11 +122,12 @@ class MMUCache(Cache):
         """Connect this cache to a memory-side bus"""
         self.mem_side = bus.slave
 
+
 class L2Cache(Cache):
     """Simple L2 Cache with default values"""
 
     # Default parameters
-    size = '256kB'
+    size = "256kB"
     assoc = 16
     tag_latency = 10
     data_latency = 10
@@ -140,10 +145,11 @@ class L2Cache(Cache):
     def connectMemSideBus(self, bus):
         self.mem_side = bus.slave
 
+
 class L3Cache(Cache):
     """Simple L3 Cache bank with default values
-       This assumes that the L3 is made up of multiple banks. This cannot
-       be used as a standalone L3 cache.
+    This assumes that the L3 is made up of multiple banks. This cannot
+    be used as a standalone L3 cache.
     """
 
     # Default parameters
@@ -153,9 +159,9 @@ class L3Cache(Cache):
     response_latency = 10
     mshrs = 256
     tgts_per_mshr = 12
-    clusivity = 'mostly_excl'
+    clusivity = "mostly_excl"
 
-    size = '4MB'
+    size = "4MB"
 
     def __init__(self):
         super(L3Cache, self).__init__()
@@ -165,3 +171,183 @@ class L3Cache(Cache):
 
     def connectMemSideBus(self, bus):
         self.mem_side = bus.slave
+
+
+"""
+----------------------------------------------------------------
+Eviction set-specific caches
+----------------------------------------------------------------
+"""
+
+"""
+SIEVE caches
+"""
+
+
+class L1I_SIEVE(L1ICache):
+    replacement_policy = SIEVERP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L1D_SIEVE(L1DCache):
+    replacement_policy = SIEVERP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L2_SIEVE(L2Cache):
+    replacement_policy = SIEVERP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+"""
+Random Replacement caches
+"""
+
+
+class L1I_RR(L1ICache):
+    replacement_policy = RandomRP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L1D_RR(L1DCache):
+    replacement_policy = RandomRP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L2_RR(L2Cache):
+    replacement_policy = RandomRP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+"""
+FIFO caches
+"""
+
+
+class L1I_FIFO(L1ICache):
+    replacement_policy = FIFORP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L1D_FIFO(L1DCache):
+    replacement_policy = FIFORP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L2_FIFO(L2Cache):
+    replacement_policy = FIFORP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+"""
+LRU caches
+"""
+
+
+class L1I_LRU(L1ICache):
+    replacement_policy = LRURP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L1D_LRU(L1DCache):
+    replacement_policy = LRURP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L2_LRU(L2Cache):
+    replacement_policy = LRURP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+"""
+Second Chance caches
+"""
+
+
+class L1I_SecondChance(L1ICache):
+    replacement_policy = SecondChanceRP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L1D_SecondChance(L1DCache):
+    replacement_policy = SecondChanceRP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L2_SecondChance(L2Cache):
+    replacement_policy = SecondChanceRP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+"""
+Tree PLRU caches
+"""
+
+
+class L1I_TreePLRU(L1ICache):
+    replacement_policy = TreePLRURP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L1D_TreePLRU(L1DCache):
+    replacement_policy = TreePLRURP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc
+
+
+class L2_TreePLRU(L2Cache):
+    replacement_policy = TreePLRURP()
+
+    def __init__(self, assoc):
+        super().__init__()
+        self.assoc = assoc

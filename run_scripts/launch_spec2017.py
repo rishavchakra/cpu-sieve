@@ -7,7 +7,7 @@ from gem5art.run import gem5Run
 from gem5art.tasks.tasks import run_gem5_instance
 from gem5art.tasks.tasks import run_job_pool
 
-experiments_repo = Artifact.registerArtifact(
+spec_image_repo = Artifact.registerArtifact(
     # This line may go after `cd gem5-resources`
     # git checkout 1fe56ffc94005b7fa0ae5634c6edc5e2cb0b7357
     command="""
@@ -82,7 +82,7 @@ disk_image = Artifact.registerArtifact(
     path="disk-image/spec-2017/spec-2017-image/spec-2017",
     inputs=[
         packer,
-        experiments_repo,
+        spec_image_repo,
         m5_binary,
     ],
     documentation="Ubuntu Server with SPEC 2017 installed, m5 binary installed and root auto login",
@@ -109,25 +109,24 @@ linux_binary = Artifact.registerArtifact(
     cp vmlinux vmlinux-4.19.83;
     """,
     inputs=[
-        experiments_repo,
+        spec_image_repo,
         linux_repo,
     ],
     documentation="kernel binary for v4.19.83",
 )
 
-run_scripts_repo = Artifact.registerArtifact(
+run_script_repo = Artifact.registerArtifact(
     # This line may go after `cd gem5-resources`
     # git checkout 1fe56ffc94005b7fa0ae5634c6edc5e2cb0b7357
     command="""
-        git clone https://github.com/rishavchakra/spec-testing.git
+        git clone https://github.com/rishavchakra/spec-run-scripts.git
     """,
     typ="git repo",
     name="spec2017 Experiment",
-    path="./",
-    cwd="./",
+    path="run_scripts/spec",
+    cwd="run_scripts/spec",
     documentation="""
-        local repo to run spec 2017 experiments with gem5 full system mode;
-        resources cloned from https://github.com/gem5/gem5-resources upto commit 1fe56ffc94005b7fa0ae5634c6edc5e2cb0b7357 of stable branch
+        local repo of gem5 FS run scripts
     """,
 )
 
@@ -140,6 +139,13 @@ if __name__ == "__main__":
         "o3": ["test"],
         "timing": ["test"],
     }
+    # test: verifying that workloads get the right answers (not a problem for this research)
+    # train: same as test? documentation confusing
+    # ref: run the workloads
+    size = "ref"
+    # 5XX: SPECrate (throughput, generally smaller)
+    # 6XX: SPECspeed (speed, generally larger/heavier)
+    # 6XX benchmarks (and speed specrand benchmarks) are disabled
     benchmarks = [
         "503.bwaves_r",
         "507.cactuBSSN_r",
@@ -165,7 +171,7 @@ if __name__ == "__main__":
         # "644.nab_s",
         # "649.fotonik3d_s",
         # "654.roms_s",
-        "996.specrand_fs",
+        # "996.specrand_fs",
         "500.perlbench_r",
         "502.gcc_r",
         "505.mcf_r",
@@ -187,31 +193,49 @@ if __name__ == "__main__":
         # "641.leela_s",
         # "648.exchange2_s",
         # "657.xz_s",
-        "998.specrand_is",
+        # "998.specrand_is",
+    ]
+    assocs = [8, 16, 4, 2, 32]
+    replacement_policies = [
+        "sieve",
+        # "tree-sieve",
+        # "lru",
+        # "fifo",
+        "rr",
+        # "second-chance",
+        "tree-plru",
+        # "weighted-lru",
+        # "nru",
+        # "rrip",
+        # "2q",
     ]
 
     runs = []
     for cpu in cpus:
-        for size in benchmark_sizes[cpu]:
+        for assoc in assocs:
             for benchmark in benchmarks:
-                run = gem5Run.createFSRun(
-                    "gem5 v20.1.0.4 spec 2017 experiment",  # name
-                    "gem5/build/X86/gem5.opt",  # gem5_binary
-                    "gem5-configs/run_spec.py",  # run_script
-                    # relative_outdir
-                    "results/{}/{}/{}".format(cpu, size, benchmark),
-                    gem5_binary,  # gem5_artifact
-                    gem5_repo,  # gem5_git_artifact
-                    run_script_repo,  # run_script_git_artifact
-                    "linux-4.19.83/vmlinux-4.19.83",  # linux_binary
-                    "disk-image/spec2017/spec2017-image/spec2017",  # disk_image
-                    linux_binary,  # linux_binary_artifact
-                    disk_image,  # disk_image_artifact
-                    cpu,
-                    benchmark,
-                    size,  # params
-                    timeout=10 * 24 * 60 * 60,  # 10 days
-                )
-                runs.append(run)
+                for repl in replacement_policies:
+                    run = gem5Run.createFSRun(
+                        "gem5 v20.1.0.4 spec 2017 experiment",  # name
+                        "gem5/build/X86/gem5.opt",  # gem5_binary
+                        "gem5-configs/run_spec.py",  # run_script
+                        # relative_outdir
+                        f"out/spec/{benchmark}/{repl}_{assoc}",
+                        gem5_binary,  # gem5_artifact
+                        gem5_repo,  # gem5_git_artifact
+                        run_script_repo,  # run_script_git_artifact
+                        "linux-4.19.83/vmlinux-4.19.83",  # linux_binary
+                        "disk-image/spec2017/spec2017-image/spec2017",  # disk_image
+                        linux_binary,  # linux_binary_artifact
+                        disk_image,  # disk_image_artifact
+                        # script params
+                        cpu,
+                        benchmark,
+                        size,
+                        assoc,
+                        repl,
+                        timeout=10 * 24 * 60 * 60,  # 10 days
+                    )
+                    runs.append(run)
 
     run_job_pool(runs)
