@@ -83,22 +83,34 @@ for assoc in assocs:
     Benchmark:     {benchmark}\n\
     Replacement Policy: {repl_policy}\n\
     Associativity:      {assoc}\n"
-    )
+            )
 
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
+            # Old command
+            """
+            gem5/build/X86/gem5.opt \
+            -d out/spec-cpu/{benchmark}/{repl_policy}/{assoc} \
+            run_scripts/spec/run.py \
+            --kernel ../vmlinux-4.19.83 \
+            --disk benchmark/spec-2017/spec-2017-image/spec-2017 \
+            --cpu kvm \
+            --size test \
+            --num_cpus 1 \
+            --benchmark {benchmark} \
+            --assoc {str(assoc)} \
+            --repl {repl_policy}
+            """
+
             commands.append(
                 f"""gem5/build/X86/gem5.opt \
--d out/spec-cpu/{benchmark}/{repl_policy}/{assoc} \
+-d out/spec-cpu/ \
 run_scripts/spec/run.py \
---kernel ../vmlinux-4.19.83 \
---disk benchmark/spec-2017/spec-2017-image/spec-2017 \
---cpu kvm \
---size test \
---num_cpus 1 \
+--image benchmark/spec-2017/spec-2017-image/spec-2017 \
+--size ref \
 --benchmark {benchmark} \
 --assoc {str(assoc)} \
 --repl {repl_policy}"""
-)
+            )
 
 runs = zip(commands, labels)
 
