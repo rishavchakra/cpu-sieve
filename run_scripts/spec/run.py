@@ -215,6 +215,11 @@ if __name__ == "__m5_main__":
     cpu_name = args.cpu
     benchmark_name = getBenchmarkName(args.benchmark)
     benchmark_size = args.size
+
+    # Testing variables
+    assoc = args.assoc
+    repl = args.repl
+
     linux_kernel_path = args.kernel
     disk_image_path = args.disk
     no_copy_logs = args.no_copy_logs
@@ -263,7 +268,7 @@ if __name__ == "__m5_main__":
         print("Switching done")
 
     # running benchmark
-    print("Benchmark: {}; Size: {}".format(benchmark_name, benchmark_size))
+    print("Benchmark: {}; Size: {}\nEviction: {}; {}-way assoc".format(benchmark_name, benchmark_size, repl, assoc))
     success, exit_cause = run_spec_benchmark()
 
     # output the stats after the benchmark is complete

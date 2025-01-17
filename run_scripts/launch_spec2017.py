@@ -116,9 +116,19 @@ linux_binary = Artifact.registerArtifact(
 )
 
 run_scripts_repo = Artifact.registerArtifact(
-    name="run-scripts",
+    # This line may go after `cd gem5-resources`
+    # git checkout 1fe56ffc94005b7fa0ae5634c6edc5e2cb0b7357
+    command="""
+        git clone https://github.com/rishavchakra/spec-testing.git
+    """,
     typ="git repo",
-
+    name="spec2017 Experiment",
+    path="./",
+    cwd="./",
+    documentation="""
+        local repo to run spec 2017 experiments with gem5 full system mode;
+        resources cloned from https://github.com/gem5/gem5-resources upto commit 1fe56ffc94005b7fa0ae5634c6edc5e2cb0b7357 of stable branch
+    """,
 )
 
 if __name__ == "__main__":
@@ -145,16 +155,16 @@ if __name__ == "__main__":
         "549.fotonik3d_r",
         "554.roms_r",
         "997.specrand_fr",
-        "603.bwaves_s",
-        "607.cactuBSSN_s",
-        "619.lbm_s",
-        "621.wrf_s",
-        "627.cam4_s",
-        "628.pop2_s",
-        "638.imagick_s",
-        "644.nab_s",
-        "649.fotonik3d_s",
-        "654.roms_s",
+        # "603.bwaves_s",
+        # "607.cactuBSSN_s",
+        # "619.lbm_s",
+        # "621.wrf_s",
+        # "627.cam4_s",
+        # "628.pop2_s",
+        # "638.imagick_s",
+        # "644.nab_s",
+        # "649.fotonik3d_s",
+        # "654.roms_s",
         "996.specrand_fs",
         "500.perlbench_r",
         "502.gcc_r",
@@ -167,16 +177,16 @@ if __name__ == "__main__":
         "548.exchange2_r",
         "557.xz_r",
         "999.specrand_ir",
-        "600.perlbench_s",
-        "602.gcc_s",
-        "605.mcf_s",
-        "620.omnetpp_s",
-        "623.xalancbmk_s",
-        "625.x264_s",
-        "631.deepsjeng_s",
-        "641.leela_s",
-        "648.exchange2_s",
-        "657.xz_s",
+        # "600.perlbench_s",
+        # "602.gcc_s",
+        # "605.mcf_s",
+        # "620.omnetpp_s",
+        # "623.xalancbmk_s",
+        # "625.x264_s",
+        # "631.deepsjeng_s",
+        # "641.leela_s",
+        # "648.exchange2_s",
+        # "657.xz_s",
         "998.specrand_is",
     ]
 

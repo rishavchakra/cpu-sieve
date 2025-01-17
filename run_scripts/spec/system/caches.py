@@ -41,12 +41,7 @@ from m5.util.convert import toMemorySize
 # Some specific options for caches
 # For all options see src/mem/cache/BaseCache.py
 
-class PrefetchCache(Cache):
-
-    def __init__(self):
-        super(PrefetchCache, self).__init__()
-
-class L1Cache(PrefetchCache):
+class L1Cache(Cache):
     """Simple L1 Cache with default values"""
 
     assoc = 8
@@ -123,7 +118,7 @@ class MMUCache(Cache):
         """Connect this cache to a memory-side bus"""
         self.mem_side = bus.slave
 
-class L2Cache(PrefetchCache):
+class L2Cache(Cache):
     """Simple L2 Cache with default values"""
 
     # Default parameters
