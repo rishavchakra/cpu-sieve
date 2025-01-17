@@ -112,25 +112,25 @@ run_scripts/spec/run.py \
 --repl {repl_policy}"""
             )
 
-runs = zip(commands, labels)
+runs = list(zip(commands, labels))
 
-with ThreadPoolExecutor(max_workers=6) as executor:
-    for run in runs:
-        print(run[1])
-        future = executor.submit(run[0])
+# with ThreadPoolExecutor(max_workers=6) as executor:
+    # for run in runs:
+        # print(run[1])
+        # future = executor.submit(run[0])
 
 print("SPEC CPU finished simulating!")
 
-# cpus = 4
-# while commands:
-#     run_batch = runs[:cpus]
-#     commands_batch = [run[0] for run in run_batch]
-#     labels_batch = [run[1] for run in run_batch]
-#     runs = runs[cpus:]
-#     # batch = commands[:cpus]
-#     # commands = commands[cpus:]
-#     for label in labels_batch:
-#         print(label)
-#     procs = [subprocess.Popen(cmd, shell=True) for cmd in commands_batch]
-#     for p in procs:
-#         p.wait()
+cpus = 6
+while runs:
+    run_batch = runs[:cpus]
+    commands_batch = [run[0] for run in run_batch]
+    labels_batch = [run[1] for run in run_batch]
+    runs = runs[cpus:]
+    # batch = commands[:cpus]
+    # commands = commands[cpus:]
+    for label in labels_batch:
+        print(label)
+    procs = [subprocess.Popen(cmd, shell=True) for cmd in commands_batch]
+    for p in procs:
+        p.wait()

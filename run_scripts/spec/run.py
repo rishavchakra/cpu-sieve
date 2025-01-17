@@ -25,6 +25,7 @@ from gem5.components.processors.simple_switchable_processor import (
 from gem5.isas import ISA
 from gem5.resources.resource import (
     DiskImageResource,
+    Resource,
     obtain_resource,
 )
 from gem5.simulate.exit_event import ExitEvent
@@ -142,22 +143,22 @@ def create_cache_hierarchy(assoc: int, repl: str):
     ret = None
     match repl:
         case "sieve":
-            ret = L1I_SIEVE(assoc)
+            ret = SIEVERP()
         case "rr":
-            ret = L1I_RR(assoc)
+            ret = RandomRP()
         case "fifo":
-            ret = L1I_FIFO(assoc)
+            ret = FIFORP()
         case "lru":
-            ret = L1I_LRU(assoc)
+            ret = LRURP()
         case "second-chance":
-            ret = L1I_SecondChance(assoc)
+            ret = SecondChanceRP()
         case "tree-plru":
-            ret = L1I_TreePLRU(assoc)
+            ret = TreePLRURP()
 
     cache_hierarchy = PrivateL1CacheHierarchy(
         l1d_size="32KiB",
         l1i_size="32KiB",
-        assoc=8,
+        assoc=assoc,
         repl=ret,
     )
     return cache_hierarchy
@@ -175,10 +176,10 @@ def handle_finish_boot():
 
 
 if __name__ == "__m5_main__":
+    print("Starting run script")
     args = parse_arguments()
 
     image = args.image
-    cpu_name = args.cpu
     benchmark = args.benchmark
     size = args.size
     partition = args.partition
@@ -190,7 +191,7 @@ if __name__ == "__m5_main__":
     processors = SimpleSwitchableProcessor(
         starting_core_type=CPUTypes.KVM,
         switch_core_type=CPUTypes.TIMING,
-        isa=ISA_X86,
+        isa=ISA.X86,
         num_cores=1,
     )
 
@@ -198,7 +199,7 @@ if __name__ == "__m5_main__":
 
     board = X86Board(
         clk_freq="3GHz",
-        processors=processors,
+        processor=processors,
         memory=memory,
         cache_hierarchy=cache_hierarchy,
     )
@@ -209,9 +210,12 @@ if __name__ == "__m5_main__":
     except FileExistsError:
         warn("output directory already exists!")
 
-    command = f"{args.benchmark} {args.repl}_{args.assoc} {output_dir}"
+    command = "m5 exit;" \
+        + "echo 'This is running on Timing CPU cores.';" \
+        + "sleep 1;" \
+        + "m5 exit;"
     board.set_kernel_disk_workload(
-        kernel=obtain_resource("x86-linux-kernel-4.19.83"),
+        kernel=obtain_resource("x86-linux-kernel-5.4.49"),
         # SPEC CPU workload disk image
         disk_image=DiskImageResource(args.image, root_partition=args.partition),
         readfile_contents=command,
@@ -220,7 +224,7 @@ if __name__ == "__m5_main__":
     simulator = Simulator(
         board=board,
         on_exit_event={
-            ExitEvent.EXIT: handle_finish_boot(),
+            ExitEvent.EXIT: (func() for func in [processors.switch]),
         },
     )
 
