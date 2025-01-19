@@ -37,8 +37,8 @@ assocs = [
     2,
 ]
 
-labels = []
-commands = []
+labels: list[str] = []
+commands: list[list[str]] = []
 
 for assoc in assocs:
     for benchmark in benchmarks:
@@ -53,25 +53,33 @@ for assoc in assocs:
 
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
             commands.append(
-                f"""gem5/build/X86/gem5.opt \
--d out/parsec/{benchmark}/{repl_policy}/{assoc} \
-parsec/configs/run_parsec.py \
---kernel parsec/vmlinux-4.19.83 \
---disk parsec/disk-image/parsec/parsec-image/parsec \
---cpu kvm \
---size test \
---num_cpus 1 \
---benchmark {benchmark} \
--a {str(assoc)} \
--r {repl_policy}"""
+                [
+                    "gem5/build/X86/gem5.fast",
+                    f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
+                    "run_scripts/bench/parsec_trial.py",
+                    "--kernel vmlinux-4.19.83",
+                    "--disk benchmark/parsec/parsec-image",
+                    "--cpu kvm",
+                    "--size simsmall",
+                    "--num_cpus 1",
+                    f"--benchmark {benchmark}",
+                    f"-a {str(assoc)}",
+                    f"-r {repl_policy}",
+                ]
             )
+
+
+def run_command_synchronous(command: list[str]):
+    p = subprocess.Popen(command, shell=False)
+    _ = p.wait()
+
 
 runs = zip(commands, labels)
 
-with ThreadPoolExecutor(max_workers=6) as executor:
+with ThreadPoolExecutor(max_workers=24) as executor:
     for run in runs:
         print(run[1])
-        future = executor.submit(run[0])
+        future = executor.submit(run_command_synchronous, run[0])
 
 # cpus = 4
 # while commands:
