@@ -63,8 +63,8 @@ for assoc in assocs:
                     "--size simsmall",
                     "--num_cpus 1",
                     f"--benchmark {benchmark}",
-                    f"-a {str(assoc)}",
-                    f"-r {repl_policy}",
+                    f"--assoc {str(assoc)}",
+                    f"--repl {repl_policy}",
                 ]
             )
 

@@ -35,8 +35,9 @@ from system.caches import *
 
 
 class MySystem(LinuxX86System):
-
-    def __init__(self, kernel, disk, num_cpus, TimingCPUModel, no_kvm=False, assoc=8, repl='LRU'):
+    def __init__(
+        self, kernel, disk, num_cpus, TimingCPUModel, no_kvm=False, assoc=8, repl="LRU"
+    ):
         super(MySystem, self).__init__()
         self._no_kvm = no_kvm
 
@@ -154,25 +155,24 @@ class MySystem(LinuxX86System):
             # For simplicity, we only use one level of cache hierarchy
             # Create an L1 instruction and data cache
             match repl:
-                case 'sieve':
+                case "sieve":
                     cpu.icache = L1I_SIEVE(assoc)
                     cpu.dcache = L1D_SIEVE(assoc)
-                case 'rr':
+                case "rr":
                     cpu.icache = L1I_RR(assoc)
                     cpu.dcache = L1D_RR(assoc)
-                case 'fifo':
+                case "fifo":
                     cpu.icache = L1I_FIFO(assoc)
                     cpu.dcache = L1D_FIFO(assoc)
-                case 'lru':
+                case "lru":
                     cpu.icache = L1I_LRU(assoc)
                     cpu.dcache = L1D_LRU(assoc)
-                case 'second-chance':
+                case "second-chance":
                     cpu.icache = L1I_SecondChance(assoc)
                     cpu.dcache = L1D_SecondChance(assoc)
-                case 'tree-plru':
+                case "tree-plru":
                     cpu.icache = L1I_TreePLRU(assoc)
                     cpu.dcache = L1D_TreePLRU(assoc)
-                    
 
             # cpu.icache = L1ICache()
             # cpu.dcache = L1DCache()
@@ -283,7 +283,7 @@ class MySystem(LinuxX86System):
         self.apicbridge = Bridge(delay="50ns")
         self.apicbridge.slave = self.iobus.master
         self.apicbridge.master = membus.slave
-self.apicbridge.ranges = [
+        self.apicbridge.ranges = [
             AddrRange(
                 interrupts_address_space_base,
                 interrupts_address_space_base + cpus * APIC_range_size - 1,
