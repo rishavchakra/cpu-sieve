@@ -1,216 +1,224 @@
-# -*- coding: utf-8 -*-
-# Copyright (c) 2019 The Regents of the University of California.
-# All rights reserved.
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met: redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer;
-# redistributions in binary form must reproduce the above copyright
-# notice, this list of conditions and the following disclaimer in the
-# documentation and/or other materials provided with the distribution;
-# neither the name of the copyright holders nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-
-""" Script to run PARSEC benchmarks with gem5.
-    The script expects kernel, diskimage, cpu (kvm or timing),
-    benchmark, benchmark size, and number of cpu cores as arguments.
-    This script is best used if your disk-image has workloads tha have
-    ROI annotations compliant with m5 utility. You can use the script in
-    ../disk-images/parsec/ with the parsec-benchmark repo at
-    https://github.com/darchr/parsec-benchmark.git to create a working
-    disk-image for this script.
 """
-from system import *
+Script to run PARSEC benchmarks with gem5.
+"""
+
 import argparse
-import errno
+import json
 import os
-import sys
 import time
+
 import m5
-import m5.ticks
 from m5.objects import *
+from m5.stats.gem5stats import get_simstat
+from m5.util import (
+    fatal,
+    warn,
+)
 
-sys.path.append("gem5/configs/common/")  # For the next line...
-# import SimpleOpts
+from gem5.coherence_protocol import CoherenceProtocol
+from gem5.components.boards.x86_board import X86Board
+from gem5.components.memory import DualChannelDDR4_2400
+from gem5.components.processors.cpu_types import CPUTypes
+from gem5.components.processors.simple_switchable_processor import (
+    SimpleSwitchableProcessor,
+)
+from gem5.isas import ISA
+from gem5.resources.resource import (
+    DiskImageResource,
+    Resource,
+    obtain_resource,
+)
+from gem5.simulate.exit_event import ExitEvent
+from gem5.simulate.simulator import Simulator
+from gem5.utils.requires import requires
+
+from gem5.components.cachehierarchies.classic.private_l1_cache_hierarchy import (
+    PrivateL1CacheHierarchy,
+)
+
+requires(
+    isa_required=ISA.X86,
+    coherence_protocol_required=CoherenceProtocol.MESI_TWO_LEVEL,
+    kvm_required=True,
+)
 
 
-def writeBenchScript(dir, bench, size, num_cpus):
-    """
-    This method creates a script in dir which will be eventually
-    passed to the simulated system (to run a specific benchmark
-    at bootup).
-    """
-    file_name = "{}/run_{}".format(dir, bench)
-    bench_file = open(file_name, "w+")
-    bench_file.write("cd /home/gem5/parsec-benchmark\n")
-    bench_file.write("source env.sh\n")
-    bench_file.write(
-        "parsecmgmt -a run -p \
-            {} -c gcc-hooks -i {} -n {}\n".format(
-            bench, size, num_cpus
-        )
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="gem5 config file to run PARSEC benchmarks"
+    )
+    parser.add_argument(
+        "--image",
+        type=str,
+        required=True,
+        help="Input the full path to the built PARSEC disk-image.",
     )
 
-    # sleeping for sometime makes sure
-    # that the benchmark's output has been
-    # printed to the console
-    bench_file.write("sleep 5 \n")
-    bench_file.write("m5 exit \n")
-    bench_file.close()
-    return file_name
+    parser.add_argument(
+        "--partition",
+        type=str,
+        required=False,
+        default=None,
+        help='Input the root partition of the PARSEC disk-image. If the disk is \
+        not partitioned, then pass "".',
+    )
+
+    parser.add_argument(
+        "--benchmark",
+        type=str,
+        required=True,
+        help="Input the benchmark program to execute.",
+    )
+
+    parser.add_argument(
+        "--size",
+        type=str,
+        required=True,
+        help="Sumulation size the benchmark program.",
+    )
+
+    parser.add_argument(
+        "--assoc",
+        type=int,
+        required=True,
+        help="Associativity of cache",
+        choices=[1, 2, 4, 8, 16, 32],
+    )
+
+    parser.add_argument(
+        "--repl",
+        type=str,
+        required=True,
+        help="Replacement Policy of cache",
+    )
+
+    args = parser.parse_args()
+
+    if args.image[0] != "/":
+        # We need to get the absolute path to this file. We assume that the file is
+        # present on the current working directory.
+        args.image = os.path.abspath(args.image)
+
+    if not os.path.exists(args.image):
+        warn("Disk image not found!")
+        fatal(f"The disk-image is not found at {args.image}")
+
+    return args
+
+
+def create_cache_hierarchy(assoc: int, repl: str):
+    # For simplicity, we only use one level of cache hierarchy
+    # Create an L1 instruction and data cache
+    ret = None
+    match repl:
+        case "sieve":
+            ret = SIEVERP()
+        case "rr":
+            ret = RandomRP()
+        case "fifo":
+            ret = FIFORP()
+        case "lru":
+            ret = LRURP()
+        case "second-chance":
+            ret = SecondChanceRP()
+        case "tree-plru":
+            ret = TreePLRURP()
+
+    cache_hierarchy = PrivateL1CacheHierarchy(
+        l1d_size="32KiB",
+        l1i_size="32KiB",
+        assoc=assoc,
+        repl=ret,
+    )
+    return cache_hierarchy
+
+def handle_workbegin(processor):
+    print("Boot finished, resetting stats")
+    m5.stats.reset()
+    processor.switch()
+    yield False
+
+def handle_workend():
+    print("ROI finished, dumping stats")
+    m5.stats.dump()
+    yield True
 
 
 if __name__ == "__m5_main__":
-    parser = argparse.ArgumentParser(
-        prog="PARSEC Benchmarking",
-        description="Benchmarking different cache replacement policies",
-    )
-    _ = parser.add_argument("--kernel")
-    _ = parser.add_argument("--disk")
-    _ = parser.add_argument("--cpu")
-    _ = parser.add_argument("--benchmark")
-    _ = parser.add_argument("--size")
-    _ = parser.add_argument("--num_cpus")
-    args = parser.parse_args()
-    kernel = args.kernel
-    disk = args.disk
-    cpu = args.cpu
+    print("Starting run script")
+    args = parse_arguments()
+
+    image = args.image
     benchmark = args.benchmark
     size = args.size
-    num_cpus = args.num_cpus
-    # (opts, args) = SimpleOpts.parse_args()
-    # kernel, disk, cpu, benchmark, size, num_cpus = args
+    partition = args.partition
+    assoc = args.assoc
+    repl = args.repl
 
-    if cpu not in ["kvm", "timing", "atomic"]:
-        m5.fatal("cpu not supported")
+    cache_hierarchy = create_cache_hierarchy(assoc, repl)
 
-    # create the system
-    system = MySystem(kernel, disk, cpu, int(num_cpus))
+    processor = SimpleSwitchableProcessor(
+        starting_core_type=CPUTypes.KVM,
+        switch_core_type=CPUTypes.TIMING,
+        isa=ISA.X86,
+        num_cores=1,
+    )
 
-    # Exit from guest on workbegin/workend
-    system.exit_on_work_items = True
+    memory = DualChannelDDR4_2400(size="3GiB")
 
-    # Create and pass a script to the simulated system to run the reuired
-    # benchmark
-    system.readfile = writeBenchScript(m5.options.outdir, benchmark, size, num_cpus)
+    board = X86Board(
+        clk_freq="3GHz",
+        processor=processor,
+        memory=memory,
+        cache_hierarchy=cache_hierarchy,
+    )
 
-    # set up the root SimObject and start the simulation
-    root = Root(full_system=True, system=system)
+    output_dir = f"{benchmark}/{repl}_{assoc}"
+    try:
+        os.makedirs(os.path.join(m5.options.outdir, output_dir))
+    except FileExistsError:
+        warn("output directory already exists!")
 
-    if system.getHostParallel():
-        # Required for running kvm on multiple host cores.
-        # Uses gem5's parallel event queue feature
-        # Note: The simulator is quite picky about this number!
-        root.sim_quantum = int(1e9)  # 1 ms
+    command = (
+        "cd /home/gem5/parsec-benchmark;"
+        + "source env.sh;"
+        + f"parsecmgmt -a run -p {args.benchmark} -c gcc-hooks -i {args.size}         -n 2;"
+        + "sleep 5;"
+        + "m5 exit;"
+    )
+    board.set_kernel_disk_workload(
+        kernel=obtain_resource("x86-linux-kernel-5.4.49"),
+        disk_image = obtain_resource("x86-parsec", resource_version="1.0.0"),
+        # workload disk image
+        # disk_image=DiskImageResource(args.image, root_partition=args.partition),
+        readfile_contents=command,
+    )
 
-    # needed for long running jobs
-    m5.disableAllListeners()
-
-    # instantiate all of the objects we've created above
-    m5.instantiate()
+    simulator = Simulator(
+        board=board,
+        on_exit_event={
+            # ExitEvent.EXIT: (func() for func in [processor.switch]),
+            ExitEvent.WORKBEGIN: handle_workbegin(processor),
+            ExitEvent.WORKEND: handle_workend(),
+        },
+    )
 
     globalStart = time.time()
 
-    print("Running the simulation")
-    print("Using cpu: {}".format(cpu))
+    print("Starting simulation...")
 
-    start_tick = m5.curTick()
-    end_tick = m5.curTick()
-    start_insts = system.totalInsts()
-    end_insts = system.totalInsts()
     m5.stats.reset()
+    simulator.run()
 
-    exit_event = m5.simulate()
+    globalEnd = time.time()
 
-    if exit_event.getCause() == "workbegin":
-        # Reached the start of ROI
-        # start of ROI is marked by an
-        # m5_work_begin() call
-        print("Resetting stats at the start of ROI!")
-        m5.stats.reset()
-        start_tick = m5.curTick()
-        start_insts = system.totalInsts()
-        # switching to timing cpu if argument cpu == timing
-        if cpu == "timing":
-            system.switchCpus(system.cpu, system.detailedCpu)
-    else:
-        print("Unexpected termination of simulation!")
-        print()
-        m5.stats.dump()
-        end_tick = m5.curTick()
-        end_insts = system.totalInsts()
-        m5.stats.reset()
-        print("Performance statistics:")
+    print("Finished simulation")
 
-        print("Simulated time: %.2fs" % ((end_tick - start_tick) / 1e12))
-        print("Instructions executed: %d" % ((end_insts - start_insts)))
-        print("Ran a total of", m5.curTick() / 1e12, "simulated seconds")
-        print(
-            "Total wallclock time: %.2fs, %.2f min"
-            % (time.time() - globalStart, (time.time() - globalStart) / 60)
-        )
-        exit()
-
-    # Simulate the ROI
-    exit_event = m5.simulate()
-
-    # Reached the end of ROI
-    # Finish executing the benchmark with kvm cpu
-    if exit_event.getCause() == "workend":
-        # Reached the end of ROI
-        # end of ROI is marked by an
-        # m5_work_end() call
-        print("Dump stats at the end of the ROI!")
-        m5.stats.dump()
-        end_tick = m5.curTick()
-        end_insts = system.totalInsts()
-        m5.stats.reset()
-        # switching to timing cpu if argument cpu == timing
-        if cpu == "timing":
-            system.switchCpus(system.timingCpu, system.cpu)
-    else:
-        print("Unexpected termination of simulation!")
-        print()
-        m5.stats.dump()
-        end_tick = m5.curTick()
-        end_insts = system.totalInsts()
-        m5.stats.reset()
-        print("Performance statistics:")
-
-        print("Simulated time: %.2fs" % ((end_tick - start_tick) / 1e12))
-        print("Instructions executed: %d" % ((end_insts - start_insts)))
-        print("Ran a total of", m5.curTick() / 1e12, "simulated seconds")
-        print(
-            "Total wallclock time: %.2fs, %.2f min"
-            % (time.time() - globalStart, (time.time() - globalStart) / 60)
-        )
-        exit()
-
-    # Simulate the remaning part of the benchmark
-    exit_event = m5.simulate()
-
-    print("Done with the simulation")
-    print()
-    print("Performance statistics:")
-
-    print("Simulated time in ROI: %.2fs" % ((end_tick - start_tick) / 1e12))
-    print("Instructions executed in ROI: %d" % ((end_insts - start_insts)))
-    print("Ran a total of", m5.curTick() / 1e12, "simulated seconds")
+    roi_begin_ticks = simulator.get_tick_stopwatch()[0][1]
+    roi_end_ticks = simulator.get_tick_stopwatch()[1][1]
+    print("ROI simulated ticks: " + str(roi_end_ticks - roi_begin_ticks))
     print(
-        "Total wallclock time: %.2fs, %.2f min"
-        % (time.time() - globalStart, (time.time() - globalStart) / 60)
+        "Run time: %.2fs:%.2fs"
+        % ((globalEnd - globalStart / 60), globalEnd - globalStart)
     )
+    print("Simulated time:", str(simulator.get_current_tick() / 1e12), "sec")
