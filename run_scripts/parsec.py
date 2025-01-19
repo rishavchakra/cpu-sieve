@@ -38,7 +38,7 @@ assocs = [
 ]
 
 labels: list[str] = []
-commands: list[list[str]] = []
+commands: list[str] = []
 
 for assoc in assocs:
     for benchmark in benchmarks:
@@ -53,7 +53,7 @@ for assoc in assocs:
 
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
             commands.append(
-                [
+                "".join([
                     "gem5/build/X86/gem5.fast",
                     f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
                     "run_scripts/bench/parsec_trial.py",
@@ -65,7 +65,7 @@ for assoc in assocs:
                     f"--benchmark {benchmark}",
                     f"--assoc {str(assoc)}",
                     f"--repl {repl_policy}",
-                ]
+                ])
             )
 
 
