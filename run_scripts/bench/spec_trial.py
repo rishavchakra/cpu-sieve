@@ -174,6 +174,16 @@ def handle_finish_boot():
     m5.stats.dump()
     yield True
 
+def handle_exit():
+    print("Done bootling Linux")
+    print("Resetting stats at the start of ROI!")
+    m5.stats.reset()
+    processor.switch()
+    yield False  # E.g., continue the simulation.
+    print("Dump stats at the end of the ROI!")
+    m5.stats.dump()
+    yield True  # Stop the simulation. We're done.
+
 
 if __name__ == "__m5_main__":
     print("Starting run script")
@@ -210,10 +220,7 @@ if __name__ == "__m5_main__":
     except FileExistsError:
         warn("output directory already exists!")
 
-    command = "m5 exit;" \
-        + "echo 'This is running on Timing CPU cores.';" \
-        + "sleep 1;" \
-        + "m5 exit;"
+    command = f"{args.benchmark} {args.size} {output_dir}"
     board.set_kernel_disk_workload(
         kernel=obtain_resource("x86-linux-kernel-5.4.49"),
         # SPEC CPU workload disk image
@@ -224,7 +231,7 @@ if __name__ == "__m5_main__":
     simulator = Simulator(
         board=board,
         on_exit_event={
-            ExitEvent.EXIT: (func() for func in [processors.switch]),
+            ExitEvent.EXIT: handle_exit(),
         },
     )
 

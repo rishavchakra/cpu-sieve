@@ -31,10 +31,10 @@ replacement_policies = [
 ]
 
 assocs = [
-    8,
-    16,
+    # 8,
+    # 16,
     4,
-    2,
+    # 2,
 ]
 
 labels: list[str] = []
@@ -53,15 +53,12 @@ for assoc in assocs:
 
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
             commands.append(
-                "".join([
+                " ".join([
                     "gem5/build/X86/gem5.fast",
                     f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
                     "run_scripts/bench/parsec_trial.py",
-                    "--kernel vmlinux-4.19.83",
-                    "--disk benchmark/parsec/parsec-image",
-                    "--cpu kvm",
+                    "--image benchmark/parsec/parsec-image",
                     "--size simsmall",
-                    "--num_cpus 1",
                     f"--benchmark {benchmark}",
                     f"--assoc {str(assoc)}",
                     f"--repl {repl_policy}",
@@ -69,28 +66,29 @@ for assoc in assocs:
             )
 
 
-def run_command_synchronous(command: list[str]):
-    p = subprocess.Popen(command, shell=False)
-    _ = p.wait()
+# def run_command_synchronous(command: str):
+    # print(run[1])
+    # print(run[0])
+    # p = subprocess.Popen(command, shell=False)
+    # _ = p.wait()
 
 
-runs = zip(commands, labels)
+runs = list(zip(commands, labels))
 
-with ThreadPoolExecutor(max_workers=24) as executor:
-    for run in runs:
-        print(run[1])
-        future = executor.submit(run_command_synchronous, run[0])
+# with ThreadPoolExecutor(max_workers=24) as executor:
+    # for run in runs:
+        # future = executor.submit(run_command_synchronous, run)
 
-# cpus = 4
-# while commands:
-#     run_batch = runs[:cpus]
-#     commands_batch = [run[0] for run in run_batch]
-#     labels_batch = [run[1] for run in run_batch]
-#     runs = runs[cpus:]
-#     # batch = commands[:cpus]
-#     # commands = commands[cpus:]
-#     for label in labels_batch:
-#         print(label)
-#     procs = [subprocess.Popen(cmd, shell=True) for cmd in commands_batch]
-#     for p in procs:
-#         p.wait()
+cpus = 8
+while commands:
+    run_batch = runs[:cpus]
+    commands_batch = [run[0] for run in run_batch]
+    labels_batch = [run[1] for run in run_batch]
+    runs = runs[cpus:]
+    # batch = commands[:cpus]
+    # commands = commands[cpus:]
+    for label in labels_batch:
+        print(label)
+    procs = [subprocess.Popen(cmd, shell=True) for cmd in commands_batch]
+    for p in procs:
+        p.wait()

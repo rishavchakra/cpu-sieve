@@ -38,7 +38,6 @@ from gem5.components.cachehierarchies.classic.private_l1_cache_hierarchy import 
 
 requires(
     isa_required=ISA.X86,
-    coherence_protocol_required=CoherenceProtocol.MESI_TWO_LEVEL,
     kvm_required=True,
 )
 
@@ -180,12 +179,13 @@ if __name__ == "__m5_main__":
         warn("output directory already exists!")
 
     command = (
-        "cd /home/gem5/parsec-benchmark;"
+        f"cd /home/gem5/parsec-benchmark;"
         + "source env.sh;"
         + f"parsecmgmt -a run -p {args.benchmark} -c gcc-hooks -i {args.size}         -n 2;"
         + "sleep 5;"
         + "m5 exit;"
     )
+
     board.set_kernel_disk_workload(
         kernel=obtain_resource("x86-linux-kernel-5.4.49"),
         disk_image = obtain_resource("x86-parsec", resource_version="1.0.0"),
@@ -197,7 +197,6 @@ if __name__ == "__m5_main__":
     simulator = Simulator(
         board=board,
         on_exit_event={
-            # ExitEvent.EXIT: (func() for func in [processor.switch]),
             ExitEvent.WORKBEGIN: handle_workbegin(processor),
             ExitEvent.WORKEND: handle_workend(),
         },
@@ -205,20 +204,20 @@ if __name__ == "__m5_main__":
 
     globalStart = time.time()
 
-    print("Starting simulation...")
+    print("Running simulation")
 
     m5.stats.reset()
+
     simulator.run()
 
+    print("Simulation successful")
+
     globalEnd = time.time()
-
     print("Finished simulation")
-
-    roi_begin_ticks = simulator.get_tick_stopwatch()[0][1]
-    roi_end_ticks = simulator.get_tick_stopwatch()[1][1]
-    print("ROI simulated ticks: " + str(roi_end_ticks - roi_begin_ticks))
+    print("ROI simulated time: " + (str(simulator.get_roi_ticks()[0])))
+    print("CPU simulation time: ", simulator.get_current_tick() / 1e12, "simulated seconds")
     print(
         "Run time: %.2fs:%.2fs"
         % ((globalEnd - globalStart / 60), globalEnd - globalStart)
     )
-    print("Simulated time:", str(simulator.get_current_tick() / 1e12), "sec")
+    print("Simulated time:", str(m5.curTick() / 1e12), "sec")

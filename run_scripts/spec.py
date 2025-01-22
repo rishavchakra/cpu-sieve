@@ -1,7 +1,8 @@
 import subprocess
 from subprocess import Popen
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import os
+import time
 
 benchmarks = [
     "503.bwaves_r",
@@ -65,8 +66,8 @@ replacement_policies = [
 ]
 
 assocs = [
-    8,
-    16,
+    # 8,
+    # 16,
     4,
     2,
 ]
@@ -102,26 +103,48 @@ for assoc in assocs:
             """
 
             commands.append(
-                f"""gem5/build/X86/gem5.opt \
--d out/spec-cpu/ \
-run_scripts/spec/run.py \
---image benchmark/spec-2017/spec-2017-image/spec-2017 \
---size ref \
---benchmark {benchmark} \
---assoc {str(assoc)} \
---repl {repl_policy}"""
+                " ".join([
+                    "gem5/build/X86/gem5.fast",
+                    f"-d out/spec/{benchmark}/{repl_policy}_{assoc}",
+                    "run_scripts/bench/spec_trial.py",
+                    "--image benchmark/spec-2017/spec-2017-image/spec-2017",
+                    "--size ref",
+                    f"--benchmark {benchmark}",
+                    f"--assoc {str(assoc)}",
+                    f"--repl {repl_policy}",
+                ])
             )
 
 runs = list(zip(commands, labels))
 
-# with ThreadPoolExecutor(max_workers=6) as executor:
-    # for run in runs:
-        # print(run[1])
-        # future = executor.submit(run[0])
+def run_command_synchronous(command: str, label: str):
+    print(label)
+    print(command)
+    p = subprocess.Popen(command, shell=False)
+    _ = p.wait()
 
-print("SPEC CPU finished simulating!")
+start = time.perf_counter()
+
+with ProcessPoolExecutor(max_workers=18) as executor:
+    run_futures = [executor.submit(run_command_synchronous, run[0], run[1]) for run in runs]
+
+finish = time.perf_counter()
+print(f'SPEC CPU finished simulating in {(finish - start):.2f} seconds')
 
 cpus = 6
+
+# group_runs = []
+# while len(runs) > 0:
+    # group_runs.append(runs[:num_threads])
+    # runs = runs[num_threads:]
+# 
+# while len(group_runs) > 0:
+    # group_batch = group_runs[:num_thread_groups]
+    # group_runs = group_runs[num_thread_groups:]
+    # for group in group_runs:
+        # 
+# 
+# 
 while runs:
     run_batch = runs[:cpus]
     commands_batch = [run[0] for run in run_batch]
