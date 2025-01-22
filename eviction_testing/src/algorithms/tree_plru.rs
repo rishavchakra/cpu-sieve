@@ -1,4 +1,4 @@
-use crate::cache::{Cache, CacheLineData, CacheLines, CacheMetadata, CacheType};
+use crate::cache::{Cache, CacheLineData, CacheLines, CacheMetadata};
 use rand::prelude::*;
 
 pub type TreePlruCache = Cache<TreePlruLineMetadata, TreePlruMetadata>;
@@ -40,6 +40,7 @@ impl Cache<TreePlruLineMetadata, TreePlruMetadata> {
                 metadata: (),
                 cache_metadata: std::marker::PhantomData,
             };
+            lines.shuffle(&mut rand::thread_rng());
             lines.push(Some(line));
         }
 
@@ -63,12 +64,14 @@ impl Cache<TreePlruLineMetadata, TreePlruMetadata> {
     }
 
     /// When touching a line, go up the hierarchy and turn all directions to point away
-    pub fn touch(&mut self, id: usize, address: usize) {
+    pub fn touch(&mut self, id: usize, address: usize) -> bool {
         let touch_ind;
+        let ret;
 
         if let Some(line_ind) = self.find(id, address) {
             // Found the cache line
             touch_ind = line_ind;
+            ret = true;
         } else {
             // Didn't find the cache line, evict and replace
             let eviction_candidate = self.evict();
@@ -80,6 +83,7 @@ impl Cache<TreePlruLineMetadata, TreePlruMetadata> {
             };
             self.lines[eviction_candidate] = Some(cache_line);
             touch_ind = eviction_candidate;
+            ret = false;
         }
 
         // Update all the nodes up the tree to point away from whatever was just touched
@@ -96,6 +100,7 @@ impl Cache<TreePlruLineMetadata, TreePlruMetadata> {
             // If child is on the left, turn towards the right
             self.metadata.tree[trace_ind] = is_left_child;
         }
+        ret
     }
 
     pub fn evict(&mut self) -> usize {

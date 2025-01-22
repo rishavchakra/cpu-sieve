@@ -1,4 +1,4 @@
-use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheMetadata, CacheType};
+use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheMetadata};
 use rand::prelude::*;
 
 pub type FifoCache = Cache<FifoLineMetadata, FifoMetadata>;
@@ -44,17 +44,17 @@ impl Cache<FifoLineMetadata, FifoMetadata> {
             lines.push(Some(line));
         }
         lines.shuffle(&mut rand::thread_rng());
-        let cache_metadata = FifoMetadata { time: assoc };
+        let cache_metadata = FifoMetadata::new(assoc);
         Self {
             lines,
             metadata: cache_metadata,
         }
     }
 
-    pub fn touch(&mut self, id: usize, address: usize) {
+    pub fn touch(&mut self, id: usize, address: usize) -> bool {
         // If the line is already in the cache, no need to do anything
         if let Some(_) = self.find(id, address) {
-            return;
+            return true;
         }
 
         let evict_id = self.evict();
@@ -66,6 +66,7 @@ impl Cache<FifoLineMetadata, FifoMetadata> {
             cache_metadata: std::marker::PhantomData,
         };
         self.lines[evict_id] = Some(cache_line);
+        false
     }
 
     pub fn evict(&mut self) -> usize {

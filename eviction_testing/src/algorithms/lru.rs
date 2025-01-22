@@ -1,4 +1,4 @@
-use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheMetadata, CacheType};
+use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheMetadata};
 use rand::prelude::*;
 
 pub type LruCache = Cache<LruLineMetadata, LruMetadata>;
@@ -42,21 +42,22 @@ impl Cache<LruLineMetadata, LruMetadata> {
                 metadata: line_metadata,
                 cache_metadata: std::marker::PhantomData,
             };
+            lines.shuffle(&mut rand::thread_rng());
             lines.push(Some(line));
         }
         lines.shuffle(&mut rand::thread_rng());
-        let cache_metadata = LruMetadata { time: assoc };
+        let cache_metadata = LruMetadata::new(assoc);
         Self {
             lines,
             metadata: cache_metadata,
         }
     }
 
-    pub fn touch(&mut self, id: usize, address: usize) {
+    pub fn touch(&mut self, id: usize, address: usize) -> bool {
         if let Some(line_ind) = self.find(id, address) {
             let line = &mut self.lines[line_ind];
             line.as_mut().unwrap().metadata.touch(&mut self.metadata);
-            return;
+            return true;
         }
 
         let evict_id = self.evict();
@@ -68,6 +69,7 @@ impl Cache<LruLineMetadata, LruMetadata> {
             cache_metadata: std::marker::PhantomData,
         };
         self.lines[evict_id] = Some(cache_line);
+        false
     }
 
     pub fn evict(&mut self) -> usize {

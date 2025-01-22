@@ -1,4 +1,4 @@
-use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines, CacheType};
+use crate::cache::{Cache, CacheLineData, CacheLineMetadata, CacheLines};
 use rand::prelude::*;
 
 pub type SieveCache = Cache<SieveLineMetadata, SieveMetadata>;
@@ -41,28 +41,29 @@ impl Cache<SieveLineMetadata, SieveMetadata> {
             };
             lines.push(Some(line));
         }
-
+        lines.shuffle(&mut rand::thread_rng());
         Self {
             lines,
             metadata: (),
         }
     }
 
-    pub fn touch(&mut self, id: usize, address: usize) {
+    pub fn touch(&mut self, id: usize, address: usize) -> bool {
         if let Some(line_ind) = self.find(id, address) {
             let line = &mut self.lines[line_ind];
             line.as_mut().unwrap().metadata.touch(&mut ());
-        } else {
-            let evict_id = self.evict();
-            let cache_line_metadata = SieveLineMetadata::new(&mut ());
-            let cache_line = CacheLineData {
-                id,
-                addr: address,
-                metadata: cache_line_metadata,
-                cache_metadata: std::marker::PhantomData,
-            };
-            self.lines[evict_id] = Some(cache_line);
+            return true;
         }
+        let evict_id = self.evict();
+        let cache_line_metadata = SieveLineMetadata::new(&mut ());
+        let cache_line = CacheLineData {
+            id,
+            addr: address,
+            metadata: cache_line_metadata,
+            cache_metadata: std::marker::PhantomData,
+        };
+        self.lines[evict_id] = Some(cache_line);
+        false
     }
 
     pub fn evict(&mut self) -> usize {
@@ -89,6 +90,9 @@ impl Cache<SieveLineMetadata, SieveMetadata> {
                 if line.metadata.safe {
                     // Move the lines in the safe set to the unsafe set
                     line.metadata.safe = false;
+                    // This line isn't needed in the gem5 version but is here
+                    // and I think it's making it worse
+                    // TODO: look into this
                     line.metadata.stale = true;
                 } else {
                     // Mark the lines in the unsafe set as stale

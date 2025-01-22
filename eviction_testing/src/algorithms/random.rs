@@ -1,6 +1,6 @@
 use rand::prelude::*;
 
-use crate::cache::{Cache, CacheLineData, CacheLines, CacheMetadata, CacheType};
+use crate::cache::{Cache, CacheLineData, CacheLines, CacheMetadata};
 
 pub type RandomCache = Cache<RandomLineMetadata, RandomMetadata>;
 
@@ -42,9 +42,9 @@ impl Cache<RandomLineMetadata, RandomMetadata> {
         }
     }
 
-    pub fn touch(&mut self, id: usize, address: usize) {
+    pub fn touch(&mut self, id: usize, address: usize) -> bool {
         if let Some(_) = self.find(id, address) {
-            return;
+            return true;
         }
 
         let evict_id = self.evict();
@@ -55,6 +55,7 @@ impl Cache<RandomLineMetadata, RandomMetadata> {
             cache_metadata: std::marker::PhantomData,
         };
         self.lines[evict_id] = Some(cache_line);
+        false
     }
 
     pub fn evict(&mut self) -> usize {
