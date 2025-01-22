@@ -1,28 +1,28 @@
 use super::{Access, AccessPattern};
 
-pub struct Double {
+pub struct Triple {
     id: usize,
     cur_pointer: usize,
-    cur_is_touched: bool,
+    touch_num: usize,
     num_addresses: usize,
     _assoc: usize,
     num_accesses: usize,
 }
 
-impl AccessPattern for Double {
+impl AccessPattern for Triple {
     fn new(id: usize, assoc: usize, num_addresses: usize) -> Self {
         Self {
             id,
             _assoc: assoc,
             num_addresses,
             cur_pointer: 0,
-            cur_is_touched: false,
+            touch_num: 0,
             num_accesses: 0,
         }
     }
 }
 
-impl Iterator for Double {
+impl Iterator for Triple {
     type Item = Access;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -32,11 +32,11 @@ impl Iterator for Double {
             num_access: self.num_accesses,
         };
         self.num_accesses += 1;
-        if self.cur_is_touched {
+        if self.touch_num == 2 {
             self.cur_pointer = (self.cur_pointer + 1) % self.num_addresses;
-            self.cur_is_touched = false;
+            self.touch_num = 0;
         } else {
-            self.cur_is_touched = true;
+            self.touch_num += 1;
         }
         Some(access)
     }

@@ -5,7 +5,7 @@ use super::{Access, AccessPattern};
 pub struct Random {
     id: usize,
     rng: ThreadRng,
-    assoc: usize,
+    _assoc: usize,
     num_addresses: usize,
     num_accesses: usize,
 }
@@ -14,7 +14,7 @@ impl AccessPattern for Random {
     fn new(id: usize, assoc: usize, num_addresses: usize) -> Self {
         Self {
             id,
-            assoc,
+            _assoc: assoc,
             num_addresses,
             rng: rand::thread_rng(),
             num_accesses: 0,

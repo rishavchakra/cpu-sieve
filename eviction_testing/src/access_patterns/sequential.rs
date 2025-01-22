@@ -4,7 +4,7 @@ pub struct Sequential {
     id: usize,
     cur_pointer: usize,
     num_addresses: usize,
-    assoc: usize,
+    _assoc: usize,
     num_accesses: usize,
 }
 
@@ -12,7 +12,7 @@ impl AccessPattern for Sequential {
     fn new(id: usize, assoc: usize, num_addresses: usize) -> Self {
         Self {
             id,
-            assoc,
+            _assoc: assoc,
             num_addresses,
             cur_pointer: 0,
             num_accesses: 0,

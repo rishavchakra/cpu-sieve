@@ -1,10 +1,14 @@
 mod double;
+mod double_skip;
 mod random;
 mod sequential;
+mod triple;
+pub use double::Double;
+pub use double_skip::DoubleSkip;
 pub use random::Random;
 pub use sequential::Sequential;
-pub use double::Double;
-use strum_macros::EnumIter;
+pub use strum_macros::EnumIter;
+pub use triple::Triple;
 
 #[derive(Debug)]
 pub struct Access {
@@ -24,6 +28,8 @@ pub enum AccessPatternType {
     Sequential,
     Random,
     Double,
+    Triple,
+    DoubleSkip,
 }
 
 impl AccessPatternType {
@@ -32,6 +38,8 @@ impl AccessPatternType {
             AccessPatternType::Sequential => "sequential",
             AccessPatternType::Random => "random",
             AccessPatternType::Double => "double",
+            AccessPatternType::Triple => "triple",
+            AccessPatternType::DoubleSkip => "double_skip",
         }
         .to_owned()
     }

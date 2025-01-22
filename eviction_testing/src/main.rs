@@ -1,6 +1,7 @@
-use access_patterns::{Access, AccessPattern, AccessPatternType};
-use algorithms::{FifoCache, LruCache, RandomCache, SieveCache, TreePlruCache};
-use cache::CacheType;
+use crate::access_patterns::{Access, AccessPattern, AccessPatternType};
+use crate::algorithms::{FifoCache, LruCache, RandomCache, SieveCache, TreePlruCache, NruCache};
+use crate::cache::CacheType;
+use algorithms::SieveTreeCache;
 use strum::IntoEnumIterator;
 
 mod access_patterns;
@@ -9,24 +10,22 @@ mod cache;
 mod logger;
 
 const MAX_LOG_ASSOC: u32 = 5;
-const MAX_EVSET_TOUCHES: usize = 10_000;
-const RAND_INIT: bool = true;
-const ACCESS_PATTERN: AccessPatternType = AccessPatternType::Random;
-const NUM_TRIALS: usize = 256;
+const MAX_EVSET_TOUCHES: usize = 16_000;
+const NUM_TRIALS: usize = 128;
 
 #[derive(Copy, Clone)]
 enum User {
     INIT = 0,
-    VICTIM = 1,
+    // VICTIM = 1,
     ATTACKER = 2,
 }
 
 fn main() {
     let mut caches: Vec<CacheType>;
 
-    let mut csv_log = logger::CsvLogger::new();
+    let mut csv_log = logger::CsvLogger::new("create".to_owned());
 
-    for log_assoc in 0..MAX_LOG_ASSOC {
+    for log_assoc in 1..MAX_LOG_ASSOC {
         let assoc = 2usize.pow(log_assoc);
 
         for pattern in AccessPatternType::iter() {
@@ -37,6 +36,7 @@ fn main() {
                     CacheType::Sieve(SieveCache::new_random(assoc, User::INIT as usize)),
                     CacheType::Random(RandomCache::new_random(assoc, User::INIT as usize)),
                     CacheType::TreePlru(TreePlruCache::new_random(assoc, User::INIT as usize)),
+                    CacheType::SieveTree(SieveTreeCache::new_random(assoc, User::INIT as usize)),
                 ];
 
                 let mut cache_evsets: Vec<(CacheType, bool)> =
@@ -57,15 +57,25 @@ fn main() {
                             assoc,
                             assoc,
                         )),
+                        AccessPatternType::Triple => Box::new(access_patterns::Triple::new(
+                            User::ATTACKER as usize,
+                            assoc,
+                            assoc,
+                        )),
+                        AccessPatternType::DoubleSkip => Box::new(
+                            access_patterns::DoubleSkip::new(User::ATTACKER as usize, assoc, assoc),
+                        ),
                     };
 
                 // Attacker touches
-                for (access_ind, access) in access_pattern.enumerate() {
+                for access in access_pattern {
                     cache_evsets.iter_mut().for_each(|(cache, is_evset)| {
                         if !*is_evset {
                             cache.touch(access.id, access.addr);
 
-                            if cache.is_eviction_set(access.id) || access_ind >= MAX_EVSET_TOUCHES {
+                            if cache.is_eviction_set(access.id)
+                                || access.num_access >= MAX_EVSET_TOUCHES
+                            {
                                 csv_log.log_evset(
                                     cache.name(),
                                     assoc,
