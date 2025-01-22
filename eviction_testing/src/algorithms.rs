@@ -1,12 +1,25 @@
 mod fifo;
 mod lru;
-mod sieve;
-mod tree_plru;
 mod random;
-mod sieve_naive;
+mod sieve;
+mod twoq;
+mod twoq_rand;
+// mod sieve_naive;
+// mod sieve_shuffle;
+mod nru;
+mod rrip;
+mod sieve_tree;
+mod split_twoq;
+mod tree_plru;
+mod tree_twoq;
 
 pub use fifo::*;
 pub use lru::*;
+pub use nru::*;
 pub use random::*;
 pub use sieve::*;
+pub use sieve_tree::*;
+pub use split_twoq::*;
 pub use tree_plru::*;
+pub use tree_twoq::*;
+pub use rrip::*;
