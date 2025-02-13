@@ -28,13 +28,16 @@ replacement_policies = [
     # "second-chance",
     "tree-plru",
     # "weighted-lru",
+    "rrip",
+    "brrip",
+    "nru",
 ]
 
 assocs = [
-    # 8,
-    # 16,
+    8,
+    16,
     4,
-    # 2,
+    2,
 ]
 
 labels: list[str] = []
@@ -53,31 +56,33 @@ for assoc in assocs:
 
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
             commands.append(
-                " ".join([
-                    "gem5/build/X86/gem5.fast",
-                    f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
-                    "run_scripts/bench/parsec_trial.py",
-                    "--image benchmark/parsec/parsec-image",
-                    "--size simsmall",
-                    f"--benchmark {benchmark}",
-                    f"--assoc {str(assoc)}",
-                    f"--repl {repl_policy}",
-                ])
+                " ".join(
+                    [
+                        "gem5/build/X86/gem5.fast",
+                        f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
+                        "run_scripts/bench/parsec_trial.py",
+                        "--image benchmark/parsec/parsec-image",
+                        "--size simsmall",
+                        f"--benchmark {benchmark}",
+                        f"--assoc {str(assoc)}",
+                        f"--repl {repl_policy}",
+                    ]
+                )
             )
 
 
 # def run_command_synchronous(command: str):
-    # print(run[1])
-    # print(run[0])
-    # p = subprocess.Popen(command, shell=False)
-    # _ = p.wait()
+# print(run[1])
+# print(run[0])
+# p = subprocess.Popen(command, shell=False)
+# _ = p.wait()
 
 
 runs = list(zip(commands, labels))
 
 # with ThreadPoolExecutor(max_workers=24) as executor:
-    # for run in runs:
-        # future = executor.submit(run_command_synchronous, run)
+# for run in runs:
+# future = executor.submit(run_command_synchronous, run)
 
 cpus = 8
 while commands:

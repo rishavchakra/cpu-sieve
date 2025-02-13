@@ -122,6 +122,12 @@ def create_cache_hierarchy(assoc: int, repl: str):
             ret = SecondChanceRP()
         case "tree-plru":
             ret = TreePLRURP()
+        case "rrip":
+            ret = RRIPRP()
+        case "brrip":
+            ret = BRRIPRP()
+        case "nru":
+            ret = NRURP()
 
     cache_hierarchy = PrivateL1CacheHierarchy(
         l1d_size="32KiB",
@@ -131,11 +137,13 @@ def create_cache_hierarchy(assoc: int, repl: str):
     )
     return cache_hierarchy
 
+
 def handle_workbegin(processor):
     print("Boot finished, resetting stats")
     m5.stats.reset()
     processor.switch()
     yield False
+
 
 def handle_workend():
     print("ROI finished, dumping stats")
@@ -188,7 +196,7 @@ if __name__ == "__m5_main__":
 
     board.set_kernel_disk_workload(
         kernel=obtain_resource("x86-linux-kernel-5.4.49"),
-        disk_image = obtain_resource("x86-parsec", resource_version="1.0.0"),
+        disk_image=obtain_resource("x86-parsec", resource_version="1.0.0"),
         # workload disk image
         # disk_image=DiskImageResource(args.image, root_partition=args.partition),
         readfile_contents=command,
@@ -215,7 +223,11 @@ if __name__ == "__m5_main__":
     globalEnd = time.time()
     print("Finished simulation")
     print("ROI simulated time: " + (str(simulator.get_roi_ticks()[0])))
-    print("CPU simulation time: ", simulator.get_current_tick() / 1e12, "simulated seconds")
+    print(
+        "CPU simulation time: ",
+        simulator.get_current_tick() / 1e12,
+        "simulated seconds",
+    )
     print(
         "Run time: %.2fs:%.2fs"
         % ((globalEnd - globalStart / 60), globalEnd - globalStart)
