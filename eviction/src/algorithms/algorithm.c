@@ -1,4 +1,5 @@
 #include "algorithm.h"
+#include <stdio.h>
 #include "../cache.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -6,7 +7,7 @@
 
 void algo_init(Algorithm *algo, Cache *cache) { algo->cache = cache; }
 
-bool algo_touch(Algorithm *algo, int id, int addr) {
+bool algo_touch(Algorithm *algo, int id, size_t addr) {
   if (cache_has(algo->cache, id, addr)) {
     // Item already in cache, touch it
     int ind = cache_find(algo->cache, id, addr);
