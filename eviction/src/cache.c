@@ -4,6 +4,22 @@
 void cache_init(Cache *cache, int assoc) {
   cache->assoc = assoc;
   cache->lines = (CacheLine *)malloc(sizeof(CacheLine) * assoc);
+  for (int i = 0; i < assoc; ++i) {
+    cache->lines[i].valid = false;
+  }
+}
+
+void cache_init_user(Cache *cache, int assoc, int user_id) {
+  cache_init(cache, assoc);
+  for (int i = 0; i < assoc; ++i) {
+    cache->lines[i].valid = true;
+    cache->lines[i].id = user_id;
+    cache->lines[i].addr = i;
+  }
+}
+
+void cache_init_rand(Cache *cache, int assoc, int user_id) {
+  cache_init_user(cache, assoc, user_id);
 }
 
 void cache_free(Cache *cache) { free(cache->lines); }
@@ -29,7 +45,7 @@ bool cache_has_evset(Cache *cache, int id) {
   return true;
 }
 
-bool cache_has(Cache *cache, int id, int addr) {
+bool cache_has(Cache *cache, int id, size_t addr) {
   for (int i = 0; i < cache->assoc; ++i) {
     if (cache->lines[i].valid && cache->lines[i].id == id &&
         cache->lines[i].addr == addr) {
@@ -39,7 +55,7 @@ bool cache_has(Cache *cache, int id, int addr) {
   return false;
 }
 
-int cache_find(Cache *cache, int id, int addr) {
+size_t cache_find(Cache *cache, int id, size_t addr) {
   for (int i = 0; i < cache->assoc; ++i) {
     if (cache->lines[i].valid && cache->lines[i].id == id &&
         cache->lines[i].addr == addr) {
@@ -49,7 +65,7 @@ int cache_find(Cache *cache, int id, int addr) {
   return -1;
 }
 
-void cache_line_init(CacheLine *line, int id, int addr, bool valid) {
+void cache_line_init(CacheLine *line, int id, size_t addr, bool valid) {
   line->addr = addr;
   line->id = id;
   line->valid = valid;

@@ -1,6 +1,7 @@
 project('eviction', 'c', version: '0.1', default_options: ['warning_level=3'])
 
 srcs = [
+  'src/lib.c',
   'src/cache.c',
   'src/pattern.c',
   'src/algorithms/algorithm.c',
@@ -8,8 +9,11 @@ srcs = [
   'src/algorithms/sieve.c',
   'src/algorithms/tree_plru.c',
   'src/algorithms/twoq.c',
+  'src/algorithms/splru.c',
 ]
 
-exe = executable('occupation', srcs + 'src/occupation.c', install: true)
+executable('occupation', srcs + 'src/occupation.c', install: true)
+executable('reduction', srcs + 'src/reduction.c', install: true)
+executable('dram', srcs + 'src/dram_hits.c', install: true)
 
-test('basic', exe)
+# test('basic', occupation_exe)
