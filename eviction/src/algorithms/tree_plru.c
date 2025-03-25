@@ -71,6 +71,7 @@ void treeplru_free(void *m, void *line_meta) {
   for (int i = 0; i < meta->tree_depth; ++i) {
     free(meta->tree_layers[i]);
   }
+  free(meta->tree_layers);
 }
 
 void algo_treeplru(Algorithm *algo) {

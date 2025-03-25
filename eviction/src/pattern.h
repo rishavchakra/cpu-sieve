@@ -10,12 +10,14 @@ typedef struct Pattern {
   // The number of possible memory elements to sample from
   // Initialized by the pattern_init function
   size_t mem_size;
+
   // Initialized by the specific implementations, after pattern_init
   size_t (*next)(void *meta, size_t mem_size);
   // Initialized by the specific implementations, after pattern_init
   void *meta;
   // Optional function to free fields within the metadata.
   // This should not free the meta member variable.
+  // If not used, the function pointer should be NULL.
   void (*free)(void *meta);
 } Pattern;
 
@@ -32,10 +34,14 @@ void pattern_sequential(Pattern *pat);
 // This is the same as pattern_repeat(2)
 void pattern_double(Pattern *pat);
 
-// Repeats an index repeat_count times, sequentially and cyclically accessing indices
+// Repeats an index repeat_count times, sequentially and cyclically accessing
+// indices
 void pattern_repeat(Pattern *pat, int repeat_count);
 
 // Zipian random distribution with parameter k
 void pattern_zipf(Pattern *pat, double alpha);
+
+// Uniform random distribution
+void pattern_random(Pattern *pat);
 
 #endif

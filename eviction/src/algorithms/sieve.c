@@ -20,14 +20,13 @@ void sieve_touch(Cache *_cache, void *_meta, void *line_meta, size_t ind) {
   lines[ind].visited = true;
 }
 
-int sieve_evict(Cache *cache, void *meta, void *line_meta) {
+size_t sieve_evict(Cache *cache, void *meta, void *line_meta) {
   Sieve *metadata = (Sieve *)meta;
   SieveLine *line_buf = (SieveLine *)line_meta;
   while (line_buf[metadata->hand].visited) {
+    line_buf[metadata->hand].visited = false;
     ++metadata->hand;
-    if (metadata->hand >= cache->assoc) {
-      metadata->hand = 0;
-    }
+    metadata->hand %= cache->assoc;
   }
   for (int i = metadata->hand; i > 0; --i) {
     CacheLine *line_dest = &cache->lines[i];
@@ -66,3 +65,7 @@ void algo_sieve_rand(Algorithm *algo) {
     ((SieveLine *)algo->line_meta)[i].visited = rand() % 2 == 0;
   }
 }
+
+void algo_sieve_pe(Algorithm *algo) {}
+
+void algo_sieve_pe_rand(Algorithm *algo) {}

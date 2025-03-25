@@ -53,9 +53,10 @@ void rec_splru_tree_free(SplruNode *node) {
 
 void algo_split_touch(Cache *cache, void *meta, void *line_meta, size_t ind) {
   Splru *m = (Splru *)meta;
-  SplruFlags flags = *(SplruFlags *)line_meta;
+  int flags = *(SplruFlag *)line_meta;
 
   size_t cold_assoc = cache->assoc / 4;
+  size_t hot_ind = ind;
 
   if (ind < cold_assoc) {
     // Evict something from the hot queue
@@ -84,34 +85,36 @@ void algo_split_touch(Cache *cache, void *meta, void *line_meta, size_t ind) {
 
     memmove(&cache->lines[evict_ind], &cache->lines[ind], sizeof(CacheLine));
     cache->lines[ind].valid = false;
-    // cache->lines[ind];
-  } else {
-    // Object in hot queue, touch algorithm within it
-    if (flags & TREE_HOT_LRU) {
-      SplruNode *leaf = m->leaf_nodes[ind];
-      SplruNode *trace = leaf;
-      while (trace->parent != NULL) {
-        bool is_left_child = trace->parent->left == trace;
-        if (is_left_child) {
-          trace->parent->direction = true;
-        } else {
-          trace->parent->direction = false;
-        }
-        trace = trace->parent;
+    hot_ind = evict_ind;
+  }
+  // Object is now in the hot queue
+  // Moved there, if previously in cold queue
+  // Already there, if in the hot queue
+  // Use touch algorithm in hot queue to mark new element as MRU
+  if (flags & TREE_HOT_LRU) {
+    SplruNode *leaf = m->leaf_nodes[hot_ind];
+    SplruNode *trace = leaf;
+    while (trace->parent != NULL) {
+      bool is_left_child = trace->parent->left == trace;
+      if (is_left_child) {
+        trace->parent->direction = true;
+      } else {
+        trace->parent->direction = false;
       }
-    } else if (flags & TREE_HOT_FIFO) {
-      SplruNode *leaf = m->leaf_nodes[ind];
-      SplruNode *trace = leaf;
-      while (trace->parent != NULL) {
-        bool is_left_child = trace->parent->left == trace;
-        if (is_left_child) {
-          trace->parent->direction = true;
-          break;
-        } else {
-          trace->parent->direction = false;
-        }
-        trace = trace->parent;
+      trace = trace->parent;
+    }
+  } else if (flags & TREE_HOT_FIFO) {
+    SplruNode *leaf = m->leaf_nodes[hot_ind];
+    SplruNode *trace = leaf;
+    while (trace->parent != NULL) {
+      bool is_left_child = trace->parent->left == trace;
+      if (is_left_child) {
+        trace->parent->direction = true;
+        break;
+      } else {
+        trace->parent->direction = false;
       }
+      trace = trace->parent;
     }
   }
 }

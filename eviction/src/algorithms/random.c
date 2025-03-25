@@ -10,7 +10,7 @@ void random_touch(Cache *cache, void *meta, void *line_meta, size_t ind) {
   (void)(ind);
 }
 
-int random_evict(Cache *cache, void *meta, void *line_meta) {
+size_t random_evict(Cache *cache, void *meta, void *line_meta) {
   (void)(meta);
   (void)(line_meta);
   return rand() % cache->assoc;

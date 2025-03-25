@@ -2,9 +2,10 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <sys/time.h>
+#include <time.h>
 
 /******** Generic pattern functions ********/
 
@@ -98,11 +99,11 @@ typedef struct {
 size_t repeat_next(void *meta, size_t mem_size) {
   Repeat *m = (Repeat *)meta;
   size_t ind = m->ind % mem_size;
+  ++m->cur_count;
   if (m->cur_count == m->max_count) {
     m->cur_count = 0;
     ++m->ind;
   }
-  ++m->cur_count;
   return ind;
 }
 
@@ -130,10 +131,10 @@ typedef struct {
 
 size_t zipf_next(void *meta, size_t mem_size) {
   Zipf *m = (Zipf *)meta;
-  double z;                 // Uniform random number (0 < z < 1)
-  int zipf_value = 0;           // Computed exponential value to be returned
-  int i;                    // Loop counter
-  int low, high, mid;       // Binary-search bounds
+  double z;           // Uniform random number (0 < z < 1)
+  int zipf_value = 0; // Computed exponential value to be returned
+  int i;              // Loop counter
+  int low, high, mid; // Binary-search bounds
 
   // Compute normalization constant on first call only
   if (m->first) {

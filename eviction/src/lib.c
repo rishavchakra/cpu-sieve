@@ -1,4 +1,6 @@
 #include "lib.h"
+#include "algorithms/algorithm.h"
+#include "pattern.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -19,6 +21,39 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     break;
   case '?': // Uniform Random
     algo_random(algo);
+    break;
+  case 'q':
+    SplruFlag cold_flag, hot_flag, choice_flag;
+    switch (r[1]) {
+    case 'r':
+      cold_flag = TREE_COLD_RAND;
+      break;
+    case 'l':
+      cold_flag = TREE_COLD_LRU;
+      break;
+    case 'f':
+      cold_flag = TREE_COLD_FIFO;
+    }
+    switch (r[2]) {
+    case 'r':
+      hot_flag = TREE_HOT_RAND;
+      break;
+    case 'l':
+      hot_flag = TREE_HOT_LRU;
+      break;
+    case 'f':
+      hot_flag = TREE_HOT_FIFO;
+    }
+    switch (r[3]) {
+    case 'r':
+      choice_flag = CHOOSE_RAND;
+      break;
+    case 'n':
+      choice_flag = CHOOSE_NEVER;
+    }
+
+    int flags = cold_flag | hot_flag | choice_flag;
+    algo_splru(algo, flags);
     break;
   default:
     fprintf(stderr, "ERROR: Replacement policy not recognized\n");

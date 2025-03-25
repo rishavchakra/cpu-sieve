@@ -58,4 +58,17 @@ void algo_twoq_tree_single_rand(Algorithm *algo);
 void algo_twoq_tree_double(Algorithm *algo);
 void algo_twoq_tree_double_rand(Algorithm *algo);
 
+typedef enum {
+  TREE_HOT_RAND = 1 << 0,
+  TREE_HOT_LRU = 1 << 1,
+  TREE_HOT_FIFO = 1 << 2,
+  TREE_COLD_RAND = 1 << 3,
+  TREE_COLD_LRU = 1 << 4,
+  TREE_COLD_FIFO = 1 << 5,
+  CHOOSE_RAND = 1 << 6,
+  CHOOSE_NEVER = 1 << 7,
+} SplruFlag;
+
+void algo_splru(Algorithm *, int flags);
+
 #endif
