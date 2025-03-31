@@ -10,16 +10,27 @@ access_pattern_tags = {"s": "sequential", "d": "double", "r": "repeat", "?": "ra
 repl_tags = {"s": "SIEVE", "t": "TreePLRU", "2": "TwoQ", "?": "RR"}
 
 access_patterns = {
-    "s": [],
-    "d": [],
-    "r": [],
-    "z": [0.9, 0.8, 0.7, 0.6],
+    "s": [],  # SIEVE
+    "q": [  # SPLRU
+        cold + hot + choice
+        for cold in ["r", "l", "f"]
+        for hot in ["r", "l", "f"]
+        for choice in ["h", "q", "e", "n"]
+    ],
+    # "d": [],
+    # "r": [3, 4, 5],
+    # "z": [0.9, 0.8, 0.7, 0.6],
 }
 
-replacement_policies = {"s": [], "t": [], "2": [], "?": []}
+replacement_policies = {
+    # "s": [],
+    "t": [],
+    # "2": [],
+    # "?": []
+}
 
 assocs = [
-    2,
+    # 2,
     4,
     8,
     16,
@@ -36,7 +47,7 @@ abs_path = os.path.abspath(args.file)
 f = None
 if not os.path.isfile(abs_path):
     f = open(args.file, "a")
-    f.write("Replacement, Access Pattern, Associativity, Touches")
+    f.write("Replacement, Access Pattern, Associativity, Touches\n")
 else:
     f = open(args.file, "a")
 
@@ -53,22 +64,32 @@ for pat, pat_args in access_patterns.items():
 
             # Handle multiple possible argument variants
             commands = []
-            for repl_arg in repl_args:
+            if len(repl_args) == 0 and len(pat_args) == 0:
+                commands.append((command, None, None))
+            elif len(repl_args) == 0:
                 for pat_arg in pat_args:
                     c = command[:]
-                    c.append(repl_arg)
                     c.append(str(pat_arg))
-                    commands.append(c)
-            if len(repl_args) == 0 and len(pat_args) == 0:
-                commands = [command]
-
+                    commands.append((c, None, str(pat_arg)))
+            elif len(pat_args) == 0:
+                for repl_arg in repl_args:
+                    c = command[:]
+                    c.append(repl_arg)
+                    commands.append((c, str(repl_arg), None))
+            else:
+                for repl_arg in repl_args:
+                    for pat_arg in pat_args:
+                        c = command[:]
+                        c.append(repl_arg)
+                        c.append(str(pat_arg))
+                        commands.append((c, str(repl_arg), str(pat_arg)))
             print(
                 f"Starting simulation:\n{repl_tags[repl]}-{repl_args}\n{access_pattern_tags[pat]}-{pat_args}\n{assoc}"
             )
 
             for trial in range(NUM_TRIALS):
                 for c in commands:
-                    res = subprocess.run(c, stdout=subprocess.PIPE)
+                    res = subprocess.run(c[0], stdout=subprocess.PIPE)
                     res_rc = res.returncode
                     if res_rc != 0:
                         print(
@@ -78,13 +99,13 @@ for pat, pat_args in access_patterns.items():
                     res_int = int(res.stdout.decode("utf-8"))
 
                     # CSV formatting and logging
-                    repl_tag_arr = [repl_tags[repl]]
-                    pat_tag_arr = [access_pattern_tags[pat]]
-                    repl_tag_arr.extend(repl_args)
-                    pat_tag_arr.extend(list(map(str, pat_args)))
-                    repl_tag = "-".join(repl_tag_arr)
-                    pat_tag = "-".join(pat_tag_arr)
-                    csv_line = f"{repl_tag}, {pat_tag}, {assoc}, {res_int}"
+                    repl_tag = repl_tags[repl]
+                    pat_tag = access_pattern_tags[pat]
+                    if c[1] is not None:
+                        repl_tag = repl_tag + "-" + c[1]
+                    if c[2] is not None:
+                        pat_tag = pat_tag + "-" + c[2]
+                    csv_line = f"{repl_tag}, {pat_tag}, {assoc}, {res_int}\n"
                     _ = f.write(csv_line)
 
                 sleep(0.01)
