@@ -22,7 +22,7 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
   case '?': // Uniform Random
     algo_random(algo);
     break;
-  case 'q':
+  case 'q': // SPLRU
     SplruFlag cold_flag, hot_flag, choice_flag;
     switch (r[1]) {
     case 'r':
@@ -45,11 +45,18 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
       hot_flag = TREE_HOT_FIFO;
     }
     switch (r[3]) {
-    case 'r':
-      choice_flag = CHOOSE_RAND;
+    case 'h':
+      choice_flag = CHOOSE_HALF_RAND;
+      break;
+    case 'q':
+      choice_flag = CHOOSE_QUARTER_RAND;
+      break;
+    case 'e':
+      choice_flag = CHOOSE_EIGHTH_RAND;
       break;
     case 'n':
       choice_flag = CHOOSE_NEVER;
+      break;
     }
 
     int flags = cold_flag | hot_flag | choice_flag;

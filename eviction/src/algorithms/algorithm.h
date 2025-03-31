@@ -65,8 +65,10 @@ typedef enum {
   TREE_COLD_RAND = 1 << 3,
   TREE_COLD_LRU = 1 << 4,
   TREE_COLD_FIFO = 1 << 5,
-  CHOOSE_RAND = 1 << 6,
-  CHOOSE_NEVER = 1 << 7,
+  CHOOSE_NEVER = 1 << 6,
+  CHOOSE_HALF_RAND = 1 << 7,
+  CHOOSE_QUARTER_RAND = 1 << 8,
+  CHOOSE_EIGHTH_RAND = 1 << 9,
 } SplruFlag;
 
 void algo_splru(Algorithm *, int flags);

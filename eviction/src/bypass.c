@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // This result will be collected through stdout
   printf("%d", num_hits);
 
   cache_free(&cache);

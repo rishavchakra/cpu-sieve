@@ -13,7 +13,7 @@ srcs = [
 ]
 
 executable('occupation', srcs + 'src/occupation.c', install: true)
-executable('reduction', srcs + 'src/reduction.c', install: true)
-executable('dram', srcs + 'src/dram_hits.c', install: true)
+executable('discovery', srcs + 'src/discovery.c', install: true)
+executable('bypass', srcs + 'src/bypass.c', install: true)
 
 # test('basic', occupation_exe)

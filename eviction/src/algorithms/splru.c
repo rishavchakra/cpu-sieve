@@ -63,7 +63,7 @@ void algo_split_touch(Cache *cache, void *meta, void *line_meta, size_t ind) {
     // Move cache line from cold to hot queue
     // Including cache data from `cache` object
     // Mark cold queue opening as empty
-    size_t evict_ind;
+    size_t evict_ind = 0;
     if (flags & TREE_COLD_LRU || flags & TREE_COLD_FIFO) {
       // Tree-based eviction strategies
       SplruNode *trace_node = m->cold;
@@ -83,8 +83,13 @@ void algo_split_touch(Cache *cache, void *meta, void *line_meta, size_t ind) {
       evict_ind = rand() % quarter_assoc;
     }
 
+    // Swap the hot obj into the cold queue, cold obj into the hot queue
+    // No need to force an unnecessary eviction
+    CacheLine temp;
+    memcpy(&temp, &cache->lines[evict_ind], sizeof(CacheLine));
     memmove(&cache->lines[evict_ind], &cache->lines[ind], sizeof(CacheLine));
-    cache->lines[ind].valid = false;
+    memcpy(&cache->lines[ind], &temp, sizeof(CacheLine));
+    // cache->lines[ind].valid = false;
     hot_ind = evict_ind;
   }
   // Object is now in the hot queue
@@ -121,17 +126,30 @@ void algo_split_touch(Cache *cache, void *meta, void *line_meta, size_t ind) {
 
 // Random eviction: Randomly evicts from either cold queue or third-quarter
 // Deterministic eviction: Evicts from the cold queue, always
+// TODO: make new element MRU
 size_t algo_splru_evict(Cache *cache, void *meta, void *line_meta) {
   (void)(cache);
   Splru *m = (Splru *)meta;
   int flags = *(int *)line_meta;
 
   SplruNode *trace_node;
-  if (flags & CHOOSE_RAND) {
+  if (flags & CHOOSE_HALF_RAND) {
     if (rand() % 2 == 0) {
       trace_node = m->cold;
     } else {
       trace_node = m->probation;
+    }
+  } else if (flags & CHOOSE_QUARTER_RAND) {
+    if (rand() % 4 == 0) {
+      trace_node = m->probation;
+    } else {
+      trace_node = m->cold;
+    }
+  } else if (flags & CHOOSE_EIGHTH_RAND) {
+    if (rand() % 8 == 0) {
+      trace_node = m->probation;
+    } else {
+      trace_node = m->cold;
     }
   } else {
     trace_node = m->cold;
@@ -189,6 +207,7 @@ void algo_splru(Algorithm *algo, int flags) {
   meta->probation = first_left->right;
   meta->hot = tree;
   meta->cold = first_left->left;
+  meta->cold->parent = NULL;
   free(first_left);
 
   algo->meta = meta;
