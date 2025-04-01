@@ -36,7 +36,8 @@ replacement_policies = {
         cold + hot + choice
         for cold in ["r", "l", "f"]
         for hot in ["r", "l", "f"]
-        for choice in ["h", "q", "e", "n"]
+        # for choice in ["h", "q", "e", "n"]
+        for choice in ["n"]
     ],
 }
 
@@ -44,7 +45,7 @@ assocs = [
     16,
     8,
     4,
-    2,
+    # 2,
 ]
 
 labels: list[str] = []
@@ -91,10 +92,12 @@ def run_command_synchronous(run: tuple[str, str]):
 runs = list(zip(commands, labels))
 
 with ThreadPoolExecutor(max_workers=36) as executor:
-    for run in runs:
-        future = executor.submit(run_command_synchronous, run)
+    # for run in runs:
+    #     future = executor.submit(run_command_synchronous, run)
+    _ = executor.map(run_command_synchronous, runs)
     executor.shutdown()
 
+print("Finished all gem5 simulations!")
 # cpus = 8
 # while len(runs) > 0:
 #     run_batch = runs[:cpus]
