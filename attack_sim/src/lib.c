@@ -24,7 +24,9 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     break;
   case 'q': // SPLRU
     SplruFlag cold_flag, hot_flag, choice_flag;
-    switch (r[1]) {
+    char *splru_args = argv[extra_arg_ind];
+    ++extra_arg_ind;
+    switch (splru_args[0]) {
     case 'r':
       cold_flag = TREE_COLD_RAND;
       break;
@@ -34,7 +36,7 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     case 'f':
       cold_flag = TREE_COLD_FIFO;
     }
-    switch (r[2]) {
+    switch (splru_args[1]) {
     case 'r':
       hot_flag = TREE_HOT_RAND;
       break;
@@ -44,7 +46,7 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     case 'f':
       hot_flag = TREE_HOT_FIFO;
     }
-    switch (r[3]) {
+    switch (splru_args[2]) {
     case 'h':
       choice_flag = CHOOSE_HALF_RAND;
       break;
