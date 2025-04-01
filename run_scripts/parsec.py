@@ -89,13 +89,13 @@ runs = list(zip(commands, labels))
 async def run_command(run: tuple[str, str], semaphore):
     print(run[1])
     async with semaphore:
-        proc = await asyncio.create_subprocess_exec(run[0])
-        return proc
-
+        run_args = run[0].split()
+        file = run_args[0]
+        proc = await asyncio.create_subprocess_exec(file, *run_args[1:])
+    print("Finished a simulation")
     # print(run[0])
-    p = subprocess.Popen(run[0], shell=False)
-    rc = p.wait()
-    print("Simulation finished with return code", rc)
+    # p = subprocess.Popen(run[0], shell=False)
+    # rc = p.wait()
 
 
 async def main(runs: list[tuple[str, str]]):
@@ -104,7 +104,7 @@ async def main(runs: list[tuple[str, str]]):
     async_cmds = []
     for run in runs:
         async_cmds.append(run_command(run, semaphore))
-    asyncio.gather(*async_cmds)
+    await asyncio.gather(*async_cmds)
 
 
 asyncio.run(main(runs))
