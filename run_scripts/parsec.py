@@ -85,7 +85,7 @@ runs = list(zip(commands, labels))
 # future = executor.submit(run_command_synchronous, run)
 
 cpus = 8
-while commands:
+while len(runs) > 0:
     run_batch = runs[:cpus]
     commands_batch = [run[0] for run in run_batch]
     labels_batch = [run[1] for run in run_batch]
