@@ -1,4 +1,5 @@
 import subprocess
+import asyncio
 from subprocess import Popen
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from multiprocessing import Pool
@@ -82,20 +83,35 @@ for assoc in assocs:
                 commands.append(" ".join(command))
 
 
-def run_command_synchronous(run: tuple[str, str]):
-    print(run[1])
-    # print(run[0])
-    p = subprocess.Popen(run[0], shell=False)
-    _ = p.wait()
-
-
 runs = list(zip(commands, labels))
 
-with ThreadPoolExecutor(max_workers=36) as executor:
-    # for run in runs:
-    #     future = executor.submit(run_command_synchronous, run)
-    _ = executor.map(run_command_synchronous, runs)
-    executor.shutdown()
+
+async def run_command(run: tuple[str, str], semaphore):
+    print(run[1])
+    async with semaphore:
+        proc = await asyncio.create_subprocess_exec(run[0])
+        return proc
+
+    # print(run[0])
+    p = subprocess.Popen(run[0], shell=False)
+    rc = p.wait()
+    print("Simulation finished with return code", rc)
+
+
+async def main(runs: list[tuple[str, str]]):
+    batch_size = 36
+    semaphore = asyncio.Semaphore(value=batch_size)
+    async_cmds = []
+    for run in runs:
+        async_cmds.append(run_command(run, semaphore))
+    asyncio.gather(*async_cmds)
+
+
+asyncio.run(main(runs))
+
+
+# with ThreadPoolExecutor(max_workers=36) as executor:
+#     _ = executor.map(run_command, runs)
 
 print("Finished all gem5 simulations!")
 # cpus = 8
