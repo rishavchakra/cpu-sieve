@@ -77,6 +77,9 @@ for assoc in assocs:
             if len(repl_args) > 0:
                 for repl_arg in repl_args:
                     arg_command = command[:]
+                    arg_command[
+                        1
+                    ] = f"-d out/parsec/{benchmark}/{repl_policy}-{repl_arg}/{assoc}"
                     arg_command.append(f"--variant {repl_arg}")
                     commands.append(" ".join(arg_command))
             else:
