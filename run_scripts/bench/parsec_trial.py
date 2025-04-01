@@ -91,6 +91,13 @@ def parse_arguments():
         help="Replacement Policy of cache",
     )
 
+    parser.add_argument(
+        "--variant",
+        type=str,
+        required=False,
+        help="Optional Replacement Policy Variant string",
+    )
+
     args = parser.parse_args()
 
     if args.image[0] != "/":
@@ -105,7 +112,7 @@ def parse_arguments():
     return args
 
 
-def create_cache_hierarchy(assoc: int, repl: str):
+def create_cache_hierarchy(assoc: int, repl: str, variant: str | None):
     # For simplicity, we only use one level of cache hierarchy
     # Create an L1 instruction and data cache
     ret = None
@@ -128,6 +135,37 @@ def create_cache_hierarchy(assoc: int, repl: str):
             ret = BRRIPRP()
         case "nru":
             ret = NRURP()
+        case "splru":
+            if variant is None:
+                print("WARNING: Initializing SPLRU with no parameters")
+                ret = SplruRP(cold_repl=0, hot_repl=0, probation_type=0)
+            else:
+                cold_repl = 0
+                hot_repl = 0
+                probation_type = 0
+
+                if variant[0] == "l":
+                    cold_repl = 1
+                elif variant[0] == "f":
+                    cold_repl = 2
+
+                if variant[1] == "l":
+                    hot_repl = 1
+                elif variant[1] == "f":
+                    hot_repl = 2
+
+                if variant[2] == "h":
+                    probation_type = 1
+                elif variant[2] == "q":
+                    probation_type = 2
+                elif variant[2] == "e":
+                    probation_type = 3
+
+                ret = SplruRP(
+                    cold_repl=cold_repl,
+                    hot_repl=hot_repl,
+                    probation_type=probation_type,
+                )
 
     cache_hierarchy = PrivateL1CacheHierarchy(
         l1d_size="32KiB",
@@ -161,8 +199,9 @@ if __name__ == "__m5_main__":
     partition = args.partition
     assoc = args.assoc
     repl = args.repl
+    variant = args.variant
 
-    cache_hierarchy = create_cache_hierarchy(assoc, repl)
+    cache_hierarchy = create_cache_hierarchy(assoc, repl, variant)
 
     processor = SimpleSwitchableProcessor(
         starting_core_type=CPUTypes.KVM,
