@@ -65,7 +65,7 @@ for assoc in assocs:
 
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
             command = [
-                "gem5/build/X86/gem5.fast",
+                "gem5/gem5_build/X86/gem5.fast",
                 f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
                 "run_scripts/bench/parsec_trial.py",
                 "--image benchmark/parsec/parsec-image",
