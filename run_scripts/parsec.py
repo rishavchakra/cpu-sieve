@@ -89,44 +89,44 @@ for assoc in assocs:
 runs = list(zip(commands, labels))
 
 
-async def run_command(run: tuple[str, str], semaphore):
-    print(run[1])
-    async with semaphore:
-        run_args = run[0].split()
-        file = run_args[0]
-        proc = await asyncio.create_subprocess_exec(file, *run_args[1:])
-    print("Finished a simulation")
-    # print(run[0])
-    # p = subprocess.Popen(run[0], shell=False)
-    # rc = p.wait()
+# async def run_command(run: tuple[str, str], semaphore):
+#     print(run[1])
+#     async with semaphore:
+#         run_args = run[0].split()
+#         file = run_args[0]
+#         proc = await asyncio.create_subprocess_exec(file, *run_args[1:])
+#     print("Finished a simulation")
+#     # print(run[0])
+#     # p = subprocess.Popen(run[0], shell=False)
+#     # rc = p.wait()
 
 
-async def main(runs: list[tuple[str, str]]):
-    batch_size = 36
-    semaphore = asyncio.Semaphore(value=batch_size)
-    async_cmds = []
-    for run in runs:
-        async_cmds.append(run_command(run, semaphore))
-    await asyncio.gather(*async_cmds)
+# async def main(runs: list[tuple[str, str]]):
+#     batch_size = 36
+#     semaphore = asyncio.Semaphore(value=batch_size)
+#     async_cmds = []
+#     for run in runs:
+#         async_cmds.append(run_command(run, semaphore))
+#     await asyncio.gather(*async_cmds)
 
 
-asyncio.run(main(runs))
+# asyncio.run(main(runs))
 
 
 # with ThreadPoolExecutor(max_workers=36) as executor:
 #     _ = executor.map(run_command, runs)
 
-print("Finished all gem5 simulations!")
-# cpus = 8
-# while len(runs) > 0:
-#     run_batch = runs[:cpus]
-#     commands_batch = [run[0] for run in run_batch]
-#     labels_batch = [run[1] for run in run_batch]
-#     runs = runs[cpus:]
-#     # batch = commands[:cpus]
-#     # commands = commands[cpus:]
-#     for label in labels_batch:
-#         print(label)
-#     procs = [subprocess.Popen(cmd, shell=True) for cmd in commands_batch]
-#     for p in procs:
-#         p.wait()
+# print("Finished all gem5 simulations!")
+cpus = 8
+while len(runs) > 0:
+    run_batch = runs[:cpus]
+    commands_batch = [run[0] for run in run_batch]
+    labels_batch = [run[1] for run in run_batch]
+    runs = runs[cpus:]
+    # batch = commands[:cpus]
+    # commands = commands[cpus:]
+    for label in labels_batch:
+        print(label)
+    procs = [subprocess.Popen(cmd, shell=True) for cmd in commands_batch]
+    for p in procs:
+        _ = p.wait()
