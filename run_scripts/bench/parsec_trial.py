@@ -210,6 +210,9 @@ if __name__ == "__m5_main__":
         num_cores=1,
     )
 
+    for proc in processor.start:
+        proc.core.usePerf = False
+
     memory = DualChannelDDR4_2400(size="3GiB")
 
     board = X86Board(
