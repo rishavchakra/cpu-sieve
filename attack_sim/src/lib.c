@@ -82,6 +82,9 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     pattern_repeat(pat, atoi(argv[extra_arg_ind]));
     ++extra_arg_ind;
     break;
+  case 'b': // Bounce
+    pattern_bounce(pat);
+    break;
   case 'z': // Zipf-random
     pattern_zipf(pat, strtod(argv[extra_arg_ind], NULL));
     ++extra_arg_ind;

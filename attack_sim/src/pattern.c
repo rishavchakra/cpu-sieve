@@ -187,3 +187,30 @@ void pattern_zipf(Pattern *pat, double alpha) {
   pat->next = zipf_next;
   pat->free = zipf_free;
 }
+
+/******** Zipf-random pattern ********/
+
+typedef struct {
+  size_t ind;
+  bool is_forward;
+} Bounce;
+
+size_t bounce_next(void *meta, size_t mem_size) {
+  Bounce *m = (Bounce *)meta;
+  size_t ind = m->ind;
+  if (m->is_forward) {
+    m->ind = (m->ind + 1) % mem_size;
+  } else {
+    m->ind = (m->ind - 1 + mem_size) % mem_size;
+  }
+  return ind;
+}
+
+void pattern_bounce(Pattern *pat) {
+  Bounce *meta = (Bounce *)malloc(sizeof(Bounce));
+  meta->ind = 0;
+  meta->is_forward = true;
+
+  pat->meta = meta;
+  pat->next = bounce_next;
+}

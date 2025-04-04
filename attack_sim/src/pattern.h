@@ -38,6 +38,8 @@ void pattern_double(Pattern *pat);
 // indices
 void pattern_repeat(Pattern *pat, int repeat_count);
 
+void pattern_bounce(Pattern *pat);
+
 // Zipian random distribution with parameter k
 void pattern_zipf(Pattern *pat, double alpha);
 
