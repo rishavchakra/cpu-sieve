@@ -8,7 +8,7 @@ srcs = [
   'src/algorithms/random.c',
   'src/algorithms/sieve.c',
   'src/algorithms/tree_plru.c',
-  'src/algorithms/splru.c',
+  'src/algorithms/three_tree.c',
 ]
 
 executable('occupation', srcs + 'src/occupation.c', install: true)

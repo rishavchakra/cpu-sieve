@@ -69,8 +69,8 @@ typedef enum {
   CHOOSE_HALF_RAND = 1 << 7,
   CHOOSE_QUARTER_RAND = 1 << 8,
   CHOOSE_EIGHTH_RAND = 1 << 9,
-} SplruFlag;
+} ThreeTreeFlag;
 
-void algo_splru(Algorithm *, int flags);
+void algo_3tree(Algorithm *, int flags);
 
 #endif

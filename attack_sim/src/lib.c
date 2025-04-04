@@ -22,8 +22,8 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
   case '?': // Uniform Random
     algo_random(algo);
     break;
-  case 'q': // SPLRU
-    SplruFlag cold_flag, hot_flag, choice_flag;
+  case '3': // SPLRU
+    ThreeTreeFlag cold_flag, hot_flag, choice_flag;
     char *splru_args = argv[extra_arg_ind];
     ++extra_arg_ind;
     switch (splru_args[0]) {
@@ -62,7 +62,7 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     }
 
     int flags = cold_flag | hot_flag | choice_flag;
-    algo_splru(algo, flags);
+    algo_3tree(algo, flags);
     break;
   default:
     fprintf(stderr, "ERROR: Replacement policy not recognized\n");
