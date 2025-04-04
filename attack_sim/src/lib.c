@@ -15,10 +15,10 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
   case 't': // TreePLRU
     algo_treeplru(algo);
     break;
-  case '2': // TwoQ, with a1 parameter
-    algo_twoq_rand(algo, strtod(argv[extra_arg_ind], NULL));
-    ++extra_arg_ind;
-    break;
+  // case '2': // TwoQ, with a1 parameter
+  //   algo_twoq_rand(algo, strtod(argv[extra_arg_ind], NULL));
+  //   ++extra_arg_ind;
+  //   break;
   case '?': // Uniform Random
     algo_random(algo);
     break;
