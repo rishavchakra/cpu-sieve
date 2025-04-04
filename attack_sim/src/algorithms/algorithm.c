@@ -1,5 +1,4 @@
 #include "algorithm.h"
-#include <stdio.h>
 #include "../cache.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -15,7 +14,8 @@ bool algo_touch(Algorithm *algo, int id, size_t addr) {
     return true;
   } else if (cache_is_full(algo->cache)) {
     // There is no empty space, need to evict something
-    int evict_ind = algo->func_evict(algo->cache, algo->meta, algo->line_meta);
+    size_t evict_ind =
+        algo->func_evict(algo->cache, algo->meta, algo->line_meta);
     algo->cache->lines[evict_ind].valid = true;
     algo->cache->lines[evict_ind].id = id;
     algo->cache->lines[evict_ind].addr = addr;

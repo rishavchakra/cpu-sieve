@@ -72,5 +72,6 @@ typedef enum {
 } ThreeTreeFlag;
 
 void algo_3tree(Algorithm *, int flags);
+void algo_3tree_rand(Algorithm *, int flags);
 
 #endif
