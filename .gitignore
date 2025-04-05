@@ -1,1 +1,31 @@
 eviction_testing/target
+out/
+out/*
+out/**
+*.o
+
+# AWS login key
+*.pem
+eviction_testing/sim-results
+spec-cpu/cpu2017-1.1.9.iso
+eviction/.cache/clangd/index
+out_v2
+out.txt
+attack_sim/.cache/clangd/index
+
+*.pyc
+m5out
+.vscode
+results
+venv
+bench/packer
+bench/packer_1.4.3_linux_amd64.zip
+bench/npb/npb-image/npb
+bench/npb/npb-hooks
+bench/packer_1.4.3_linux_amd64.zip
+bench/parsec/parsec-image/parsec
+# bench/parsec/
+bench/parsec-benchmark/
+bench/packer_cache
+gem5
+linux-stable/
