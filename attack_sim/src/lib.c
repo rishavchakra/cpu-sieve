@@ -13,7 +13,7 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     algo_sieve_rand(algo);
     break;
   case 't': // TreePLRU
-    algo_treeplru(algo);
+    algo_treeplru_rand(algo);
     break;
   // case '2': // TwoQ, with a1 parameter
   //   algo_twoq_rand(algo, strtod(argv[extra_arg_ind], NULL));
@@ -62,7 +62,7 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     }
 
     int flags = cold_flag | hot_flag | choice_flag;
-    algo_3tree(algo, flags);
+    algo_3tree_rand(algo, flags);
     break;
   default:
     fprintf(stderr, "ERROR: Replacement policy not recognized\n");
