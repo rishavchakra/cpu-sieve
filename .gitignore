@@ -1,5 +1,6 @@
 eviction_testing/target
 out/**
+out_**
 *.o
 
 # AWS login key
@@ -29,3 +30,5 @@ bench/parsec-benchmark/
 bench/packer_cache
 gem5
 linux-stable/
+vmlinux-4.19.83
+config.4.19.83
