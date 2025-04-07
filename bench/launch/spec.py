@@ -28,7 +28,9 @@ gem5_repo = Artifact.registerArtifact(
     command="""
         git clone -b sieve-research https://github.com/rishavchakra/gem5
         cd gem5
-        scons build/X86/gem5.fast -j16
+        scons defconfig gem5_build build_opts/X86
+        scons setconfig gem5_build USE_KVM=y
+        scons gem5_build/X86/gem5.fast -j16
     """,
     typ="git repo",
     name="gem5",
@@ -38,11 +40,11 @@ gem5_repo = Artifact.registerArtifact(
 )
 
 gem5_binary = Artifact.registerArtifact(
-    command="scons build/X86/gem5.fast -j16",
+    command="scons gem5_build/X86/gem5.fast -j16",
     typ="gem5 binary",
     name="gem5-20.1.0.4",
     cwd="gem5/",
-    path="gem5/build/X86/gem5.fast",
+    path="gem5/gem5_build/X86/gem5.fast",
     inputs=[
         gem5_repo,
     ],
