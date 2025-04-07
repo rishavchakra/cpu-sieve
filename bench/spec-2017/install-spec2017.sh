@@ -6,13 +6,13 @@ echo "12345" | sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-esse
 
 # mount the SPEC2017 ISO file and install SPEC to the disk image
 mkdir /home/gem5/mnt
-mount -o loop -t iso9660 /home/gem5/cpu2017-1.1.0.iso /home/gem5/mnt
+mount -o loop -t iso9660 /home/gem5/cpu2017-1.1.9.iso /home/gem5/mnt
 mkdir /home/gem5/spec2017
 echo "y" | /home/gem5/mnt/install.sh -d /home/gem5/spec2017 -u linux-x86_64
 cd /home/gem5/spec2017
 . /home/gem5/mnt/shrc
 umount /home/gem5/mnt
-rm -f /home/gem5/cpu2017-1.1.0.iso
+rm -f /home/gem5/cpu2017-1.1.9.iso
 
 # use the example config as the template
 cp /home/gem5/spec2017/config/Example-gcc-linux-x86.cfg /home/gem5/spec2017/config/myconfig.x86.cfg
@@ -36,4 +36,4 @@ runcpu --config=myconfig.x86.cfg --define build_ncpus=$(nproc) --define gcc_dir=
 
 # the above building process will produce a large log file
 # this command removes the log files to avoid copying out large files unnecessarily
-rm -f /home/gem5/spec2017/result/*
+rm -f /home/gem5/spec2017/out/*

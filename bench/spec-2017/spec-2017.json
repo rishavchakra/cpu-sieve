@@ -68,7 +68,7 @@
         },
         {
             "type": "file",
-            "source": "spec-2017/cpu2017-1.1.0.iso",
+            "source": "spec-2017/cpu2017-1.1.9.iso",
             "destination": "/home/gem5/"
         },
         {
