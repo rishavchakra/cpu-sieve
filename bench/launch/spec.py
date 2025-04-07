@@ -52,7 +52,7 @@ gem5_binary = Artifact.registerArtifact(
 )
 
 m5_binary = Artifact.registerArtifact(
-    command="scons build/x86/out/m5",
+    command="scons gem5_build/x86/out/m5",
     typ="binary",
     name="m5",
     path="gem5/util/m5/build/x86/out/m5",
@@ -122,7 +122,7 @@ run_script_repo = Artifact.registerArtifact(
 def create_run(bench, repl, assoc):
     return gem5Run.createFSRun(
         # "3Tree research SPEC 2017 benchmarks",  # name
-        "gem5/build/X86/gem5.fast",  # gem5_binary
+        "gem5/gem5_build/X86/gem5.fast",  # gem5_binary
         "configs/run_spec.py",  # run_script
         # relative_outdir
         f"out/spec/{bench}/{repl}/{assoc}",
