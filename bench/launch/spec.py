@@ -52,7 +52,7 @@ gem5_binary = Artifact.registerArtifact(
 )
 
 m5_binary = Artifact.registerArtifact(
-    command="scons gem5_build/x86/out/m5",
+    command="scons build/x86/out/m5",
     typ="binary",
     name="m5",
     path="gem5/util/m5/build/x86/out/m5",
