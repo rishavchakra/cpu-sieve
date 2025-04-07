@@ -113,7 +113,7 @@ run_script_repo = Artifact.registerArtifact(
     """,
     typ="git repo",
     name="configs",
-    path="configs",
+    path="bench/configs",
     cwd="./",
     documentation="gem5 run scripts made specifically for SPEC benchmarks",
 )
