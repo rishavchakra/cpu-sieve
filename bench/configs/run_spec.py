@@ -1,188 +1,314 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2019 The Regents of the University of California.
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met: redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer;
+# redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution;
+# neither the name of the copyright holders nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Authors: Jason Lowe-Power, Ayaz Akram, Hoa Nguyen
+
+""" Script to run a SPEC benchmark in full system mode with gem5.
+
+    Inputs:
+    * This script expects the following as arguments:
+        ** kernel: 
+                  This is a positional argument specifying the path to
+                  vmlinux.
+        ** disk: 
+                  This is a positional argument specifying the path to the
+                  disk image containing the installed SPEC benchmarks.
+        ** cpu: 
+                  This is a positional argument specifying the name of the
+                  detailed CPU model. The names of the available CPU models
+                  are available in the getDetailedCPUModel(cpu_name) function.
+                  The function should be modified to add new CPU models.
+                  Currently, the available CPU models are:
+                    - kvm: this is not a detailed CPU model, ideal for testing.
+                    - o3: DerivO3CPU.
+                    - atomic: AtomicSimpleCPU.
+                    - timing: TimingSimpleCPU.
+        ** benchmark:
+                  This is a positional argument specifying the name of the
+                  SPEC benchmark to run. Most SPEC benchmarks are available.
+                  Please follow this link to check the availability of the
+                  benchmarks. The working benchmark matrix is near the bottom
+                  of the page:
+         (SPEC 2006) https://gem5art.readthedocs.io/en/latest/spec2006-tutorial.html
+         (SPEC 2017) https://gem5art.readthedocs.io/en/latest/spec2017-tutorial.html
+        ** size:
+                  This is a positional argument specifying the size of the
+                  benchmark. The available sizes are: ref, test, train.
+        ** --no-copy-logs:
+                  This is an optional argument specifying the reports of
+                  the benchmark run is not copied to the output folder.
+                  The reports are copied by default.
+        ** --allow-listeners:
+                  This is an optional argument specifying gem5 to open
+                  listening ports. Usually, the ports are opened for debugging
+                  purposes. 
+                  By default, the ports are off.
+                  
+    Outputs:
+    * TODO: simple performance statistics
+"""
 import os
 import sys
-from uuid import UUID
+import time
 
-from gem5art.artifact import Artifact
-from gem5art.run import gem5Run
-from gem5art.tasks.tasks import run_job_pool
-import multiprocessing as mp
+import m5
+import m5.ticks
+from m5.objects import *
 
-experiments_repo = Artifact.registerArtifact(
-    command="""
-        git clone https://github.com/rishavchakra/cpu-sieve
-        cd gem5-resources
-    """,
-    typ="git repo",
-    name="spec2017 Experiment",
-    path="./",
-    cwd="./",
-    documentation="""
-        Main research repo with all experiments and scripts.
-        Resources cloned from https://github.com/rishavchakra/cpu-sieve at branch main
-    """,
-)
+import argparse
 
-gem5_repo = Artifact.registerArtifact(
-    command="""
-        git clone -b sieve-research https://github.com/rishavchakra/gem5
-        cd gem5
-        scons build/X86/gem5.fast -j16
-    """,
-    typ="git repo",
-    name="gem5",
-    path="gem5/",
-    cwd="./",
-    documentation="cloned gem5 at sieve-research branch",
-)
-
-gem5_binary = Artifact.registerArtifact(
-    command="scons build/X86/gem5.fast -j16",
-    typ="gem5 binary",
-    name="gem5-20.1.0.4",
-    cwd="gem5/",
-    path="gem5/build/X86/gem5.opt",
-    inputs=[
-        gem5_repo,
-    ],
-    documentation="compiled gem5 v20.1.0.4 binary",
-)
-
-m5_binary = Artifact.registerArtifact(
-    command="scons build/x86/out/m5",
-    typ="binary",
-    name="m5",
-    path="gem5/util/m5/build/x86/out/m5",
-    cwd="gem5/util/m5",
-    inputs=[
-        gem5_repo,
-    ],
-    documentation="m5 utility",
-)
-
-packer = Artifact.registerArtifact(
-    command="""
-        wget https://releases.hashicorp.com/packer/1.6.6/packer_1.6.6_linux_amd64.zip;
-        unzip packer_1.6.6_linux_amd64.zip;
-    """,
-    typ="binary",
-    name="packer",
-    path="bench/packer",
-    cwd="bench",
-    documentation="Program to build disk images. Downloaded from https://www.packer.io/.",
-)
-
-disk_image = Artifact.registerArtifact(
-    command="./packer build spec-2017/spec-2017.json",
-    typ="disk image",
-    name="spec-2017",
-    cwd="bench/",
-    path="bench/spec-2017/spec-2017-image/spec-2017",
-    inputs=[
-        packer,
-        experiments_repo,
-        m5_binary,
-    ],
-    documentation="Ubuntu Server with SPEC 2017 installed, m5 binary installed and root auto login",
-)
-
-linux_binary = Artifact.registerArtifact(
-    name="vmlinux-4.19.83",
-    typ="kernel",
-    path="./vmlinux-4.19.83",
-    cwd="./",
-    command=""" wget http://dist.gem5.org/dist/v21-1/kernels/x86/static/vmlinux-4.19.83""",
-    inputs=[
-        experiments_repo,
-    ],
-    documentation="kernel binary for v4.19.83",
-)
+from system import MySystem
 
 
-def create_run(bench, repl, assoc):
-    return gem5Run.createFSRun(
-        "3Tree research SPEC 2017 benchmarks",  # name
-        "gem5/build/X86/gem5.fast",  # gem5_binary
-        "configs/run_spec.py",  # run_script
-        # relative_outdir
-        f"out/spec/{bench}/{repl}/{assoc}",
-        gem5_binary,  # gem5_artifact
-        gem5_repo,  # gem5_git_artifact
-        experiments_repo,  # run_script_git_artifact
-        "./vmlinux-4.19.83",  # linux_binary
-        "bench/spec-2017/spec2017-image/spec2017",  # disk_image
-        linux_binary,  # linux_binary_artifact
-        disk_image,  # disk_image_artifact
-        cpu,
-        benchmark,
-        size,  # params
-        timeout=10 * 24 * 60 * 60,  # 10 days
+def writeBenchScript(dir, benchmark_name, size, output_path):
+    """
+    This method creates a script in dir which will be eventually
+    passed to the simulated system (to run a specific benchmark
+    at bootup).
+    """
+    input_file_name = "{}/run_{}_{}".format(dir, benchmark_name, size)
+    with open(input_file_name, "w") as f:
+        f.write("{} {} {}".format(benchmark_name, size, output_path))
+    return input_file_name
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="gem5 config file to run SPEC benchmarks"
+    )
+    parser.add_argument("kernel", type=str, help="Path to vmlinux")
+    parser.add_argument(
+        "disk", type=str, help="Path to the disk image containing SPEC benchmarks"
+    )
+    parser.add_argument("cpu", type=str, help="Name of the detailed CPU")
+    parser.add_argument("benchmark", type=str, help="Name of the SPEC benchmark")
+    parser.add_argument("size", type=str, help="Available sizes: test, train, ref")
+    parser.add_argument("repl", type=str, help="Replacement Algorithm")
+    parser.add_argument("assoc", type=int, help="Cache associativity")
+    parser.add_argument(
+        "-k",
+        "--kernel",
+        type=str,
+        default="linux-4.19.83/vmlinux-4.19.83",
+        help="Path to vmlinux",
+    )
+    parser.add_argument(
+        "-l",
+        "--no-copy-logs",
+        default=False,
+        action="store_true",
+        help="Not copy SPEC run logs to the host system;" "Logs are copied by default",
+    )
+    parser.add_argument(
+        "-z",
+        "--allow-listeners",
+        default=False,
+        action="store_true",
+        help="Turn on ports;" "The ports are off by default",
+    )
+    return parser.parse_args()
+
+
+def getDetailedCPUModel(cpu_name):
+    """
+    Return the CPU model corresponding to the cpu_name.
+    """
+    available_models = {
+        "kvm": X86KvmCPU,
+        "o3": DerivO3CPU,
+        "atomic": AtomicSimpleCPU,
+        "timing": TimingSimpleCPU,
+    }
+    try:
+        available_models["FlexCPU"] = FlexCPU
+    except NameError:
+        # FlexCPU is not defined
+        pass
+    # https://docs.python.org/3/library/stdtypes.html#dict.get
+    # dict.get() returns None if the key does not exist
+    return available_models.get(cpu_name)
+
+
+def getBenchmarkName(benchmark_name):
+    if benchmark_name.endswith("(base)"):
+        benchmark_name = benchmark_name[:-6]
+    return benchmark_name
+
+
+def create_system(linux_kernel_path, disk_image_path, detailed_cpu_model, repl, assoc):
+    # create the system we are going to simulate
+    system = MySystem(
+        kernel=linux_kernel_path,
+        disk=disk_image_path,
+        num_cpus=1,  # run the benchmark in a single thread
+        no_kvm=False,
+        TimingCPUModel=detailed_cpu_model,
+        repl=repl,
+        assoc=assoc,
     )
 
+    # For workitems to work correctly
+    # This will cause the simulator to exit simulation when the first work
+    # item is reached and when the first work item is finished.
+    system.work_begin_exit_count = 1
+    system.work_end_exit_count = 1
 
-if __name__ == "__main__":
-    cpus = ["kvm", "atomic", "o3", "timing"]
-    benchmark_sizes = {
-        "kvm": ["ref"]
-        # "kvm": ["test", "ref"],
-        # "atomic": ["test"],
-        # "o3": ["test"],
-        # "timing": ["test"],
-    }
-    benchmarks = [
-        # "503.bwaves_r",
-        # "507.cactuBSSN_r",
-        # "508.namd_r",
-        # "510.parest_r",
-        # "511.povray_r",
-        # "519.lbm_r",
-        # "521.wrf_r",
-        # "526.blender_r",
-        # "527.cam4_r",
-        # "538.imagick_r",
-        # "544.nab_r",
-        # "549.fotonik3d_r",
-        # "554.roms_r",
-        # "997.specrand_fr",
-        "603.bwaves_s",
-        "607.cactuBSSN_s",
-        "619.lbm_s",
-        "621.wrf_s",
-        "627.cam4_s",
-        "628.pop2_s",
-        "638.imagick_s",
-        "644.nab_s",
-        "649.fotonik3d_s",
-        "654.roms_s",
-        # "996.specrand_fs",
-        # "500.perlbench_r",
-        # "502.gcc_r",
-        # "505.mcf_r",
-        # "520.omnetpp_r",
-        # "523.xalancbmk_r",
-        # "525.x264_r",
-        # "531.deepsjeng_r",
-        # "541.leela_r",
-        # "548.exchange2_r",
-        # "557.xz_r",
-        # "999.specrand_ir",
-        "600.perlbench_s",
-        "602.gcc_s",
-        "605.mcf_s",
-        "620.omnetpp_s",
-        "623.xalancbmk_s",
-        "625.x264_s",
-        "631.deepsjeng_s",
-        "641.leela_s",
-        "648.exchange2_s",
-        "657.xz_s",
-        # "998.specrand_is",
-    ]
+    # set up the root SimObject and start the simulation
+    root = Root(full_system=True, system=system)
 
-    runs = []
-    for cpu in cpus:
-        for size in benchmark_sizes[cpu]:
-            for benchmark in benchmarks:
-                run = create_run(benchmark, 'uh', 'assoc')
-                runs.append(run)
+    if system.getHostParallel():
+        # Required for running kvm on multiple host cores.
+        # Uses gem5's parallel event queue feature
+        # Note: The simulator is quite picky about this number!
+        root.sim_quantum = int(1e9)  # 1 ms
 
-    run_job_pool(runs)
+    return root, system
+
+
+def boot_linux():
+    """
+    Output 1: False if errors occur, True otherwise
+    Output 2: exit cause
+    """
+    print("Booting Linux")
+    exit_event = m5.simulate()
+    exit_cause = exit_event.getCause()
+    success = exit_cause == "m5_exit instruction encountered"
+    if not success:
+        print("Error while booting linux: {}".format(exit_cause))
+        exit(1)
+    print("Booting done")
+    return success, exit_cause
+
+
+def run_spec_benchmark():
+    """
+    Output 1: False if errors occur, True otherwise
+    Output 2: exit cause
+    """
+    print("Start running benchmark")
+    exit_event = m5.simulate()
+    exit_cause = exit_event.getCause()
+    success = exit_cause == "m5_exit instruction encountered"
+    if not success:
+        print("Error while running benchmark: {}".format(exit_cause))
+        exit(1)
+    print("Benchmark done")
+    return success, exit_cause
+
+
+def copy_spec_logs():
+    """
+    Output 1: False if errors occur, True otherwise
+    Output 2: exit cause
+    """
+    print("Copying SPEC logs")
+    exit_event = m5.simulate()
+    exit_cause = exit_event.getCause()
+    success = exit_cause == "m5_exit instruction encountered"
+    if not success:
+        print("Error while copying SPEC log files: {}".format(exit_cause))
+        exit(1)
+    print("Copying done")
+    return success, exit_cause
+
+
+if __name__ == "__m5_main__":
+    args = parse_arguments()
+
+    cpu_name = args.cpu
+    benchmark_name = getBenchmarkName(args.benchmark)
+    benchmark_size = args.size
+    linux_kernel_path = args.kernel
+    disk_image_path = args.disk
+    no_copy_logs = args.no_copy_logs
+    allow_listeners = args.allow_listeners
+
+    repl = args.repl
+    repl = args.repl[0]
+    assoc = args.assoc
+
+    output_dir = os.path.join(m5.options.outdir, "speclogs")
+
+    # Get the DetailedCPU class from its name
+    detailed_cpu = getDetailedCPUModel(cpu_name)
+    if detailed_cpu == None:
+        print("'{}' is not define in the config script.".format(cpu_name))
+        print("Change getDeatiledCPUModel() in run_spec.py " "to add more CPU Models.")
+        exit(1)
+
+    if not benchmark_size in ["ref", "train", "test"]:
+        print("Benchmark size must be one of the following: ref, train, test")
+        exit(1)
+
+    root, system = create_system(linux_kernel_path, disk_image_path, detailed_cpu)
+
+    # Create and pass a script to the simulated system to run the reuired
+    # benchmark
+    system.readfile = writeBenchScript(
+        m5.options.outdir, benchmark_name, benchmark_size, output_dir
+    )
+
+    # needed for long running jobs
+    if not allow_listeners:
+        m5.disableAllListeners()
+
+    # instantiate all of the objects we've created above
+    m5.instantiate()
+
+    # booting linux
+    success, exit_cause = boot_linux()
+
+    # reset stats
+    print("Reset stats")
+    m5.stats.reset()
+
+    # switch from KVM to detailed CPU
+    if not cpu_name == "kvm":
+        print("Switching to detailed CPU")
+        system.switchCpus(system.cpu, system.detailed_cpu)
+        print("Switching done")
+
+    # running benchmark
+    print("Benchmark: {}; Size: {}".format(benchmark_name, benchmark_size))
+    success, exit_cause = run_spec_benchmark()
+
+    # output the stats after the benchmark is complete
+    print("Output stats")
+    m5.stats.dump()
+
+    if not no_copy_logs:
+        # create the output folder
+        os.makedirs(output_dir)
+
+        # switch from detailed CPU to KVM
+        if not cpu_name == "kvm":
+            print("Switching to KVM")
+            system.switchCpus(system.detailed_cpu, system.cpu)
+            print("Switching done")
+
+        # copying logs
+        success, exit_cause = copy_spec_logs()
