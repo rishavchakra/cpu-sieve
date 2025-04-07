@@ -30,7 +30,7 @@ gem5_repo = Artifact.registerArtifact(
         cd gem5
         scons defconfig gem5_build build_opts/X86
         scons setconfig gem5_build USE_KVM=y
-        scons gem5_build/X86/gem5.fast -j16
+        scons gem5_build/X86/gem5.fast -j24
     """,
     typ="git repo",
     name="gem5",
@@ -40,7 +40,7 @@ gem5_repo = Artifact.registerArtifact(
 )
 
 gem5_binary = Artifact.registerArtifact(
-    command="scons gem5_build/X86/gem5.fast -j16",
+    command="scons gem5_build/X86/gem5.fast -j24",
     typ="gem5 binary",
     name="gem5-20.1.0.4",
     cwd="gem5/",
@@ -121,7 +121,7 @@ run_script_repo = Artifact.registerArtifact(
 
 def create_run(bench, repl, assoc):
     return gem5Run.createFSRun(
-        # "3Tree research SPEC 2017 benchmarks",  # name
+        "3Tree research SPEC 2017 benchmarks",  # name
         "gem5/gem5_build/X86/gem5.fast",  # gem5_binary
         "configs/run_spec.py",  # run_script
         # relative_outdir
