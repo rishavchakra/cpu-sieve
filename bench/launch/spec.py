@@ -149,6 +149,14 @@ def create_run(bench, repl, assoc):
     )
 
 
+def work_run(run):
+    run.run()
+    json = run.dumpsJson()
+    with open("out/spec/log.json", "a") as file:
+        file.write(str(json))
+    # print(json)
+
+
 if __name__ == "__main__":
     cpus = ["kvm", "atomic", "o3", "timing"]
     benchmark_sizes = {
@@ -228,10 +236,15 @@ if __name__ == "__main__":
         create_run,
         product(benchmarks, repls, assocs),
     )
+    for run in runs:
+        jobs.append(run)
+
+    with mp.Pool(mp.cpu_count() - 6) as pool:
+        pool.map(work_run, jobs)
     # for cpu in cpus:
     #     for size in benchmark_sizes[cpu]:
     #         for benchmark in benchmarks:
     #             run = create_run(benchmark, "uh", "assoc")
     #             runs.append(run)
 
-    run_job_pool(runs)
+    # run_job_pool(runs)

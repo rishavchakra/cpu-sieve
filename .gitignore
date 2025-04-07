@@ -1,6 +1,4 @@
 eviction_testing/target
-out/
-out/*
 out/**
 *.o
 
@@ -24,6 +22,8 @@ bench/npb/npb-image/npb
 bench/npb/npb-hooks
 bench/packer_1.4.3_linux_amd64.zip
 bench/parsec/parsec-image/parsec
+bench/spec-2017/spec-2017-image/spec-2017
+bench/spec-2017/cpu2017-1.1.9.iso
 # bench/parsec/
 bench/parsec-benchmark/
 bench/packer_cache
