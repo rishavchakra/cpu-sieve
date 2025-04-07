@@ -119,7 +119,7 @@ run_script_repo = Artifact.registerArtifact(
 
 def create_run(bench, repl, assoc):
     return gem5Run.createFSRun(
-        "3Tree research SPEC 2017 benchmarks",  # name
+        # "3Tree research SPEC 2017 benchmarks",  # name
         "gem5/build/X86/gem5.fast",  # gem5_binary
         "configs/run_spec.py",  # run_script
         # relative_outdir
