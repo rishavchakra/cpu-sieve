@@ -219,17 +219,17 @@ if __name__ == "__main__":
     ]
 
     repls = [
-        "s",  # SIEVE
-        *[  # 2Tree
-            "2" + cold + hot + choice
-            for cold in ["r", "l", "f"]
-            for hot in ["r", "l", "f"]
-            for choice in ["h", "q", "e", "n"]
-        ],
+        # "s",  # SIEVE
+        # *[  # 2Tree
+            # "2" + cold + hot + choice
+            # for cold in ["r", "l", "f"]
+            # for hot in ["r", "l", "f"]
+            # for choice in ["h", "q", "e", "n"]
+        # ],
         "3", # 3Tree
-        "t",  # TreePLRU
+        # "t",  # TreePLRU
         # "2",  # 2Q (defunct)
-        "?",  # Random
+        # "?",  # Random
     ]
 
     assocs = [16, 8, 4]
