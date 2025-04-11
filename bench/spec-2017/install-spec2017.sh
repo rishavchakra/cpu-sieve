@@ -29,6 +29,9 @@ sed -i "s/-march=native//g" /home/gem5/spec2017/config/myconfig.x86.cfg
 # the query causes gem5 runtime error
 sed -i "s/command_add_redirect = 1/sysinfo_program =\ncommand_add_redirect = 1/g" /home/gem5/spec2017/config/myconfig.x86.cfg
 
+ulimit -s unlimited
+
+runcpu --update
 # build all SPEC workloads
 # build_ncpus: number of cpus to build the workloads
 # gcc_dir: where to find the compilers (gcc, g++, gfortran)
