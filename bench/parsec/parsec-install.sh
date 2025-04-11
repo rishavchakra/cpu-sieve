@@ -19,6 +19,7 @@ sudo rm libs.txt
 sudo apt install -y build-essential
 sudo apt install -y m4
 sudo apt install -y git
+sudo apt install -y oracular
 sudo apt install -y python
 sudo apt install -y python-dev
 sudo apt install -y gettext
@@ -45,6 +46,7 @@ cd parsec-benchmark
 . env.sh
 parsecmgmt -a build -p all
 cd ..
-echo "12345" | sudo -S chown gem5 -R parsec-benchmark/
-echo "12345" | sudo -S chgrp gem5 -R parsec-benchmark/
+# These seem to break the build at the very end
+# echo "12345" | sudo -S chown gem5 -R parsec-benchmark/
+# echo "12345" | sudo -S chgrp gem5 -R parsec-benchmark/
 ##
