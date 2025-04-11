@@ -35,7 +35,7 @@ runcpu --update
 # build all SPEC workloads
 # build_ncpus: number of cpus to build the workloads
 # gcc_dir: where to find the compilers (gcc, g++, gfortran)
-runcpu --config=myconfig.x86.cfg --define build_ncpus=$(nproc) --define gcc_dir="/usr" --action=build all
+runcpu --config=myconfig.x86.cfg --define build_ncpus=$(nproc) --define gcc_dir="/usr" --action=build specspeed
 
 # the above building process will produce a large log file
 # this command removes the log files to avoid copying out large files unnecessarily
