@@ -52,7 +52,7 @@
     [
         {
             "type": "file",
-            "source": "../gem5/util/m5/m5",
+            "source": "../gem5/util/m5/build/x86/out/m5",
             "destination": "/home/gem5/"
         },
         {
@@ -75,7 +75,7 @@
             "execute_command": "echo '{{ user `ssh_password` }}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
             "scripts":
             [
-                "parsce/post-installation.sh",
+                "parsec/post-installation.sh",
                 "parsec/parsec-install.sh"
             ]
         }
@@ -96,7 +96,7 @@
         "ssh_fullname": "gem5",
         "ssh_password": "12345",
         "ssh_username": "gem5",
-        "vm_cpus": "16",
+        "vm_cpus": "8",
         "vm_memory": "8192",
         "image_name": "parsec"
   }

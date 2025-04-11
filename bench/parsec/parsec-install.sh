@@ -35,8 +35,11 @@ sudo apt install -y freeglut3-dev
 echo "12345" | sudo -S chown gem5 -R parsec-benchmark/
 echo "12345" | sudo -S chgrp gem5 -R parsec-benchmark/
 cd parsec-benchmark
-./install.sh
+# ./install.sh
 ./get-inputs
+./configure
+. env.sh
+parsecmgmt -a build -p all
 cd ..
 echo "12345" | sudo -S chown gem5 -R parsec-benchmark/
 echo "12345" | sudo -S chgrp gem5 -R parsec-benchmark/
