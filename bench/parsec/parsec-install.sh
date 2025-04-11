@@ -9,9 +9,9 @@ echo "12345" | sudo -S apt update
 # Allowing services to restart while updating some
 # libraries.
 sudo apt install -y debconf-utils
-sudo debconf-get-selections | grep restart-without-asking > libs.txt
+sudo debconf-get-selections | grep restart-without-asking >libs.txt
 sed -i 's/false/true/g' libs.txt
-while read line; do echo $line | sudo debconf-set-selections; done < libs.txt
+while read line; do echo $line | sudo debconf-set-selections; done <libs.txt
 sudo rm libs.txt
 ##
 
@@ -23,6 +23,7 @@ sudo apt install -y python
 sudo apt install -y python-dev
 sudo apt install -y gettext
 sudo apt install -y libx11-dev
+sudo apt-install -y libltdl7
 sudo apt install -y libxext-dev
 sudo apt install -y xorg-dev
 sudo apt install -y unzip
