@@ -22,6 +22,8 @@ sudo apt install -y git
 sudo apt install -y python
 sudo apt install -y python-dev
 sudo apt install -y gettext
+sudo apt install -y libtool
+sudo apt install -y intltool
 sudo apt install -y libx11-dev
 sudo apt-install -y libltdl7
 sudo apt install -y libxext-dev
