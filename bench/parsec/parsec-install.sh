@@ -36,7 +36,8 @@ echo "12345" | sudo -S chown gem5 -R parsec-benchmark/
 echo "12345" | sudo -S chgrp gem5 -R parsec-benchmark/
 cd parsec-benchmark
 # ./install.sh
-./get-inputs
+# We don't need native-sized inputs, they are way too big
+# ./get-inputs
 ./configure
 . env.sh
 parsecmgmt -a build -p all
