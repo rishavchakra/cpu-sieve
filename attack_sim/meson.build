@@ -8,6 +8,7 @@ srcs = [
   'src/algorithms/random.c',
   'src/algorithms/sieve.c',
   'src/algorithms/tree_plru.c',
+  'src/algorithms/two_tree.c',
   'src/algorithms/three_tree.c',
 ]
 

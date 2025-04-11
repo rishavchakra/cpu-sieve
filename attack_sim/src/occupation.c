@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   parse_args(argv, 5, 3, 4, &algo, &pattern);
 
   int i_touch = 0;
-  for (; i_touch < 10000; ++i_touch) {
+  for (; i_touch < 100000; ++i_touch) {
     size_t touch_ind = pattern.next(pattern.meta, pattern.mem_size);
     algo_touch(&algo, USER_ATTACKER, touch_ind);
     if (cache_has_evset(&cache, USER_ATTACKER)) {
