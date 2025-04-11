@@ -36,7 +36,7 @@ from caches import *
 
 
 def getReplArgs(repl):
-    if repl[0] not in ["3"]:
+    if repl[0] not in ["2"]:
         return None
     tree_repl_args = {
         "r": 0,
@@ -198,9 +198,9 @@ class MySystem(LinuxX86System):
                 case "t":
                     cpu.icache.replacement_policy = TreePLRURP()
                     cpu.dcache.replacement_policy = TreePLRURP()
-                case "3":
-                    cpu.icache.replacement_policy = ThreeTreeRP()
-                    cpu.dcache.replacement_policy = ThreeTreeRP()
+                case "2":
+                    cpu.icache.replacement_policy = TwoTreeRP()
+                    cpu.dcache.replacement_policy = TwoTreeRP()
 
                     args = getReplArgs(repl)
                     cpu.icache.replacement_policy.cold_repl = Param.Int(args[0])
@@ -210,6 +210,9 @@ class MySystem(LinuxX86System):
                     cpu.dcache.replacement_policy.cold_repl = Param.Int(args[0])
                     cpu.dcache.replacement_policy.hot_repl = Param.Int(args[1])
                     cpu.dcache.replacement_policy.probation_type = Param.Int(args[2])
+                case "3":
+                    cpu.icache.replacement_policy = ThreeTreeRP()
+                    cpu.dcache.replacement_policy = ThreeTreeRP()
                     # if args ==
             # cpu.icache.replacement_policy = assoc
             # cpu.dcache.replacement_policy = assoc
