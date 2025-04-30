@@ -26,7 +26,7 @@ sudo apt install -y gettext
 sudo apt install -y libtool
 sudo apt install -y intltool
 sudo apt install -y libx11-dev
-sudo apt-install -y libltdl7
+sudo apt install -y libltd17
 sudo apt install -y libxext-dev
 sudo apt install -y xorg-dev
 sudo apt install -y unzip
@@ -36,9 +36,14 @@ sudo apt install -y freeglut3-dev
 
 # Building PARSEC
 
+cd /home/
+# ls -a
+cd /home/gem5/
+# ls -a
 echo "12345" | sudo -S chown gem5 -R parsec-benchmark/
 echo "12345" | sudo -S chgrp gem5 -R parsec-benchmark/
 cd parsec-benchmark
+# ls -a
 # ./install.sh
 # We don't need native-sized inputs, they are way too big
 # ./get-inputs

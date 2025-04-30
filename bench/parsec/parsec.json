@@ -66,9 +66,13 @@
             "destination": "/home/gem5/"
         },
         {
+            "type": "shell",
+            "inline": ["mkdir -p /home/gem5/parsec-benchmark"]
+        },
+        {
             "type": "file",
             "source": "parsec/parsec-benchmark/",
-            "destination": "/home/gem5/"
+            "destination": "/home/gem5/parsec-benchmark/"
         },
         {
             "type": "shell",
