@@ -1,0 +1,671 @@
+%%
+%% This is file `sample-sigconf.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `all,proceedings,bibtex,sigconf')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-sigconf.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%%
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+\documentclass[sigconf, screen, review]{acmart}
+\usepackage{svg}
+\usepackage{algpseudocode}
+
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{none} 
+%\setcopyright{acmlicensed}
+\copyrightyear{2025}
+\acmYear{2025}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[MICRO 2025]{The 58th IEEE/ACM International Symposium on Microarchitecture}{October 18--22, 2025}{Seoul, Korea}
+%%
+%%  Uncomment \acmBooktitle if the title of the proceedings is different
+%%  from ``Proceedings of ...''!
+%%
+%%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+%%  June 03--05, 2018, Woodstock, NY}
+
+\acmISBN{978-X-XXXX-XXXX-X/XX/XX}
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+\settopmatter{printfolios=true}
+\settopmatter{printacmref=false}
+%\pagestyle{plain}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{3Tree: Segmented CPU Caching for Speed and Eviction Set
+  Security}
+\subtitle{\normalsize{MICRO 2025 Submission
+    \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+%\author{\normalsize{ISCA 2025 Submission
+ %   \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+
+%%%%%% -- PAPER CONTENT STARTS-- %%%%%%%%
+
+\begin{abstract}
+
+  Eviction sets are fundamental to cache-enabled attacks such as Rowhammer
+  and Prime+Probe style side channel attacks.
+  Previous work focuses on defending against finding eviction sets for one or many
+  of a cache's sets ("mapping" the cache).
+
+  In this paper we present the replacement policy of a CPU cache as a defense against
+  % Possibly: add mapping as a defense target too
+  the use of already-found eviction sets to occupy cache sets ("priming" the cache).
+  In particular, we establish a relation between the cache replacement policy and the
+  maximum data leakage throughput of a Prime+Probe style attack as well as the
+  maximum DRAM access in Rowhammer style attacks.
+
+  Finally, we present the 3Tree replacement algorithm based on the TwoQ and SLRU
+  software-based replacement algorithms and implemented in the CPU similar to the widely-used
+  TreePLRU algorithm.
+  Additionally, set dueling is used to switch between two variants of 3Tree.
+  A CPU implementation of SLRU (along with many performance-enhancing variations) has
+  already been introduced, and 3Tree is competitive in performance.
+  In gem5 PARSEC simulations, 3Tree incurs a 1.7\% miss ratio penalty
+  compared to fixed SLRU while using 86\% less per-line metadata and no bypass table for line aging.
+  Most importantly, 3Tree algorithm significantly enhances the security against eviction set
+  % Possibly: add mapping as a defense target too
+  cache priming.
+  3Tree shows a 92.6\% reduction in the data leakage throughput through Prime+Probe attacks.
+
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10002978.10003001.10003599</concept_id>
+       <concept_desc>Security and privacy~Hardware security implementation</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10002978.10003001.10010777.10011702</concept_id>
+       <concept_desc>Security and privacy~Side-channel analysis and countermeasures</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10002978.10003001.10010777.10010779</concept_id>
+       <concept_desc>Security and privacy~Malicious design modifications</concept_desc>
+       <concept_significance>300</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10010520.10010521</concept_id>
+       <concept_desc>Computer systems organization~Architectures</concept_desc>
+       <concept_significance>300</concept_significance>
+       </concept>
+ </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Security and privacy~Hardware security implementation}
+\ccsdesc[500]{Security and privacy~Side-channel analysis and countermeasures}
+\ccsdesc[300]{Security and privacy~Malicious design modifications}
+\ccsdesc[300]{Computer systems organization~Architectures}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{Cache, Eviction, Security, Memory, Performance}
+
+\maketitle
+
+\section{Introduction}
+
+% Basically, an extended version of the abstract
+% Basis of cache attacks - shared cache among different processes,
+% should be secure but there are ways around it:
+% Cache attacks and what they're used for
+% At a basic level, here's what an eviction set is
+% Here's the existing defenses against these attacks
+% It's hard to completely defend against these attacks without severely impacting performance,
+% so defenses are largely focused on slowing them down
+% Most defenses are focused on evset discovery, but this only happens once per attack
+% Here's some of what is already being used, more specifically in preventing priming
+% Here's the basic premise of what I'm trying to do:
+% Current preventions focus on one-time discovery
+% This proj. slows actual priming, which is required for every use (in some attacks, used many times)
+% without impacting performance too much (changing cache replacement policies tends to do this)
+
+CPU caches are increasingly becoming vectors and targets for modern attacks.
+The most common are software attacks that take advantage of the architecture.
+Prime+Probe attacks use the sharing of a cache among multiple processes and sometimes different cores
+to leak information from a different address space,
+even though processes have their memory isolated from one another.
+This includes attacks that use this form as their foundation,
+such as speculative execution attacks
+\cite{Gofetch}\cite{Spectre}\cite{TikTag}\cite{PACMan}\cite{SPAM}\cite{LeakyWay}\cite{Streamline}\cite{TransientAttackSurvey}.
+Rowhammer attacks use the cache to attack the DRAM modules
+by repeatedly touching a memory address until the electrical interference induces a targeted bitflip
+\cite{Rowhammer}.
+Attacks like these are able to leak significant amounts of information from victim processes.
+% How much can Spectre leak? Rowhammer? Gofetch?
+Additionally, many of these attacks are difficult to detect and prevent as they occur.
+Speculative attacks are especially silent,
+as they work within the window of transient execution,
+which completely deletes any easily accessible trace of execution after it is flushed.
+
+Many software approaches have been introduced to defend against these attacks,
+including Rowhammer-specific defenses
+\cite{RowhammerDefense} % TODO: cite one more
+and many defenses against Spectre and Meltdown at the OS level that are currently in use
+% TODO: cite some Spectre OS defense
+.
+
+Hardware defenses are less common because changing the cache architecture can have
+significant performance implications,
+and preventing eviction set-based attacks completely can severely degrade
+cache capacity and performance.
+Instead, hardware defenses usually focus on slowing these attacks
+by introducing complexity in eviction set-specific function
+without overly affecting normal performance.
+While software defenses benefit from being dynamic
+and can be patched into operating systems and maintained applications,
+many applications are archaic or unmaintained, and different hardware may secure these systems
+where software alone cannot.
+
+Both Rowhammer and Prime+Probe-based attacks use \textit{Eviction Sets}
+as the foundation of their attack.
+Many procedures have been introduced to very quickly discover these eviction sets,
+whether for a single cache set \cite{TPFES}
+or for a majority of the cache \cite{EvictionSetsAtScale}.
+However, these algorithms make assumptions about the architecture,
+including the use of LRU or Random replacement algorithms
+and, critically, the lack of modern CPU features like 
+% TODO: get examples of cache randomization from Prune+PlumTree
+\cite{EvictionSetsAtScale}.
+Additionally, these algorithms enable or enhance the setup for cache attacks,
+but do not address the execution of the attack itself.
+
+To this end, we introduce the \textit{3Tree} cache replacement algorithm.
+The algorithm is based on software cache eviction algorithms that focus on
+performance enhancement over other very commonly used algorithms,
+and we implement a variation of the algorithm in hardware
+with these performance characteristics in mind
+and with an emphasis on security against cache priming.
+
+
+\section{Background}
+% Introduce the concepts of caches and eviction sets
+% How they appear in the CPU and their general forms (size, layers, etc.)
+% Attacks are possible with the cache as an attack vector (cite)
+% Dangerous! And a few types of attacks that are all fundamentally different
+
+% \subsection{Caches and Eviction Policies}
+
+Caches are memory modules between processors and larger, slower memory modules.
+They are used in many computing environments where the latency of memory
+is a significant factor in performance,
+such as small databases between clients and CDNs; we observe caches in CPUs.
+
+In order to take advantage of the spatial and temporal locality characteristics
+of most computing workloads,
+CPU memory caches are divided into \textit{cache lines}, usually 64 bytes long,
+grouped into \textit{sets} usually of 1-16 lines.
+The number of lines per set is called the associativity, which we hence call $a$.
+Modern CPUs use multiple levels of caches, including an L1, L2, and optional L3 cache
+in order of increasing size and distance from the ALU.
+The Last Level Cache (LLC) is often shared among all CPU cores, and may further group
+cache sets into \textit{slices}, with one or two slices placed physically on each core.
+Smaller caches tend to have lower associativity values of 2 or 4, and larger caches and LLCs
+tend to have higher values between 4 and 16.
+
+As caches are limited in size, replacement policies, also called eviction algorithms,
+replace an old or stale cache line (an \textit{eviction candidate}) with a new one,
+chosen based on per-object metadata.
+The ideal replacement algorithm minimizes \textit{cache misses}, where the requested memory address
+is not present in the cache and must wait much longer for a response
+from a larger cache or main memory.
+An efficient replacement algorithm will evict objects that are predicted to be unused
+or will induce \textit{thrashing}, where sequential memory touches are all cache misses,
+and conversely will retain objects that are commonly used
+or predicted to be used again in the near future.
+The miss ratio describes the efficiency of a cache:
+\begin{equation}
+  m = \frac{misses}{hits + misses}
+\end{equation}
+A cache may also be measured by its latency $T$, which describes the amount of time taken
+to fulfill a memory request.
+Together, the memory access time performance of a cache is given by the equation:
+\begin{equation}
+  T = T_{L1}(1-m_{L1}) + T_{L2}m_{L1}(1-m_{L2}) + \dots
+\end{equation}
+
+\subsection{Pseudo LRU}
+% DIAGRAM: Bit Tree
+% Explain how it works
+% Explain what's good about it and why it's so often used
+% Describe QLRU in Intel caches, why it's used, etc.
+
+Tree Pseudo Least Recently Used (TreePLRU) is a very common replacement algorithm that
+very closely follows the function of LRU.
+As a perfect LRU hardware implementation requires a complex circuit and lots of energy usage,
+this approximation is commonly used to approach the performance of LRU.
+It organizes the cache lines into a binary tree structure to recursively divide the cache
+into "hot" and a "cold" subtrees.
+Each node in the tree is a single bit that 'points' to one half of the tree
+(e.g. 0 points to the left, 1 points to the right).
+Eviction candidates are chosen by tracing down the tree according to the direction of these nodes
+following each node's colder subtree,
+and address touches (including the initial placement into the cache)
+trace from the node up the tree and set each node to point away from the cache line,
+as the cache line should in all levels be in the "hot" subtree.
+This algorithm can be easily extended into First In First Out (FIFO)
+by only placing objects into the Most Recently Used (MRU) position when they are first added
+and not updating the tree upon subsequent address touches.
+
+%----------------
+% TreePLRU Diagram
+%----------------
+
+Quad Least Recently Used (QLRU) is another replacement algorithm
+commonly used in Intel processors and used to replicate the function of LRU.
+It is very similar to RRIP \cite{RRIP}, using four possible priority values for each cache line.
+New objects are added with a low priority which gets promoted upon touches of the same address.
+The object with the lowest priority is evicted, using the order of the cache lines to break ties.
+
+\subsection{Random Replacement}
+% Explain how it works
+% Explain what's good about it and where it's conditionally used
+
+Random Replacement is an eviction algorithm sometimes used in CPU caches.
+Upon a cache miss, this algorithm simply chooses an eviction candidate at random.
+As this algorithm does not attempt to evaluate cache lines for recency of use
+or predict their next use, it suffers from a higher miss ratio than many other algorithms.
+However, since it requires no cache metadata and no algorithm logic,
+it uses very little energy and incurs no extra latency.
+For this reason, Random Replacement is sometimes used in L1 caches,
+The low latency of these caches, which is usually around 1-2ns for L1
+and 4-5ns for L2 to fulfill a memory request,
+means that the more common cache misses do not add too much latency to memory requests
+but may save a lot of energy.
+Most ARM processors equip Random Replacement algorithms in some of their CPU caches.
+% TODO: cite
+
+\subsection{TwoQ and SLRU}
+% Explain how it works
+% Explain what's good about it and where it's used (not hardware)
+
+TwoQ \cite{TwoQ} and Segmented Least Recently Used (SLRU) \cite{SLRU}
+are very similar eviction algorithms implemented in software,
+enhancing miss ratio performance in caches for large web caches and CDNs
+and for smaller-scale caches like those used in Disk-IO interaction.
+They both split the LRU queue into two segments, one holding older, warmer objects
+which we hence call the "hot" queue,
+and one holding colder or younger objects,
+which we call the "cold" queue.
+
+Both algorithms add new objects to the cold queue
+and then promote them to the head of the hot queue upon a subsequent touch.
+Upon promotion, one object must be removed from the hot queue;
+SLRU solves this by choosing the object in the LRU position as an eviction candidate
+and placing it at the Most Recently Updated (MRU) position in the cold queue,
+and TwoQ solves this by removing the object from the cache altogether.
+This way, cold queue objects are isolated from the hot queue unless they are touched again,
+preventing against cache thrashing and making the cache scan-resistant.
+
+Later variations of SLRU have been introduced \cite{SSLRU},
+including hardware implementations for CPU caches
+\cite{DuelingSLRU}\cite{LimitedSLRU}\cite{FixedSLRU}\cite{FixedSLRUEnhancements}.
+These algorithms perform well but introduce significant overhead in hardware complexity,
+using bypass tables \dots
+% TODO: how much exactly?
+
+% \subsection{Cache Covert Channels}
+% Class of attacks that use the cache as a covert channel (difference from side channel?)
+% Examples
+% What's powerful about these attacks? How sneaky, and how much info can they leak?
+
+% \subsection{Rowhammer}
+% Fundamentally different type of attack from covert channels. Here's how it works
+
+\subsection{Eviction Sets in Attacks}
+% Both of the above attacks use eviction sets
+% Define an eviction set very thoroughly
+% Discovery and Occupation
+% Actually sike covert channels can optionally use other forms
+% but this is the universal way of doing it (not just Intel)
+% How is it used in these attacks?
+
+Eviction sets are an attack primitive used in many cache-based hardware attacks,
+including Prime+Probe and Rowhammer.
+They are used to \textit{prime} a cache by ensuring that a victim object is removed from its cache set.
+An eviction set is a group of virtual addresses that are all congruent: they all map to the same cache set.
+For an $a$-way associative cache, an eviction set $S$ must contain $|S| \geq a$ addresses.
+
+The first step in eviction set-based attacks is \textit{discovery},
+where an attacker must reduce a set of randmly chosen memory addresses
+into a \textit{minimal eviction set}, where $|S| = a$.
+Algorithms have been outlined to efficiently find eviction sets for one or almost all
+of the cache sets.
+% TODO: is there much else I need to write for this?
+
+
+
+% Timing oracle
+Eviction sets are used in Prime+Probe attacks as a timing oracle.
+After finding eviction sets and using them to prime the cache,
+an attacker times access to all items in the target cache set
+before and after a victim program is run and possibly accesses elements in these target sets.
+A greater time after the victim program implies that the victim accessed addresses in the victim set,
+replacing eviction set elements which, upon the second access,
+must introduce the significantly longer latency of a DRAM access.
+
+Eviction sets are used in Rowhammer to bypass the cache and force DRAM hits.
+By priming a cache set to evict a target congruent target address from all levels of the cache,
+the target address will have to access the RAM.
+Due to % TODO: what is this called
+repeated RAM hits can encourage bitflips in victim memory.
+
+\section{Design}
+
+\subsection{Expected Difficulty of an Eviction Algorithm}
+% Define the expected difficulty function
+% Optimal attacker assumption - similar but different expected difficulty function
+% Choice Randomness
+% Permutation Randomness (Permutation/orderering affecting evictions) affecting with or without interrupting outside touches
+
+We define the difficulty $D$ of occupying a cache set with a certain touching pattern
+as the total number of memory touches required to overwrite all lines in the cache
+with addresses from an eviction set.
+
+For the minimum difficulty $D_m$, we assume an optimal attacker;
+for each eviction algorithm, there exists a memory touching pattern that
+most effectively primes a cache set.
+In this case, an optimal attacker does not know the state of the cache,
+but may optionally use a timing oracle to determine if a previously touched address
+is still in the cache.
+This timing oracle incurs an extra counted touch, but we ignore the cost of
+the added conditional.
+
+Additionally, randomness is a factor in some of these eviction algorithms.
+We assume a uniform random distribution of initial cache states;
+We define the expected minimum difficulty $D_{Em}$ of an eviction algorithm
+as the mean number of optimally-ordered touches required to fill a cache set.
+
+Finally, SLRU and our implementation of 3Tree splits the cache into segments,
+which may mean that the attacker can guarantee that a victim overwrites
+an attacker-primed address without the attacker filling the entire cache set,
+and thus that the minimum expected difficulty may be higher than the true value
+when used in an attack.
+We define the guarantee difficulty $D_g$ as the minimum expected number of touches
+required to guarantee an attacker access to an accurate timing oracle.
+For replacement algorithms where new objects may be placed in any index in the cache,
+$D_g = D_{Em}$, as an attacker must fill every cache line to guarantee
+that a victim touch will overwrite an eviction set address.
+We separately define $D_g$ for 3Tree.
+
+
+\subsubsection{LRU, TreePLRU, and FIFO}
+% Derive expected difficulty, no choice or permutation randomness
+LRU, TreePLRU, and FIFO pose little defense against cache priming.
+In both FIFO and LRU caches, new cache objects are instantly promoted to the head of the queue.
+In LRU, new objects are marked as the most recently updated and thus the last to be evicted,
+and the FIFO queue means new objects are evicted after objects added earlier.
+Although TreePLRU does not follow the same linear structure,
+it is similarly trivial to occupy a cache set.
+Thus, for an $a$-way associativity LRU, FIFO, or TreePLRU cache, an attacker only needs
+$a$ sequential touches to fill a cache set.
+As these algorithms are deterministic, the expected difficulty is the same value.
+
+\begin{equation}\label{LRUExpectedD}
+  D_g(LRU) = D_{m}(LRU) = D_{Em}(LRU) = a
+\end{equation}
+
+\subsubsection{QLRU}
+
+% Derive expected difficulty, only choice randomness
+\subsubsection{Random Replacement}
+Given a cache set with associativity $a$ in which an attacker has occupied $n$ addresses
+using some subset $S \subset E, |S| = n$ of eviction set $E$,
+a following touch on address $\alpha$ may be in $S$ or not.
+
+If $\alpha \in S$, there is no cache or per-line metadata to update, and the cache state does not change.
+
+If $\alpha \notin S$, the random replacement algorithm will evict an address $\beta$.
+This evicted address will occupy an unoccupied line with probability
+$P(\beta \notin S) = \frac{a-n}{a}$.
+
+Then, the probability occupying $n+1$ addresses in a cache set with $n$ addresses occupied is $P(n+1) = \frac{a-n}{a}$.
+The corresponding expected value is $EV(n+1) = \frac{1}{P(n+1)} = \frac{a}{a-n}$
+Then, the expected value of the total number of unique touches to occupy an eviction set is
+
+% If they have an issue with this not being fully simplified they can take that up in review
+\begin{equation}\label{RandomExpected}
+    D_g(Random) = D_{Em}(Random) = \sum_{i=0}^{a-1}{\frac{a}{a-i}}
+\end{equation}
+
+\subsection{Cache Priming Prevention Strategies}
+
+\subsection{Preventing Eviction Set Discovery}
+
+\subsection{Preventing Cache Bypass}
+% #JustRowhammerThings - maybe take out if it turns out to be more of a side effect of the
+% implementations
+
+\subsection{Performance}
+% Time requirements useful but not the most crucial because of modern features
+% Spatial requirements useful but not the most crucial because of relative size
+% Energy requirements useful but no way to accurately/easily test this,
+% especially against unknown impls.
+
+The function of software-based algorithms is often not exactly reflected in hardware
+without introducing significant performance or complexity overhead.
+For example, LRU can be implemented in a software cache to add, update, and remove objects
+in $O(1)$ time.
+A similar exact LRU is complex in CPU caches and involves lots of metadata per cache line
+and checks every possible cache state in parallel to determine an eviction candidate.
+This excessive circuitry introduces extra latency by increasing the critical path of the circuit
+and extra energy usage by requiring additional transistors.
+The LRU algorithm is thus commonly simplified to TreePLRU in the CPU, which requires
+much less hardware but performs similarly and achieves a similar miss ratio.
+Notably, modern CPU features like prefetching or only calculating the cache eviction
+after fulfilling the memory request may largely mitigate the latency factor of the
+replacement algorithm.
+
+Additionally, for non-Random Replacement caches, the algorithm may introduce registers
+for the cache line metadata.
+The amount of metadata is much smaller than the amount of data in a cache set:
+for example, for an 8-way associative, 64-byte cache line,
+a TreePLRU replacement policy for the set uses
+$\frac{7}{512 \cdot 8}=0.17\%$ as much space as the data itself.
+
+Because the exact latency and energy usage is difficult to calculate
+and the specific implementations of algorithms are kept proprietary by CPU manufacturers,
+we are unable to accurately compare replacement algorithms.
+For the sake of simplicity,
+we analyze our replacement algorithm qualitatively to ensure that the latency and hardware complexity
+is within reason and assume this to be competitive with existing algorithms.
+
+\section{Implementation}
+% Describe how the algorithm works
+% In algorithm and in circuit arrangement
+
+We implement 3Tree using a tree structure similar to TreePLRU
+that splits the tree into segments similar to TwoQ and SLRU.
+
+\begin{algorithmic}
+\end{algorithmic}
+
+% \begin{figure}
+%   \centerline{\includesvg[width=1\columnwidth]{diagrams/3Tree}}
+% \end{figure}
+
+\subsection{Expected Difficulty}
+% Derive expected difficulty of my implementation(s)
+% Expected difficulty is not enough for this,
+% because there are cases (c=0) where attacker can fill less than expected difficulty
+% and guarantee timing oracle
+% TODO: decide if I want to redefine D as number of touches required to guarantee
+% that a victim touch will be noticed
+% This would make random more robust, since currently it just runs until
+% it knows it's finished - how does the attacker know when it is finished?
+
+\section{Experiment Methodology}
+
+% Eviction set functions
+To evaluate 3Tree in comparison to other algorithms in their defense
+against eviction set-based cache priming, % TODO: maybe change this to "eviction set function"
+we implement a cache simulator to represent an attacker
+
+% Performance
+To evaluate the performance of 3Tree, we implement the algorithm in the
+cycle-accurate gem5 CPU simulator on the SPEC2017 suite of benchmarks
+to reflect common computing workloads.
+Some of these workloads depend on the memory subsystem more than others,
+but we take the benchmark suite as generally representative
+of cache workloads.
+
+\section{Results}
+
+\subsection{Priming}
+% Results from my attack simulation on priming
+
+\subsection{Discovery}
+% Optional if I can properly derive the resistance to TPFES and Prune+PlumTree
+
+\subsection{Cache Bypass}
+% Optional if I can get proper DRAM hit results
+
+\subsection{Performance}
+
+% gem5 results, of course
+% hardware analysis:
+% This is simpler than TreePLRU in # of registers
+% but introduces complexity in the bus required to swap cache lines
+% between hot and cold queue
+% Again, no way to accurately measure so we treat this as good enough
+
+\section{Discussion}
+
+% Some variations are functionally useless against eviction sets
+% c=0 goes against our goal, if anything
+% attacker only has to find a quarter as many congruent addresses to tell
+% if an address has been touched
+% for other c, an attacker may only fill a quarter but there is a c chance
+% of a false negative (placed directly in probation queue) which corrupts results
+% In this case, the attacker would only have to fill the probation queue
+% and the cold queue to get an accurate oracle
+% so we require the probation<->hot swapping as well.
+% Then, depending on the victim workload, an attacker must fill the entire eviction set
+% to avoid false negatives
+
+\begin{acks}
+\end{acks}
+
+
+%%%%%%% -- PAPER CONTENT ENDS -- %%%%%%%%
+
+%%
+%% The next two lines define the bibliography style to be used, and
+%% the bibliography file.
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sources}
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-sigconf.tex'.
+

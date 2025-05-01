@@ -7,33 +7,34 @@ NUM_TRIALS = 64
 
 access_pattern_tags = {"s": "sequential", "d": "double", "r": "repeat", "?": "random"}
 
-repl_tags = {"s": "SIEVE", "t": "TreePLRU", "2": "TwoQ", "?": "RR"}
+repl_tags = {"s": "SIEVE", "t": "TreePLRU", "3": "3Tree", "2": "2Tree", "?": "RR"}
 
 access_patterns = {
-    "s": [],  # SIEVE
-    "q": [  # SPLRU
-        cold + hot + choice
-        for cold in ["r", "l", "f"]
-        for hot in ["r", "l", "f"]
-        for choice in ["h", "q", "e", "n"]
-    ],
-    # "d": [],
-    # "r": [3, 4, 5],
-    # "z": [0.9, 0.8, 0.7, 0.6],
+    "s": [],  # Sequential
+    "d": [],  # Double
+    "r": [3, 4, 5],  # Repeat
+    # "z": [0.9, 0.8, 0.7, 0.6],  # Zipf-random
 }
 
 replacement_policies = {
-    # "s": [],
-    "t": [],
-    # "2": [],
-    # "?": []
+    "s": [],  # SIEVE
+    "3": [],
+    # "2": [  # SPLRU
+    #     cold + hot + choice
+    #     for cold in ["r", "l", "f"]
+    #     for hot in ["r", "l", "f"]
+    #     for choice in ["h", "q", "e", "n"]
+    # ],
+    "t": [],  # TreePLRU
+    # "2": [],  # 2Q (defunct)
+    "?": [],  # Random
 }
 
 assocs = [
     # 2,
-    4,
-    8,
     16,
+    8,
+    4,
 ]
 
 parser = argparse.ArgumentParser(
@@ -41,21 +42,27 @@ parser = argparse.ArgumentParser(
     description="Running the eviction testing simulation and storing the results",
 )
 parser.add_argument("-f", "--file")
+
+print("about to parse args")
+
 args = parser.parse_args()
 
 abs_path = os.path.abspath(args.file)
+print(abs_path)
 f = None
 if not os.path.isfile(abs_path):
+    print("File does not exist, creating new file", args.file)
     f = open(args.file, "a")
     f.write("Replacement, Access Pattern, Associativity, Touches\n")
 else:
+    print("File does not exist, appending to  q", args.file)
     f = open(args.file, "a")
 
 for pat, pat_args in access_patterns.items():
     for repl, repl_args in replacement_policies.items():
         for assoc in assocs:
             command = [
-                "eviction/build/occupation",
+                "attack_sim/build/occupation",
                 str(assoc),  # Associativity
                 str(assoc),  # Memory region size, assume minimal evsets
                 repl,
@@ -92,9 +99,12 @@ for pat, pat_args in access_patterns.items():
                     res = subprocess.run(c[0], stdout=subprocess.PIPE)
                     res_rc = res.returncode
                     if res_rc != 0:
+                        print("=" * 24)
                         print(
-                            f"ERROR: Test failed with RC {res_rc}\nReplacement: {repl}-{repl_args}\nAccess Pattern:{pat}-{pat_args}\nAssociativity: {assoc}"
+                            f"ERROR: Test failed with RC {res_rc}\nReplacement:\t{repl}-{repl_args}\nAccess Pattern:\t{pat}-{pat_args}\nAssociativity:\t{assoc}"
                         )
+                        print(f"Command:\t{c[0]}")
+                        print("=" * 24)
                         exit(1)
                     res_int = int(res.stdout.decode("utf-8"))
 

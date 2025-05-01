@@ -30,8 +30,7 @@ replacement_policies = {
 }
 
 assocs = {
-    2: [2],
-    4: [4],
+    4: [4, 5, 8],
     8: [8],
     16: [16],
 }
@@ -55,7 +54,7 @@ for pat, pat_args in access_patterns.items():
     for repl, repl_args in replacement_policies.items():
         for assoc, assoc_args in assocs.items():
             command = [
-                "eviction/build/bypass",
+                "attack_sim/build/bypass",
                 str(assoc),
             ]
 
@@ -64,12 +63,16 @@ for pat, pat_args in access_patterns.items():
                 for assoc_arg in assoc_args:
                     c = command[:]
                     c.append(str(assoc_arg))
+                    c.append(repl)
+                    c.append(pat)
                     commands.append((c, assoc_arg, None, None))
             elif len(repl_args) == 0:
                 for pat_arg in pat_args:
                     for assoc_arg in assoc_args:
                         c = command[:]
                         c.append(str(assoc_arg))
+                        c.append(repl)
+                        c.append(pat)
                         c.append(str(pat_arg))
                         commands.append((c, assoc_arg, None, str(pat_arg)))
             elif len(pat_args) == 0:
@@ -77,6 +80,8 @@ for pat, pat_args in access_patterns.items():
                     for assoc_arg in assoc_args:
                         c = command[:]
                         c.append(str(assoc_arg))
+                        c.append(repl)
+                        c.append(pat)
                         c.append(str(repl_arg))
                         commands.append((c, assoc_arg, str(repl_arg), None))
             else:
@@ -85,6 +90,8 @@ for pat, pat_args in access_patterns.items():
                         for assoc_arg in assoc_args:
                             c = command[:]
                             c.append(str(assoc_arg))
+                            c.append(repl)
+                            c.append(pat)
                             c.append(str(pat_arg))
                             c.append(str(repl_arg))
                             commands.append((c, assoc_arg, str(repl_arg), str(pat_arg)))
@@ -95,6 +102,7 @@ for pat, pat_args in access_patterns.items():
 
             for trial in range(NUM_TRIALS):
                 for c in commands:
+                    # print(c[0])
                     res = subprocess.run(c[0], stdout=subprocess.PIPE)
                     res_rc = res.returncode
                     if res_rc != 0:
