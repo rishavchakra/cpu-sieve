@@ -135,4 +135,65 @@ def create_run(bench, repl, assoc):
         run_script_repo,
         "./vmlinux-4.19.83",
         "bench/parsec/parsec-image/parsec",
+        linux_binary,
+        disk_image,
+        ########
+        # params
+        ########
+        # cpu
+        "timing",
+        bench,
+        # benchmark size
+        "simsmall",
+        1,
+        timeout=24 * 60 * 60,
     )
+
+
+def work_run(run):
+    run.run()
+    json = run.dumpsJson()
+    with open("out/parsec/log.json", "a") as file:
+        file.write(str(json))
+
+
+if __name__ == "__main__":
+    benchmarks = [
+        "blackscholes",
+        "bodytrack",
+        "canneal",
+        "dedup",
+        "facesim",
+        "ferret",
+        "fluidanimate",
+        "freqmine",
+        "raytrace",
+        "streamcluster",
+        "swaptions",
+        "vips",
+        "x264",
+    ]
+    repls = [
+        "s",  # SIEVE
+        *[  # 2Tree
+            "2" + cold + hot + choice
+            for cold in ["r", "l", "f"]
+            for hot in ["r", "l", "f"]
+            for choice in ["h", "q", "e", "n"]
+        ],
+        "3",  # 3Tree
+        "t",  # TreePLRU
+        # "2",  # 2Q (defunct)
+        "?",  # Random
+    ]
+    assocs = [16, 8, 4]
+    jobs = []
+    runs = starmap(
+        create_run,
+        product(benchmarks, repls, assocs),
+    )
+    for run in runs:
+        jobs.append(run)
+
+    with mp.Pool(mp.cpu_count() - 6) as pool:
+        pool.map(work_run, jobs)
