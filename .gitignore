@@ -1,7 +1,10 @@
+**/.DS_Store
+
 eviction_testing/target
 out/**
 out_**
-*.o
+**.o
+**.csv
 
 # AWS login key
 *.pem
@@ -32,3 +35,17 @@ gem5
 linux-stable/
 vmlinux-4.19.83
 config.4.19.83
+
+# Latex files
+**.aux
+**.bbl
+**.blg
+**.fdb_latexmk
+**.fls
+**.log
+**.out
+**.pdf
+**.gz
+**.zip
+**.cut
+writing/micro58-latex-template
