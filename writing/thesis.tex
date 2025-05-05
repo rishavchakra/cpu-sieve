@@ -3,6 +3,7 @@
 
 % to be able to draw some self-contained figs
 \usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage{algpseudocode}
@@ -182,6 +183,117 @@ and not updating the tree upon subsequent address touches.
 %----------------
 % TreePLRU Diagram
 %----------------
+\begin{figure}
+\begin{center}
+\begin{tikzpicture} [
+  every node/.style={draw},
+  level 0/.style={circle},
+  level 1/.style={circle,sibling distance=40mm},
+  level 2/.style={circle,sibling distance=20mm},
+  level 3/.style={circle,sibling distance=10mm},
+  level 4/.style={rectangle,minimum size=5mm,inner sep=0,sibling distance=5mm}
+  ]
+  \node (n0) [circle] {0}
+    child {
+      node (n1) {1}
+      child {
+        node (n3) {0}
+        child {
+          node (n7) {1}
+          child {
+            node (n15) {$s_0$}
+          edge from parent [double]}
+          child {
+            node (n16) {$s_1$}
+          }
+        edge from parent [double]}
+        child {
+          node (n8) {1}
+          child {
+            node (n17) {$s_2$}
+          }
+          child {
+            node (n18) {$s_3$}
+          edge from parent [double]}
+        }
+      }
+      child {
+        node (n4) {1}
+        child {
+          node (n9) {1}
+          child {
+            node (n19) {$s_4$}
+          }
+          child {
+            node (n20) {$s_5$}
+          edge from parent [double]}
+        }
+        child {
+          node (n10) {0}
+          child {
+            node (n21) {$s_6$}
+          edge from parent [double]}
+          child {
+            node (n22) {$s_7$}
+          }
+        edge from parent [double]}
+      edge from parent [double]}
+    edge from parent [double]}
+    child {
+      node (n2) {0}
+      child {
+        node (n5) {1}
+        child {
+          node (n11) {0}
+          child {
+            node (n23) {$s_8$}
+          edge from parent [double]}
+          child {
+            node (n24) {$s_9$}
+          }
+        }
+        child {
+          node (n12) {1}
+          child {
+            node (n25) {$s_{10}$}
+          }
+          child {
+            node (n26) {$s_{11}$}
+          edge from parent [double]}
+        edge from parent [double]}
+      edge from parent [double]}
+      child {
+        node (n6) {1}
+        child {
+          node (n13) {0}
+          child {
+            node (n27) {$s_{12}$}
+          edge from parent [double]}
+          child {
+            node (n28) {$s_{13}$}
+          }
+        }
+        child {
+          node (n14) {0}
+          child {
+            node (n29) {$s_{14}$}
+          edge from parent [double]}
+          child {
+            node (n30) {$s_{15}$}
+          }
+        edge from parent [double]}
+      }
+    };
+\end{tikzpicture}
+\end{center}
+  \caption{TreePLRU metadata structure}
+  \label{fig:treeplru}
+\end{figure}
+
+In Figure \ref{fig:treeplru}, 
+$s_{13}$ is in the MRU position and is safest from eviction.
+$s_6$ would be the first eviction candidate,
+followed by $s_{11}$.
 
 Quad Least Recently Used (QLRU) is another replacement algorithm
 commonly used in Intel processors and used to replicate the function of LRU.
