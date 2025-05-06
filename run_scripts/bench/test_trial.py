@@ -7,6 +7,7 @@ import json
 import os
 import time
 
+from bench.system.caches import L1Cache
 import m5
 from m5.objects import *
 from m5.stats.gem5stats import get_simstat
@@ -246,14 +247,42 @@ if __name__ == "__m5_main__":
     except FileExistsError:
         warn("output directory already exists!")
 
+    system = System()
+    system.clk_domain = SrcClockDomain()
+    system.clk_domain.clock = '1GHz'
+    system.clk_domain.voltage_domain = VoltageDomain()
+    system.mem_mode = 'timing'
+    system.mem_ranges = [AddrRange('512MB')]
+    system.cpu = X86TimingSimpleCPU()
+    system.membus = SystemXBar()
+    system.cpu.icache = L1Cache()
+    system.cpu.dcache = L1Cache()
+    system.cpu.icache.assoc = assoc
+    system.cpu.dcache.assoc = assoc
+    system.cpu.icache.replacement_policy = get_rp(assoc, repl, variant)
+    system.cpu.dcache.replacement_policy = get_rp(assoc, repl, variant)
+    system.cpu.icache.cpu_side_ports = system.cpu
+    system.cpu.dcache.cpu_side_ports = system.cpu
+    # system.cpu.icache_port = system.cpu.icache.cpu_side_ports
+    # system.cpu.dcache_port = system.cpu.dcache.cpu_side_ports
+    system.cpu.createInterruptController()
+    system.cpu.interrupts[0].pio = system.membus.mem_side_ports
+    system.cpu.interrupts[0].int_requestor = system.membus.cpu_side_ports
+    system.cpu.interrupts[0].int_responder = system.membus.mem_side_ports
+    system.system_port = system.membus.cpu_side_ports
+    system.mem_ctrl = MemCtrl()
+    system.mem_ctrl.dram = DDR3_1600_8x8()
+    system.mem_ctrl.dram.range = system.mem_ranges[0]
+    system.mem_ctrl.port = system.membus.mem_side_ports
+
     binary = "gem5/tests/test-progs/hello/bin/x86/linux/hello"
     system.workload = SEWorkload.init_compatible(binary)
     process = Process()
     process.cmd = [binary]
     system.cpu.workload = process
     system.cpu.createThreads()
-    system.cpu.replacement_policy = get_rp(assoc, repl)
-    system.cpu.assoc = assoc
+    # system.cpu.replacement_policy = get_rp(assoc, repl)
+    # system.cpu.assoc = assoc
 
     root = Root(full_system=False, system=system)
     m5.instantiate()
