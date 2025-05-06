@@ -56,3 +56,6 @@ Associativity:      {assoc}\n"
                 commands.append(" ".join(arg_command))
         else:
             commands.append(" ".join(command))
+
+for command in commands:
+    _ = subprocess.run(command)
