@@ -255,8 +255,8 @@ if __name__ == "__m5_main__":
     system.mem_ranges = [AddrRange("512MB")]
     system.cpu = X86TimingSimpleCPU()
     system.membus = SystemXBar()
-    system.cpu.icache = L1Cache()
-    system.cpu.dcache = L1Cache()
+    system.cpu.icache = L1ICache()
+    system.cpu.dcache = L1DCache()
     system.cpu.icache.assoc = assoc
     system.cpu.dcache.assoc = assoc
     system.cpu.icache.replacement_policy = get_rp(repl, variant)
