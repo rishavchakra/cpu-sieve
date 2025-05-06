@@ -42,7 +42,7 @@ Associativity:      {assoc}\n"
 
         # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
         command = [
-            "gem5/gem5_build/ALL/gem5.opt",
+            "gem5/build/ALL/gem5.opt",
             f"-d out/gem5_test/{repl_policy}/{assoc}",
             "run_scripts/bench/test_trial.py",
             f"--assoc {str(assoc)}",
