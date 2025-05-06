@@ -289,10 +289,12 @@ if __name__ == "__m5_main__":
     root = Root(full_system=False, system=system)
     m5.instantiate()
 
+    globalStart = time.time()
+
     print("Beginning simulation!")
     exit_event = m5.simulate()
 
-    print("Exiting @ tick {} because {}".format(m5.curTick(), exit_event.getCause()))
+    # print("Exiting @ tick {} because {}".format(m5.curTick(), exit_event.getCause()))
 
     # simulator = Simulator(
     #     board=board,
@@ -302,24 +304,22 @@ if __name__ == "__m5_main__":
     #     },
     # )
 
-    globalStart = time.time()
+    # print("Running simulation")
 
-    print("Running simulation")
+    # m5.stats.reset()
 
-    m5.stats.reset()
-
-    simulator.run()
+    # simulator.run()
 
     print("Simulation successful")
 
     globalEnd = time.time()
     print("Finished simulation")
-    print("ROI simulated time: " + (str(simulator.get_roi_ticks()[0])))
-    print(
-        "CPU simulation time: ",
-        simulator.get_current_tick() / 1e12,
-        "simulated seconds",
-    )
+    # print("ROI simulated time: " + (str(simulator.get_roi_ticks()[0])))
+    # print(
+    #     "CPU simulation time: ",
+    #     simulator.get_current_tick() / 1e12,
+    #     "simulated seconds",
+    # )
     print(
         "Run time: %.2fs:%.2fs"
         % ((globalEnd - globalStart / 60), globalEnd - globalStart)
