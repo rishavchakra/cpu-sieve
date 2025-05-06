@@ -186,7 +186,7 @@ if __name__ == "__m5_main__":
     except FileExistsError:
         warn("output directory already exists!")
 
-    binary = "tests/test-progs/hello/bin/x86/linux/hello"
+    binary = "gem5/tests/test-progs/hello/bin/x86/linux/hello"
     system.workload = SEWorkload.init_compatible(binary)
 
     simulator = Simulator(
