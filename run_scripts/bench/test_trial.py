@@ -261,8 +261,8 @@ if __name__ == "__m5_main__":
     system.cpu.dcache.assoc = assoc
     system.cpu.icache.replacement_policy = get_rp(repl, variant)
     system.cpu.dcache.replacement_policy = get_rp(repl, variant)
-    system.cpu.icache.cpu_side = system.cpu.mem_side_ports
-    system.cpu.dcache.cpu_side = system.cpu.mem_side_ports
+    system.cpu.icache.cpu_side = system.cpu.icache_port
+    system.cpu.dcache.cpu_side = system.cpu.dcache_port
     system.cpu.icache.mem_side = system.membus.cpu_side_ports
     system.cpu.dcache.mem_side = system.membus.cpu_side_ports
     # system.cpu.icache_port = system.cpu.icache.cpu_side_ports
