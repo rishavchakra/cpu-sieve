@@ -73,6 +73,66 @@ def parse_arguments():
     return args
 
 
+def get_rp(assoc: int, repl: str, variant: str | None):
+    # For simplicity, we only use one level of cache hierarchy
+    # Create an L1 instruction and data cache
+    ret = None
+    match repl:
+        case "sieve":
+            ret = SIEVERP()
+        case "rr":
+            ret = RandomRP()
+        case "fifo":
+            ret = FIFORP()
+        case "lru":
+            ret = LRURP()
+        case "second-chance":
+            ret = SecondChanceRP()
+        case "tree-plru":
+            ret = TreePLRURP()
+        case "rrip":
+            ret = RRIPRP()
+        case "brrip":
+            ret = BRRIPRP()
+        case "nru":
+            ret = NRURP()
+        case "2tree":
+            if variant is None:
+                print("WARNING: Initializing 2Tree with no parameters")
+                ret = TwoTreeRP(cold_repl=0, hot_repl=0, probation_type=0)
+            else:
+                cold_repl = 0
+                hot_repl = 0
+                probation_type = 0
+
+                if variant[0] == "l":
+                    cold_repl = 1
+                elif variant[0] == "f":
+                    cold_repl = 2
+
+                if variant[1] == "l":
+                    hot_repl = 1
+                elif variant[1] == "f":
+                    hot_repl = 2
+
+                if variant[2] == "h":
+                    probation_type = 1
+                elif variant[2] == "q":
+                    probation_type = 2
+                elif variant[2] == "e":
+                    probation_type = 3
+
+                ret = TwoTreeRP(
+                    cold_repl=cold_repl,
+                    hot_repl=hot_repl,
+                    probation_type=probation_type,
+                )
+        case "3tree":
+            ret = ThreeTreeRP()
+
+    return ret
+
+
 def create_cache_hierarchy(assoc: int, repl: str, variant: str | None):
     # For simplicity, we only use one level of cache hierarchy
     # Create an L1 instruction and data cache
@@ -160,26 +220,26 @@ if __name__ == "__m5_main__":
     repl = args.repl
     variant = args.variant
 
-    cache_hierarchy = create_cache_hierarchy(assoc, repl, variant)
+    # cache_hierarchy = create_cache_hierarchy(assoc, repl, variant)
 
-    processor = SimpleSwitchableProcessor(
-        starting_core_type=CPUTypes.KVM,
-        switch_core_type=CPUTypes.TIMING,
-        isa=ISA.X86,
-        num_cores=1,
-    )
+    # processor = SimpleSwitchableProcessor(
+    #     starting_core_type=CPUTypes.KVM,
+    #     switch_core_type=CPUTypes.TIMING,
+    #     isa=ISA.X86,
+    #     num_cores=1,
+    # )
 
-    for proc in processor.start:
-        proc.core.usePerf = False
+    # for proc in processor.start:
+    #     proc.core.usePerf = False
 
-    memory = DualChannelDDR4_2400(size="3GiB")
+    # memory = DualChannelDDR4_2400(size="3GiB")
 
-    board = X86Board(
-        clk_freq="3GHz",
-        processor=processor,
-        memory=memory,
-        cache_hierarchy=cache_hierarchy,
-    )
+    # board = X86Board(
+    #     clk_freq="3GHz",
+    #     processor=processor,
+    #     memory=memory,
+    #     cache_hierarchy=cache_hierarchy,
+    # )
 
     try:
         os.makedirs(m5.options.outdir)
@@ -188,14 +248,28 @@ if __name__ == "__m5_main__":
 
     binary = "gem5/tests/test-progs/hello/bin/x86/linux/hello"
     system.workload = SEWorkload.init_compatible(binary)
+    process = Process()
+    process.cmd = [binary]
+    system.cpu.workload = process
+    system.cpu.createThreads()
+    system.cpu.replacement_policy = get_rp(assoc, repl)
+    system.cpu.assoc = assoc
 
-    simulator = Simulator(
-        board=board,
-        on_exit_event={
-            ExitEvent.WORKBEGIN: handle_workbegin(processor),
-            ExitEvent.WORKEND: handle_workend(),
-        },
-    )
+    root = Root(full_system=False, system=system)
+    m5.instantiate()
+
+    print("Beginning simulation!")
+    exit_event = m5.simulate()
+
+    print("Exiting @ tick {} because {}".format(m5.curTick(), exit_event.getCause()))
+
+    # simulator = Simulator(
+    #     board=board,
+    #     on_exit_event={
+    #         ExitEvent.WORKBEGIN: handle_workbegin(processor),
+    #         ExitEvent.WORKEND: handle_workend(),
+    #     },
+    # )
 
     globalStart = time.time()
 
