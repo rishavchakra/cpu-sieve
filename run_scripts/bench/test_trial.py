@@ -74,7 +74,7 @@ def parse_arguments():
     return args
 
 
-def get_rp(assoc: int, repl: str, variant: str | None):
+def get_rp(repl: str, variant: str | None):
     # For simplicity, we only use one level of cache hierarchy
     # Create an L1 instruction and data cache
     ret = None
@@ -249,18 +249,18 @@ if __name__ == "__m5_main__":
 
     system = System()
     system.clk_domain = SrcClockDomain()
-    system.clk_domain.clock = '1GHz'
+    system.clk_domain.clock = "1GHz"
     system.clk_domain.voltage_domain = VoltageDomain()
-    system.mem_mode = 'timing'
-    system.mem_ranges = [AddrRange('512MB')]
+    system.mem_mode = "timing"
+    system.mem_ranges = [AddrRange("512MB")]
     system.cpu = X86TimingSimpleCPU()
     system.membus = SystemXBar()
     system.cpu.icache = L1Cache()
     system.cpu.dcache = L1Cache()
     system.cpu.icache.assoc = assoc
     system.cpu.dcache.assoc = assoc
-    system.cpu.icache.replacement_policy = get_rp(assoc, repl, variant)
-    system.cpu.dcache.replacement_policy = get_rp(assoc, repl, variant)
+    system.cpu.icache.replacement_policy = get_rp(repl, variant)
+    system.cpu.dcache.replacement_policy = get_rp(repl, variant)
     system.cpu.icache.cpu_side_ports = system.cpu
     system.cpu.dcache.cpu_side_ports = system.cpu
     # system.cpu.icache_port = system.cpu.icache.cpu_side_ports
@@ -281,7 +281,7 @@ if __name__ == "__m5_main__":
     process.cmd = [binary]
     system.cpu.workload = process
     system.cpu.createThreads()
-    # system.cpu.replacement_policy = get_rp(assoc, repl)
+    # system.cpu.replacement_policy = get_rp(repl)
     # system.cpu.assoc = assoc
 
     root = Root(full_system=False, system=system)

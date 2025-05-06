@@ -359,7 +359,7 @@ RRIP caches
 
 
 class L1I_RRIP(L1ICache):
-    replacement_policy = RRIP()
+    replacement_policy = RRIPRP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -367,7 +367,7 @@ class L1I_RRIP(L1ICache):
 
 
 class L1D_RRIP(L1DCache):
-    replacement_policy = RRIP()
+    replacement_policy = RRIPRP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -375,7 +375,7 @@ class L1D_RRIP(L1DCache):
 
 
 class L2_RRIP(L2Cache):
-    replacement_policy = RRIP()
+    replacement_policy = RRIPRP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -388,7 +388,7 @@ BRRIP caches
 
 
 class L1I_BRRIP(L1ICache):
-    replacement_policy = BRRIP()
+    replacement_policy = BRRIPRP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -396,7 +396,7 @@ class L1I_BRRIP(L1ICache):
 
 
 class L1D_BRRIP(L1DCache):
-    replacement_policy = BRRIP()
+    replacement_policy = BRRIPRP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -404,7 +404,7 @@ class L1D_BRRIP(L1DCache):
 
 
 class L2_BRRIP(L2Cache):
-    replacement_policy = BRRIP()
+    replacement_policy = BRRIPRP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -417,7 +417,7 @@ NRU caches
 
 
 class L1I_NRU(L1ICache):
-    replacement_policy = NRU()
+    replacement_policy = NRURP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -425,7 +425,7 @@ class L1I_NRU(L1ICache):
 
 
 class L1D_NRU(L1DCache):
-    replacement_policy = NRU()
+    replacement_policy = NRURP()
 
     def __init__(self, assoc):
         super().__init__()
@@ -433,7 +433,7 @@ class L1D_NRU(L1DCache):
 
 
 class L2_NRU(L2Cache):
-    replacement_policy = NRU()
+    replacement_policy = NRURP()
 
     def __init__(self, assoc):
         super().__init__()
