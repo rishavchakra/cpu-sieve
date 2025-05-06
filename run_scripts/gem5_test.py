@@ -57,5 +57,14 @@ Associativity:      {assoc}\n"
         else:
             commands.append(" ".join(command))
 
-for command in commands:
-    _ = subprocess.run(command)
+cpus = 16
+while len(commands) > 0:
+    command_batch = commands[:cpus]
+    label_batch = labels[:cpus]
+    for label in label_batch:
+        print(label)
+    procs = [subprocess.Popen(cmd, shell=True) for cmd in command_batch]
+    for p in procs:
+        _ = p.wait()
+    commands = commands[cpus:]
+    labels = labels[cpus:]

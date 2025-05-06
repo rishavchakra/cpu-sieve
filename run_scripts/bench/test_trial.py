@@ -191,13 +191,12 @@ if __name__ == "__m5_main__":
         cache_hierarchy=cache_hierarchy,
     )
 
-    output_dir = f"{repl}_{assoc}"
     try:
-        os.makedirs(os.path.join(m5.options.outdir, output_dir))
+        os.makedirs(m5.options.outdir)
     except FileExistsError:
         warn("output directory already exists!")
 
-    binary = 'tests/test-progs/hello/bin/x86/linux/hello'
+    binary = "tests/test-progs/hello/bin/x86/linux/hello"
     system.workload = SEWorkload.init_compatible(binary)
 
     simulator = Simulator(
