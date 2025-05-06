@@ -7,7 +7,7 @@ import json
 import os
 import time
 
-from bench.system.caches import L1Cache
+from system.caches import L1Cache
 import m5
 from m5.objects import *
 from m5.stats.gem5stats import get_simstat
