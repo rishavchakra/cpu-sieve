@@ -23,6 +23,7 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     algo_random(algo);
     break;
   case '2': // 2Tree
+      ;     // Avoids a compile warning(?)
     TwoTreeFlag cold_flag, hot_flag, choice_flag;
     char *splru_args = argv[extra_arg_ind];
     ++extra_arg_ind;
@@ -65,7 +66,27 @@ void parse_args(char *argv[], int extra_arg_ind, int algo_ind, int pat_ind,
     algo_2tree_rand(algo, flags);
     break;
   case '3': // 3Tree
-    algo_3tree(algo);
+      ;     // Avoids a compile warning(?)
+    const char *three_tree_args = argv[extra_arg_ind];
+    ++extra_arg_ind;
+    switch (three_tree_args[0]) {
+    case 'l':
+      algo_3tree_rand(algo, PLRU);
+      break;
+    case 'f':
+      algo_3tree_rand(algo, FIFO);
+      break;
+    case 'r':
+      algo_3tree_rand(algo, RAND);
+      break;
+    default:
+      fprintf(
+          stderr,
+          "WARNING: No 3Tree algorithm provided, defaulting to LRU\narg: %s\n",
+          three_tree_args);
+      algo_3tree_rand(algo, PLRU);
+      break;
+    }
     break;
   default:
     fprintf(stderr, "ERROR: Replacement policy not recognized\n");

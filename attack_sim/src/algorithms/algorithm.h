@@ -74,7 +74,13 @@ typedef enum {
 void algo_2tree(Algorithm *, int flags);
 void algo_2tree_rand(Algorithm *, int flags);
 
-void algo_3tree(Algorithm *);
-void algo_3tree_rand(Algorithm *);
+typedef enum {
+  PLRU,
+  FIFO,
+  RAND,
+} ThreeTreeRepl;
+
+void algo_3tree(Algorithm *, ThreeTreeRepl);
+void algo_3tree_rand(Algorithm *, ThreeTreeRepl);
 
 #endif
