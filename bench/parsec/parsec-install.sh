@@ -24,6 +24,10 @@ sudo apt install -y python
 sudo apt install -y python-dev
 sudo apt install -y gettext
 sudo apt install -y libtool
+sudo apt install -y libprotobuf-dev
+sudo apt install -y protobuf-compiler
+sudo apt install -y libprotoc-dev
+sudo apt install -y libgoogle-perftools-dev
 sudo apt install -y intltool
 sudo apt install -y libx11-dev
 sudo apt install -y libltd17
