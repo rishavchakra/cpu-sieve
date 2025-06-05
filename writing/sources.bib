@@ -3,157 +3,173 @@ Cache Eviction Policies
 --------------------------------
 
 @inproceedings{TwoQ,
-  author = {Johnson, Theodore and Shasha, Dennis},
-  title = {2Q: A Low Overhead High Performance Buffer Management Replacement
-           Algorithm},
-  year = {1994},
-  isbn = {1558601538},
-  publisher = {Morgan Kaufmann Publishers Inc.},
-  address = {San Francisco, CA, USA},
-  booktitle = {Proceedings of the 20th International Conference on Very Large
-               Data Bases},
-  pages = {439–450},
-  numpages = {12},
-  series = {VLDB '94},
+	author = {Johnson, Theodore and Shasha, Dennis},
+	title = {2Q: A Low Overhead High Performance Buffer Management Replacement
+	         Algorithm},
+	year = {1994},
+	isbn = {1558601538},
+	publisher = {Morgan Kaufmann Publishers Inc.},
+	address = {San Francisco, CA, USA},
+	booktitle = {Proceedings of the 20th International Conference on Very Large
+	             Data Bases},
+	pages = {439–450},
+	numpages = {12},
+	series = {VLDB '94},
 }
 
 @inproceedings{AdaptiveInsertionPolicies,
-  abstract = {The commonly used LRU replacement policy is susceptible to
-              thrashing for memory-intensive workloads that have a working set
-              greater than the available cache size. For such applications, the
-              majority of lines traverse from the MRU position to the LRU
-              position without receiving any cache hits, resulting in inefficient
-              use of cache space. Cache performance can be improved if some
-              fraction of the working set is retained in the cache so that at
-              least that fraction of the working set can contribute to cache
-              hits. We show that simple changes to the insertion policy can
-              significantly reduce cache misses for memory-intensive workloads.
-              We propose the LRU Insertion Policy (LIP) which places the incoming
-              line in the LRU position instead of the MRU position. LIP protects
-              the cache from thrashing and results in close to optimal hitrate
-              for applications that have a cyclic reference pattern. We also
-              propose the Bimodal Insertion Policy (BIP) as an enhancement of LIP
-              that adapts to changes in the working set while maintaining the
-              thrashing protection of LIP. We finally propose a Dynamic Insertion
-              Policy (DIP) to choose between BIP and the traditional LRU policy
-              depending on which policy incurs fewer misses. The proposed
-              insertion policies do not require any change to the existing cache
-              structure, are trivial to implement, and have a storage requirement
-              of less than two bytes. We show that DIP reduces the average MPKI
-              of the baseline 1MB 16-way L2 cache by 21%, bridging two-thirds of
-              the gap between LRU and OPT.},
-  author = {Qureshi, Moinuddin K. and Jaleel, Aamer and Patt, Yale N. and Steely
-            , Simon C. and Emer, Joel},
-  address = {New York, NY, USA},
-  booktitle = {ISCA '07 : the 34th annual International Symposium on Computer
-               Architecture : June 9-13, 2007, San Diego, California, USA :
-               conference proceedings},
-  copyright = {2007 ACM},
-  isbn = {1595937064},
-  language = {eng},
-  pages = {381-391},
-  publisher = {ACM},
-  title = {Adaptive insertion policies for high performance caching},
-  year = {2007},
+	abstract = {The commonly used LRU replacement policy is susceptible to
+	            thrashing for memory-intensive workloads that have a working set
+	            greater than the available cache size. For such applications, the
+	            majority of lines traverse from the MRU position to the LRU
+	            position without receiving any cache hits, resulting in inefficient
+	            use of cache space. Cache performance can be improved if some
+	            fraction of the working set is retained in the cache so that at
+	            least that fraction of the working set can contribute to cache
+	            hits. We show that simple changes to the insertion policy can
+	            significantly reduce cache misses for memory-intensive workloads.
+	            We propose the LRU Insertion Policy (LIP) which places the incoming
+	            line in the LRU position instead of the MRU position. LIP protects
+	            the cache from thrashing and results in close to optimal hitrate
+	            for applications that have a cyclic reference pattern. We also
+	            propose the Bimodal Insertion Policy (BIP) as an enhancement of LIP
+	            that adapts to changes in the working set while maintaining the
+	            thrashing protection of LIP. We finally propose a Dynamic Insertion
+	            Policy (DIP) to choose between BIP and the traditional LRU policy
+	            depending on which policy incurs fewer misses. The proposed
+	            insertion policies do not require any change to the existing cache
+	            structure, are trivial to implement, and have a storage requirement
+	            of less than two bytes. We show that DIP reduces the average MPKI
+	            of the baseline 1MB 16-way L2 cache by 21%, bridging two-thirds of
+	            the gap between LRU and OPT.},
+	author = {Qureshi, Moinuddin K. and Jaleel, Aamer and Patt, Yale N. and Steely
+	          , Simon C. and Emer, Joel},
+	address = {New York, NY, USA},
+	booktitle = {ISCA '07 : the 34th annual International Symposium on Computer
+	             Architecture : June 9-13, 2007, San Diego, California, USA :
+	             conference proceedings},
+	copyright = {2007 ACM},
+	isbn = {1595937064},
+	language = {eng},
+	pages = {381-391},
+	publisher = {ACM},
+	title = {Adaptive insertion policies for high performance caching},
+	year = {2007},
 }
 
 @inproceedings{CacheAttacksCountermeasures,
-  author = {OSVIK, Dag Arne and SHAMIR, Adi and TROMER, Eran},
-  address = {Berlin},
-  booktitle = {Lecture notes in computer science},
-  copyright = {2007 INIST-CNRS},
-  isbn = {3540310339},
-  issn = {0302-9743},
-  keywords = {Cryptography ; Software},
-  language = {eng},
-  pages = {1-20},
-  publisher = {Springer},
-  title = {Cache attacks and countermeasures : The case of AES},
-  year = {2006},
+	author = {OSVIK, Dag Arne and SHAMIR, Adi and TROMER, Eran},
+	address = {Berlin},
+	booktitle = {Lecture notes in computer science},
+	copyright = {2007 INIST-CNRS},
+	isbn = {3540310339},
+	issn = {0302-9743},
+	keywords = {Cryptography ; Software},
+	language = {eng},
+	pages = {1-20},
+	publisher = {Springer},
+	title = {Cache attacks and countermeasures : The case of AES},
+	year = {2006},
 }
 
 @inproceedings{CacheReplacementModeling,
-  abstract = {Modern microarchitectures employ memory hierarchies involving one
-              or more levels of cache memory to hide the large latency gap
-              between the processor and main memory. Cycle-accurate simulators,
-              self-optimizing software systems, and platform-aware compilers need
-              accurate models of the memory hierarchy to produce useful results.
-              Similarly, worst-case execution time analyzers require faithful
-              models, both for soundness and precision. Unfortunately,
-              sufficiently precise documentation of the logical organization of
-              the memory hierarchy is seldom available publicly. In this paper,
-              we propose an algorithm to automatically model the cache
-              replacement policy by measurements on the actual hardware. We have
-              implemented and applied this algorithm to various popular
-              microarchitectures, uncovering a previously undocumented cache
-              replacement policy in the Intel Atom D525.},
-  author = {Abel, A. and Reineke, J.},
-  booktitle = {2013 IEEE 19th Real-Time and Embedded Technology and Applications
-               Symposium (RTAS)},
-  isbn = {9781479901869},
-  issn = {1080-1812},
-  keywords = {Hardware ; Indexes},
-  language = {eng},
-  pages = {65-74},
-  publisher = {IEEE},
-  title = {Measurement-based modeling of the cache replacement policy},
-  year = {2013},
+	abstract = {Modern microarchitectures employ memory hierarchies involving one
+	            or more levels of cache memory to hide the large latency gap
+	            between the processor and main memory. Cycle-accurate simulators,
+	            self-optimizing software systems, and platform-aware compilers need
+	            accurate models of the memory hierarchy to produce useful results.
+	            Similarly, worst-case execution time analyzers require faithful
+	            models, both for soundness and precision. Unfortunately,
+	            sufficiently precise documentation of the logical organization of
+	            the memory hierarchy is seldom available publicly. In this paper,
+	            we propose an algorithm to automatically model the cache
+	            replacement policy by measurements on the actual hardware. We have
+	            implemented and applied this algorithm to various popular
+	            microarchitectures, uncovering a previously undocumented cache
+	            replacement policy in the Intel Atom D525.},
+	author = {Abel, A. and Reineke, J.},
+	booktitle = {2013 IEEE 19th Real-Time and Embedded Technology and Applications
+	             Symposium (RTAS)},
+	isbn = {9781479901869},
+	issn = {1080-1812},
+	keywords = {Hardware ; Indexes},
+	language = {eng},
+	pages = {65-74},
+	publisher = {IEEE},
+	title = {Measurement-based modeling of the cache replacement policy},
+	year = {2013},
 }
 
 @article{VotingBasedEviction,
-  abstract = {In manycore systems, eviction decisions related to caches and
-              memory coherence greatly impact system performance, thereby
-              emphasizing their importance. Extensive research has produced
-              numerous standalone eviction policies such as LRU, LFU, FIFO, etc.
-              all aiming to attain the Bélády optimum solution. Standalone
-              eviction policies optimize for a single attribute (recency,
-              frequency, etc.), limiting their impact on applications exhibiting
-              non-uniform memory access patterns. The Hybrid Voting-based
-              Eviction Policy (HyVE) extends multiple standalone eviction
-              policies with a ranking system and evaluates them using concepts
-              from the voting theory domain. The goal of HyVE is to make better
-              replacement decisions by creating a consensus among its constituent
-              eviction policies. With its inherent voting properties, HyVE takes
-              different replacement decisions compared to its standalone
-              counterparts, making it a unique and new eviction policy. We deploy
-              and evaluate HyVE as part of two case-studies: last-level cache
-              replacement decisions in a generic manycore environment, and sparse
-              directory eviction decisions on a tile-based distributed shared
-              memory (DSM) architecture. We explore different variants of HyVE,
-              and evaluate them using workloads from the PARSEC and SPLASH-2
-              benchmark suites in a simulation environment. We also compare HyVE
-              to state-of-the-art set-dueling and learning-based eviction
-              policies. For last-level cache replacement decisions, HyVE reduces
-              cache misses by 7.4% compared to the LRU policy, whereas DRRIP and
-              Hawkeye reduce cache misses by 5.5% and 9.2% respectively compared
-              to the LRU policy. Though Hawkeye exhibits better performance on
-              average, HyVE offers a unique advantage for certain workloads by
-              using a voting-based approach to solve the replacement problem. For
-              sparse directory eviction decisions, results show that HyVE reduces
-              coherence traffic and execution time by up to 11% compared to the
-              LRU policy. We have synthesized HyVE on an FPGA prototype. Hardware
-              analysis results show that HyVE’s constituent policies contribute
-              the most to its overheads, while HyVE’s ranking and voting
-              extensions do not add significant overheads. Timing analysis
-              results show that HyVE’s logic delay is comparable to that of
-              standalone eviction policies. Lastly, we evaluate HyVE on the FPGA
-              prototype using characteristic micro-benchmarks that further
-              emphasize HyVE’s ability to remain agnostic to varying data access
-              patterns.},
-  author = {Srivatsa, Akshay and Fasfous, Nael and Anh Vu Doan, Nguyen and Nagel
-            , Sebastian and Wild, Thomas and Herkersdorf, Andreas},
-  address = {Kidlington},
-  copyright = {2021 Elsevier B.V.},
-  issn = {0141-9331},
-  journal = {Microprocessors and microsystems},
-  keywords = {Bench-marks ; Directories ; Voting ; Workload},
-  language = {eng},
-  pages = {104384-},
-  publisher = {Elsevier B.V},
-  title = {Exploring a Hybrid Voting-based Eviction Policy for Caches and Sparse
-           Directories on Manycore Architectures},
-  volume = {87},
-  year = {2021},
+	abstract = {In manycore systems, eviction decisions related to caches and
+	            memory coherence greatly impact system performance, thereby
+	            emphasizing their importance. Extensive research has produced
+	            numerous standalone eviction policies such as LRU, LFU, FIFO, etc.
+	            all aiming to attain the Bélády optimum solution. Standalone
+	            eviction policies optimize for a single attribute (recency,
+	            frequency, etc.), limiting their impact on applications exhibiting
+	            non-uniform memory access patterns. The Hybrid Voting-based
+	            Eviction Policy (HyVE) extends multiple standalone eviction
+	            policies with a ranking system and evaluates them using concepts
+	            from the voting theory domain. The goal of HyVE is to make better
+	            replacement decisions by creating a consensus among its constituent
+	            eviction policies. With its inherent voting properties, HyVE takes
+	            different replacement decisions compared to its standalone
+	            counterparts, making it a unique and new eviction policy. We deploy
+	            and evaluate HyVE as part of two case-studies: last-level cache
+	            replacement decisions in a generic manycore environment, and sparse
+	            directory eviction decisions on a tile-based distributed shared
+	            memory (DSM) architecture. We explore different variants of HyVE,
+	            and evaluate them using workloads from the PARSEC and SPLASH-2
+	            benchmark suites in a simulation environment. We also compare HyVE
+	            to state-of-the-art set-dueling and learning-based eviction
+	            policies. For last-level cache replacement decisions, HyVE reduces
+	            cache misses by 7.4% compared to the LRU policy, whereas DRRIP and
+	            Hawkeye reduce cache misses by 5.5% and 9.2% respectively compared
+	            to the LRU policy. Though Hawkeye exhibits better performance on
+	            average, HyVE offers a unique advantage for certain workloads by
+	            using a voting-based approach to solve the replacement problem. For
+	            sparse directory eviction decisions, results show that HyVE reduces
+	            coherence traffic and execution time by up to 11% compared to the
+	            LRU policy. We have synthesized HyVE on an FPGA prototype. Hardware
+	            analysis results show that HyVE’s constituent policies contribute
+	            the most to its overheads, while HyVE’s ranking and voting
+	            extensions do not add significant overheads. Timing analysis
+	            results show that HyVE’s logic delay is comparable to that of
+	            standalone eviction policies. Lastly, we evaluate HyVE on the FPGA
+	            prototype using characteristic micro-benchmarks that further
+	            emphasize HyVE’s ability to remain agnostic to varying data access
+	            patterns.},
+	author = {Srivatsa, Akshay and Fasfous, Nael and Anh Vu Doan, Nguyen and Nagel
+	          , Sebastian and Wild, Thomas and Herkersdorf, Andreas},
+	address = {Kidlington},
+	copyright = {2021 Elsevier B.V.},
+	issn = {0141-9331},
+	journal = {Microprocessors and microsystems},
+	keywords = {Bench-marks ; Directories ; Voting ; Workload},
+	language = {eng},
+	pages = {104384-},
+	publisher = {Elsevier B.V},
+	title = {Exploring a Hybrid Voting-based Eviction Policy for Caches and Sparse
+	         Directories on Manycore Architectures},
+	volume = {87},
+	year = {2021},
+}
+
+	@inproceedings{SIEVE,
+	author = {Yazhuo Zhang and Juncheng Yang and Yao Yue and Ymir Vigfusson and
+	          K.V. Rashmi},
+	title = {{SIEVE} is Simpler than {LRU}: an Efficient {Turn-Key} Eviction
+	         Algorithm for Web Caches},
+	booktitle = {21st USENIX Symposium on Networked Systems Design and
+	             Implementation (NSDI 24)},
+	year = {2024},
+	isbn = {978-1-939133-39-7},
+	address = {Santa Clara, CA},
+	pages = {1229--1246},
+	url = {https://www.usenix.org/conference/nsdi24/presentation/zhang-yazhuo},
+	publisher = {USENIX Association},
+	month = apr,
 }
 
 --------------------------------
@@ -161,73 +177,73 @@ Eviction Sets
 --------------------------------
 
 @inproceedings{TPFES,
-  abstract = {Many micro-architectural attacks rely on the capability of an
-              attacker to efficiently find small eviction sets: groups of virtual
-              addresses that map to the same cache set. This capability has
-              become a decisive primitive for cache side-channel, rowhammer , and
-              speculative execution attacks. Despite their importance, algorithms
-              for finding small eviction sets have not been systematically
-              studied in the literature. In this paper, we perform such a
-              systematic study. We begin by formalizing the problem and analyzing
-              the probability that a set of random virtual addresses is an
-              eviction set. We then present novel algorithms, based on ideas from
-              threshold group testing, that reduce random eviction sets to their
-              minimal core in linear time, improving over the quadratic
-              state-of-the-art. We complement the theoretical analysis of our
-              algorithms with a rigorous empirical evaluation in which we
-              identify and isolate factors that affect their reliability in
-              practice, such as adaptive cache replacement strategies and TLB
-              thrashing. Our results indicate that our algorithms enable finding
-              small eviction sets much faster than before, and under conditions
-              where this was previously deemed impractical.},
-  author = {Vila, Pepe and Kopf, Boris and Morales, Jose F.},
-  booktitle = {2019 IEEE Symposium on Security and Privacy (SP)},
-  isbn = {9781538666609},
-  issn = {2375-1207},
-  keywords = {Implements ; Indexes ; Random access memory ; Reliability ;
-              Testing},
-  language = {eng},
-  pages = {39-54},
-  publisher = {IEEE},
-  title = {Theory and Practice of Finding Eviction Sets},
-  year = {2019},
+	abstract = {Many micro-architectural attacks rely on the capability of an
+	            attacker to efficiently find small eviction sets: groups of virtual
+	            addresses that map to the same cache set. This capability has
+	            become a decisive primitive for cache side-channel, rowhammer , and
+	            speculative execution attacks. Despite their importance, algorithms
+	            for finding small eviction sets have not been systematically
+	            studied in the literature. In this paper, we perform such a
+	            systematic study. We begin by formalizing the problem and analyzing
+	            the probability that a set of random virtual addresses is an
+	            eviction set. We then present novel algorithms, based on ideas from
+	            threshold group testing, that reduce random eviction sets to their
+	            minimal core in linear time, improving over the quadratic
+	            state-of-the-art. We complement the theoretical analysis of our
+	            algorithms with a rigorous empirical evaluation in which we
+	            identify and isolate factors that affect their reliability in
+	            practice, such as adaptive cache replacement strategies and TLB
+	            thrashing. Our results indicate that our algorithms enable finding
+	            small eviction sets much faster than before, and under conditions
+	            where this was previously deemed impractical.},
+	author = {Vila, Pepe and Kopf, Boris and Morales, Jose F.},
+	booktitle = {2019 IEEE Symposium on Security and Privacy (SP)},
+	isbn = {9781538666609},
+	issn = {2375-1207},
+	keywords = {Implements ; Indexes ; Random access memory ; Reliability ;
+	            Testing},
+	language = {eng},
+	pages = {39-54},
+	publisher = {IEEE},
+	title = {Theory and Practice of Finding Eviction Sets},
+	year = {2019},
 }
 
 @inproceedings{EvictionSetsAtScale,
-  abstract = {Finding eviction sets for a large fraction of the cache is an
-              essential preprocessing step for Prime+Probe based cache
-              side-channel attacks. Previous work on this problem reduces it to
-              finding an eviction set for each cache set independently. In a
-              w-way, set-associative cache with s cache sets this approach
-              requires Ω(s 2 w) time.This work introduces the Prune+PlumTree
-              algorithm, which finds eviction sets for any constant fraction of
-              the cache in time O(sw log s), assuming the LRU cache replacement
-              policy. We complement the asymptotic result with tests on current
-              Intel processors, with 16k sets in the Last Level Cache (LLC) and 4
-              Kbyte memory pages, finding eviction sets for more than 98% of the
-              LLC in 40-63 milliseconds, improving over previous work by two
-              orders of magnitude. Simulating Prune+PlumTree on a standard, i.e.
-              unskewed, randomized cache, mapping addresses to random cache sets,
-              results in finding eviction sets for more than 98% of a 12-way
-              cache with 2 14 sets in less than 7.4 seconds.We further adapt
-              Prune+PlumTree to caches with a random replacement policy based on
-              a novel method to prune a large set of random memory lines to a
-              union of minimal eviction sets in this setting. This variant of
-              Prune+PlumTree runs in time O(sw 2 log s). As a final contribution,
-              we show that Prune+PlumTree for the LRU replacement policy has
-              asymptotically tight running time by proving that any algorithm
-              that maps a constant fraction of the cache runs in time Ω(sw log
-              s).},
-  author = {Kessous, Tom and Gilboa, Niv},
-  booktitle = {2024 IEEE Symposium on Security and Privacy (SP)},
-  isbn = {9798350331301},
-  issn = {2375-1207},
-  keywords = {Privacy},
-  language = {eng},
-  pages = {3754-3772},
-  publisher = {IEEE},
-  title = {Prune+PlumTree - Finding Eviction Sets at Scale},
-  year = {2024},
+	abstract = {Finding eviction sets for a large fraction of the cache is an
+	            essential preprocessing step for Prime+Probe based cache
+	            side-channel attacks. Previous work on this problem reduces it to
+	            finding an eviction set for each cache set independently. In a
+	            w-way, set-associative cache with s cache sets this approach
+	            requires Ω(s 2 w) time.This work introduces the Prune+PlumTree
+	            algorithm, which finds eviction sets for any constant fraction of
+	            the cache in time O(sw log s), assuming the LRU cache replacement
+	            policy. We complement the asymptotic result with tests on current
+	            Intel processors, with 16k sets in the Last Level Cache (LLC) and 4
+	            Kbyte memory pages, finding eviction sets for more than 98% of the
+	            LLC in 40-63 milliseconds, improving over previous work by two
+	            orders of magnitude. Simulating Prune+PlumTree on a standard, i.e.
+	            unskewed, randomized cache, mapping addresses to random cache sets,
+	            results in finding eviction sets for more than 98% of a 12-way
+	            cache with 2 14 sets in less than 7.4 seconds.We further adapt
+	            Prune+PlumTree to caches with a random replacement policy based on
+	            a novel method to prune a large set of random memory lines to a
+	            union of minimal eviction sets in this setting. This variant of
+	            Prune+PlumTree runs in time O(sw 2 log s). As a final contribution,
+	            we show that Prune+PlumTree for the LRU replacement policy has
+	            asymptotically tight running time by proving that any algorithm
+	            that maps a constant fraction of the cache runs in time Ω(sw log
+	            s).},
+	author = {Kessous, Tom and Gilboa, Niv},
+	booktitle = {2024 IEEE Symposium on Security and Privacy (SP)},
+	isbn = {9798350331301},
+	issn = {2375-1207},
+	keywords = {Privacy},
+	language = {eng},
+	pages = {3754-3772},
+	publisher = {IEEE},
+	title = {Prune+PlumTree - Finding Eviction Sets at Scale},
+	year = {2024},
 }
 
 --------------------------------
@@ -236,647 +252,672 @@ SLRU and others
 --------------------------------
 
 @article{SLRU,
-  abstract = {I/O subsystem manufacturers attempt to reduce latency by
-              increasing disk rotation speeds, incorporating more intelligent
-              disk scheduling algorithms, increasing I/O bus speed, using
-              solid-state disks, and implementing caches at various places in the
-              I/O stream. In this article, we examine the use of caching as a
-              means to increase system response time and improve the data
-              throughput of the disk subsystem. Caching can help to alleviate I/O
-              subsystem bottlenecks caused by mechanical latencies. This article
-              describes a caching strategy that offers the performance of caches
-              twice its size. After explaining some basic caching issues, we
-              examine some popular caching strategies and cache replacement
-              algorithms, as well as the advantages and disadvantages of caching
-              at different levels of the computer system hierarchy. Finally, we
-              investigate the performance of three cache replacement algorithms:
-              random replacement (RR), least recently used (LRU), and a
-              frequency-based variation of LRU known as segmented LRU (SLRU).< >},
-  author = {Karedla, R. and Love, J.S. and Wherry, B.G.},
-  issn = {0018-9162},
-  journal = {Computer (Long Beach, Calif.)},
-  keywords = {Costs ; Drive ; Hardware ; Terminology},
-  language = {eng},
-  number = {3},
-  pages = {38-46},
-  publisher = {IEEE},
-  title = {Caching strategies to improve disk system performance},
-  volume = {27},
-  year = {1994},
+	abstract = {I/O subsystem manufacturers attempt to reduce latency by
+	            increasing disk rotation speeds, incorporating more intelligent
+	            disk scheduling algorithms, increasing I/O bus speed, using
+	            solid-state disks, and implementing caches at various places in the
+	            I/O stream. In this article, we examine the use of caching as a
+	            means to increase system response time and improve the data
+	            throughput of the disk subsystem. Caching can help to alleviate I/O
+	            subsystem bottlenecks caused by mechanical latencies. This article
+	            describes a caching strategy that offers the performance of caches
+	            twice its size. After explaining some basic caching issues, we
+	            examine some popular caching strategies and cache replacement
+	            algorithms, as well as the advantages and disadvantages of caching
+	            at different levels of the computer system hierarchy. Finally, we
+	            investigate the performance of three cache replacement algorithms:
+	            random replacement (RR), least recently used (LRU), and a
+	            frequency-based variation of LRU known as segmented LRU (SLRU).< >},
+	author = {Karedla, R. and Love, J.S. and Wherry, B.G.},
+	issn = {0018-9162},
+	journal = {Computer (Long Beach, Calif.)},
+	keywords = {Costs ; Drive ; Hardware ; Terminology},
+	language = {eng},
+	number = {3},
+	pages = {38-46},
+	publisher = {IEEE},
+	title = {Caching strategies to improve disk system performance},
+	volume = {27},
+	year = {1994},
 }
 
 @inproceedings{DuelingSLRU,
-  title = {A Dueling Segmented LRU Replacement Algorithm with Adaptive Bypassing
-           },
-  author = {Hongliang Gao and Chris Wilkerson},
-  year = {2010},
-  url = {https://api.semanticscholar.org/CorpusID:18813408},
+	title = {A Dueling Segmented LRU Replacement Algorithm with Adaptive Bypassing
+	         },
+	author = {Hongliang Gao and Chris Wilkerson},
+	year = {2010},
+	url = {https://api.semanticscholar.org/CorpusID:18813408},
 }
 
 @inproceedings{FixedSLRU,
-  abstract = {Cache replacement policies are an essential part of the memory
-              hierarchy used to bridge the gap in speed between CPU and memory.
-              Most of the cache replacement algorithms that can perform
-              significantly better than LRU (Least Recently Used) replacement
-              policy come at the cost of large hardware requirements [1][3]. With
-              the rise of mobile computing and system-on-chip technology, these
-              hardware costs are not acceptable. The goal of this research is to
-              design a low cost cache replacement algorithm that achieves
-              comparable performance to existing scheme. In this paper , we
-              propose two enhancements to the SLRU (Segmented LRU) algorithm: (i)
-              fixing the number of protected and probationary segments based on
-              effective segmentation ratio with increasing the protected segments
-              , and (ii) implementing selective caching, to achieve more
-              effective eviction, based on preventing dead blocks from entering
-              the cache. Our experiment results show that we achieve a speed up
-              to 14.0% over LRU and up to 12.5% over standard SLRU.},
-  author = {Morales, K. and Byeong Kil Lee},
-  booktitle = {2012 IEEE 31st International Performance Computing and
-               Communications Conference (IPCCC)},
-  isbn = {1467348813},
-  issn = {1097-2641},
-  keywords = {Hardware ; Hidden Markov models},
-  language = {eng},
-  pages = {199-200},
-  publisher = {IEEE},
-  title = {Fixed Segmented LRU cache replacement scheme with selective caching },
-  year = {2012},
+	abstract = {Cache replacement policies are an essential part of the memory
+	            hierarchy used to bridge the gap in speed between CPU and memory.
+	            Most of the cache replacement algorithms that can perform
+	            significantly better than LRU (Least Recently Used) replacement
+	            policy come at the cost of large hardware requirements [1][3]. With
+	            the rise of mobile computing and system-on-chip technology, these
+	            hardware costs are not acceptable. The goal of this research is to
+	            design a low cost cache replacement algorithm that achieves
+	            comparable performance to existing scheme. In this paper , we
+	            propose two enhancements to the SLRU (Segmented LRU) algorithm: (i)
+	            fixing the number of protected and probationary segments based on
+	            effective segmentation ratio with increasing the protected segments
+	            , and (ii) implementing selective caching, to achieve more
+	            effective eviction, based on preventing dead blocks from entering
+	            the cache. Our experiment results show that we achieve a speed up
+	            to 14.0% over LRU and up to 12.5% over standard SLRU.},
+	author = {Morales, K. and Byeong Kil Lee},
+	booktitle = {2012 IEEE 31st International Performance Computing and
+	             Communications Conference (IPCCC)},
+	isbn = {1467348813},
+	issn = {1097-2641},
+	keywords = {Hardware ; Hidden Markov models},
+	language = {eng},
+	pages = {199-200},
+	publisher = {IEEE},
+	title = {Fixed Segmented LRU cache replacement scheme with selective caching },
+	year = {2012},
 }
 
 @inproceedings{FixedSLRUEnhancements,
-  abstract = {The goal of this research is to design a low cost cache
-              replacement algorithm that achieves comparable performance to
-              existing scheme. In previous work, we proposed an enhancement to
-              the SLRU (Segmented LRU) algorithm called fixed SLRU that fixes the
-              number of protected and probationary segments. Due to an
-              ineffective simulation environment, we were unable to fully
-              understand our results. In this work, we will test fixed SLRU with
-              an improved simulation environment, and propose three enhancements
-              to the algorithm: cache bypassing, random promotion, and aging. Our
-              experiment results show that fixed SLRU achieved an average speed
-              up of 7.00% over LRU, and 4.22% over SLRU, with a maximum speed up
-              of 43.55% over LRU, and 41.59% over standard SLRU. With certain
-              enhancements applied, we achieved a maximum speed up of 61.70% over
-              LRU.},
-  author = {Hurt, Kathlene and Byeong Kil Lee},
-  booktitle = {2013 IEEE 32nd International Performance Computing and
-               Communications Conference (IPCCC)},
-  isbn = {1479932140},
-  issn = {1097-2641},
-  keywords = {Aging ; Computers},
-  language = {eng},
-  pages = {1-2},
-  publisher = {IEEE},
-  title = {Proposed enhancements to fixed segmented LRU cache replacement policy
-           },
-  year = {2013},
+	abstract = {The goal of this research is to design a low cost cache
+	            replacement algorithm that achieves comparable performance to
+	            existing scheme. In previous work, we proposed an enhancement to
+	            the SLRU (Segmented LRU) algorithm called fixed SLRU that fixes the
+	            number of protected and probationary segments. Due to an
+	            ineffective simulation environment, we were unable to fully
+	            understand our results. In this work, we will test fixed SLRU with
+	            an improved simulation environment, and propose three enhancements
+	            to the algorithm: cache bypassing, random promotion, and aging. Our
+	            experiment results show that fixed SLRU achieved an average speed
+	            up of 7.00% over LRU, and 4.22% over SLRU, with a maximum speed up
+	            of 43.55% over LRU, and 41.59% over standard SLRU. With certain
+	            enhancements applied, we achieved a maximum speed up of 61.70% over
+	            LRU.},
+	author = {Hurt, Kathlene and Byeong Kil Lee},
+	booktitle = {2013 IEEE 32nd International Performance Computing and
+	             Communications Conference (IPCCC)},
+	isbn = {1479932140},
+	issn = {1097-2641},
+	keywords = {Aging ; Computers},
+	language = {eng},
+	pages = {1-2},
+	publisher = {IEEE},
+	title = {Proposed enhancements to fixed segmented LRU cache replacement policy
+	         },
+	year = {2013},
 }
 
 @phdthesis{LimitedSLRU,
-  author = {Hurt,Kathlene},
-  year = {2015},
-  title = {Limited segmented LRU cache replacement algorithm with set aging for
-           memory sensitive benchmarks},
-  journal = {ProQuest Dissertations and Theses},
-  pages = {83},
-  note = {Copyright - Database copyright ProQuest LLC; ProQuest does not claim
-          copyright in the individual underlying works; Last updated - 2023-03-04
-          },
-  abstract = {Cache memory replacement algorithms are an essential part of the
-              memory hierarchy used to bridge the gap in speed between the CPU
-              and main memory. The Segmented Least Recently Used (SLRU) algorithm
-              is a variation of the popular Least Recently Used (LRU) algorithm.
-              SLRU considers both when a line was accessed last and if it has
-              been re-referenced while in the cache to make its eviction
-              decision. This is achieved by dividing a cache set into two halves:
-              the protected segment and the probationary segment. While SLRU has
-              been shown to perform better than LRU, it has some shortcomings
-              such as requiring a static ratio between the number of protected
-              and probationary segments. In this work, we will first perform an
-              in-depth analysis of SLRU to explore the effect of the protected
-              and probationary segment sizes on performance and better understand
-              its behavior. From there, we will propose two enhancements to SLRU:
-              Limited SLRU (LSLRU) and Set Aging. These two enhancement allow the
-              SLRU algorithm to adapt the segment ratio to the behavior of the
-              current working set of benchmarks. Our work will focus on a subset
-              of the SPEC2K6 benchmark suite that are considered memory
-              sensitive. The hardware costs of both SLRU and the proposed
-              algorithm will also be examined.},
-  keywords = {Applied sciences; Cache memory; Cache replacement algorithm;
-              Computer architecture; Spec benchmarks; Superscalar processors;
-              Computer engineering; 0464:Computer Engineering},
-  isbn = {978-1-339-03438-6},
-  language = {English},
-  url = {
-         https://www.proquest.com/dissertations-theses/limited-segmented-lru-cache-replacement-algorithm/docview/1728065592/se-2
-         },
+	author = {Hurt,Kathlene},
+	year = {2015},
+	title = {Limited segmented LRU cache replacement algorithm with set aging for
+	         memory sensitive benchmarks},
+	journal = {ProQuest Dissertations and Theses},
+	pages = {83},
+	note = {Copyright - Database copyright ProQuest LLC; ProQuest does not claim
+	        copyright in the individual underlying works; Last updated - 2023-03-04
+	        },
+	abstract = {Cache memory replacement algorithms are an essential part of the
+	            memory hierarchy used to bridge the gap in speed between the CPU
+	            and main memory. The Segmented Least Recently Used (SLRU) algorithm
+	            is a variation of the popular Least Recently Used (LRU) algorithm.
+	            SLRU considers both when a line was accessed last and if it has
+	            been re-referenced while in the cache to make its eviction
+	            decision. This is achieved by dividing a cache set into two halves:
+	            the protected segment and the probationary segment. While SLRU has
+	            been shown to perform better than LRU, it has some shortcomings
+	            such as requiring a static ratio between the number of protected
+	            and probationary segments. In this work, we will first perform an
+	            in-depth analysis of SLRU to explore the effect of the protected
+	            and probationary segment sizes on performance and better understand
+	            its behavior. From there, we will propose two enhancements to SLRU:
+	            Limited SLRU (LSLRU) and Set Aging. These two enhancement allow the
+	            SLRU algorithm to adapt the segment ratio to the behavior of the
+	            current working set of benchmarks. Our work will focus on a subset
+	            of the SPEC2K6 benchmark suite that are considered memory
+	            sensitive. The hardware costs of both SLRU and the proposed
+	            algorithm will also be examined.},
+	keywords = {Applied sciences; Cache memory; Cache replacement algorithm;
+	            Computer architecture; Spec benchmarks; Superscalar processors;
+	            Computer engineering; 0464:Computer Engineering},
+	isbn = {978-1-339-03438-6},
+	language = {English},
+	url = {
+	       https://www.proquest.com/dissertations-theses/limited-segmented-lru-cache-replacement-algorithm/docview/1728065592/se-2
+	       },
 }
 
 @inproceedings{SSLRU,
-  abstract = {Many caching policies use machine learning to predict data reuse ,
-              but they ignore the impact of incorrect prediction on cache
-              performance, especially for large-size objects. In this paper, we
-              propose a smart segmented LRU (SS-LRU) replacement policy, which
-              adopts a size-aware classifier designed for cache scenarios and
-              considers the cache cost caused by misprediction. Besides, SS-LRU
-              enhances the migration rules of segmented LRU (SLRU) and implements
-              a smart caching with unequal priorities and segment sizes based on
-              prediction and multiple access patterns. We conducted Extensive
-              experiments under the real-world workloads to demonstrate the
-              superiority of our approach over state-of-the-art caching policies.
-              },
-  author = {Li, Chunhua and Wu, Man and Liu, Yuhan and Zhou, Ke and Zhang, Ji
-            and Sun, Yunqing},
-  address = {New York, NY, USA},
-  booktitle = {Proceedings of the 59th ACM/IEEE Design Automation Conference},
-  copyright = {2022 ACM},
-  isbn = {1450391427},
-  language = {eng},
-  pages = {397-402},
-  publisher = {ACM},
-  title = {SS-LRU: a smart segmented LRU caching},
-  year = {2022},
+	abstract = {Many caching policies use machine learning to predict data reuse ,
+	            but they ignore the impact of incorrect prediction on cache
+	            performance, especially for large-size objects. In this paper, we
+	            propose a smart segmented LRU (SS-LRU) replacement policy, which
+	            adopts a size-aware classifier designed for cache scenarios and
+	            considers the cache cost caused by misprediction. Besides, SS-LRU
+	            enhances the migration rules of segmented LRU (SLRU) and implements
+	            a smart caching with unequal priorities and segment sizes based on
+	            prediction and multiple access patterns. We conducted Extensive
+	            experiments under the real-world workloads to demonstrate the
+	            superiority of our approach over state-of-the-art caching policies.
+	            },
+	author = {Li, Chunhua and Wu, Man and Liu, Yuhan and Zhou, Ke and Zhang, Ji
+	          and Sun, Yunqing},
+	address = {New York, NY, USA},
+	booktitle = {Proceedings of the 59th ACM/IEEE Design Automation Conference},
+	copyright = {2022 ACM},
+	isbn = {1450391427},
+	language = {eng},
+	pages = {397-402},
+	publisher = {ACM},
+	title = {SS-LRU: a smart segmented LRU caching},
+	year = {2022},
 }
 
   @inproceedings{RRIP,
-  abstract = {Practical cache replacement policies attempt to emulate optimal
-              replacement by predicting the re-reference interval of a cache
-              block. The commonly used LRU replacement policy always predicts a
-              near-immediate re-reference interval on cache hits and misses.
-              Applications that exhibit a distant re-reference interval perform
-              badly under LRU. Such applications usually have a working-set
-              larger than the cache or have frequent bursts of references to
-              non-temporal data (called scans). To improve the performance of
-              such workloads, this paper proposes cache replacement using
-              Re-reference Interval Prediction (RRIP). We propose Static RRIP
-              (SRRIP) that is scan-resistant and Dynamic RRIP (DRRIP) that is
-              both scan-resistant and thrash-resistant. Both RRIP policies
-              require only 2-bits per cache block and easily integrate into
-              existing LRU approximations found in modern processors. Our
-              evaluations using PC games, multimedia, server and SPEC CPU2006
-              workloads on a single-core processor with a 2MB last-level cache
-              (LLC) show that both SRRIP and DRRIP outperform LRU replacement on
-              the throughput metric by an average of 4% and 10% respectively. Our
-              evaluations with over 1000 multi-programmed workloads on a 4-core
-              CMP with an 8MB shared LLC show that SRRIP and DRRIP outperform LRU
-              replacement on the throughput metric by an average of 7% and 9%
-              respectively. We also show that RRIP outperforms LFU, the state-of
-              the art scan-resistant replacement algorithm to-date. For the cache
-              configurations under study, RRIP requires 2X less hardware than LRU
-              and 2.5X less hardware than LFU.},
-  author = {Jaleel, Aamer and Theobald, Kevin B. and Steely, Simon C. and Emer,
-            Joel},
-  address = {New York, NY, USA},
-  booktitle = {Proceedings - International Symposium on Computer Architecture},
-  copyright = {2010 ACM},
-  isbn = {9781450300537},
-  issn = {1063-6897},
-  keywords = {Computer science ; Technology},
-  language = {eng},
-  organization = {ACM},
-  pages = {60-71},
-  publisher = {ACM},
-  title = {High performance cache replacement using re-reference interval
-           prediction (RRIP)},
-  year = {2010},
+	abstract = {Practical cache replacement policies attempt to emulate optimal
+	            replacement by predicting the re-reference interval of a cache
+	            block. The commonly used LRU replacement policy always predicts a
+	            near-immediate re-reference interval on cache hits and misses.
+	            Applications that exhibit a distant re-reference interval perform
+	            badly under LRU. Such applications usually have a working-set
+	            larger than the cache or have frequent bursts of references to
+	            non-temporal data (called scans). To improve the performance of
+	            such workloads, this paper proposes cache replacement using
+	            Re-reference Interval Prediction (RRIP). We propose Static RRIP
+	            (SRRIP) that is scan-resistant and Dynamic RRIP (DRRIP) that is
+	            both scan-resistant and thrash-resistant. Both RRIP policies
+	            require only 2-bits per cache block and easily integrate into
+	            existing LRU approximations found in modern processors. Our
+	            evaluations using PC games, multimedia, server and SPEC CPU2006
+	            workloads on a single-core processor with a 2MB last-level cache
+	            (LLC) show that both SRRIP and DRRIP outperform LRU replacement on
+	            the throughput metric by an average of 4% and 10% respectively. Our
+	            evaluations with over 1000 multi-programmed workloads on a 4-core
+	            CMP with an 8MB shared LLC show that SRRIP and DRRIP outperform LRU
+	            replacement on the throughput metric by an average of 7% and 9%
+	            respectively. We also show that RRIP outperforms LFU, the state-of
+	            the art scan-resistant replacement algorithm to-date. For the cache
+	            configurations under study, RRIP requires 2X less hardware than LRU
+	            and 2.5X less hardware than LFU.},
+	author = {Jaleel, Aamer and Theobald, Kevin B. and Steely, Simon C. and Emer,
+	          Joel},
+	address = {New York, NY, USA},
+	booktitle = {Proceedings - International Symposium on Computer Architecture},
+	copyright = {2010 ACM},
+	isbn = {9781450300537},
+	issn = {1063-6897},
+	keywords = {Computer science ; Technology},
+	language = {eng},
+	organization = {ACM},
+	pages = {60-71},
+	publisher = {ACM},
+	title = {High performance cache replacement using re-reference interval
+	         prediction (RRIP)},
+	year = {2010},
 }
 
+@inproceedings{MuonTrap,
+	title = {MuonTrap: Preventing Cross-Domain Spectre-Like Attacks by Capturing
+	         Speculative State},
+	url = {http://dx.doi.org/10.1109/ISCA45697.2020.00022},
+	DOI = {10.1109/isca45697.2020.00022},
+	booktitle = {2020 ACM/IEEE 47th Annual International Symposium on Computer
+	             Architecture (ISCA)},
+	publisher = {IEEE},
+	author = {Ainsworth, Sam and Jones, Timothy M.},
+	year = {2020},
+	month = may,
+	pages = {132–144},
+}
 --------------------------------
 Attacks
 --------------------------------
 
 @inproceedings{Gofetch,
-  title = {GoFetch: Breaking Constant-Time Cryptographic Implementations Using
-           Data Memory-Dependent Prefetchers},
-  author = {Boru Chen and Yingchen Wang and Pradyumna Shome and Christopher W.
-            Fletcher and David Kohlbrenner and Riccardo Paccagnella and Daniel
-            Genkin},
-  booktitle = {USENIX Security},
-  year = {2024},
+	title = {GoFetch: Breaking Constant-Time Cryptographic Implementations Using
+	         Data Memory-Dependent Prefetchers},
+	author = {Boru Chen and Yingchen Wang and Pradyumna Shome and Christopher W.
+	          Fletcher and David Kohlbrenner and Riccardo Paccagnella and Daniel
+	          Genkin},
+	booktitle = {USENIX Security},
+	year = {2024},
 }
 
 @inproceedings{Rowhammer,
-  abstract = {Memory isolation is a key property of a reliable and secure
-              computing system--an access to one memory address should not have
-              unintended side effects on data stored in other addresses. However,
-              as DRAM process technology scales down to smaller dimensions, it
-              becomes more difficult to prevent DRAM cells from electrically
-              interacting with each other. In this paper, we expose the
-              vulnerability of commodity DRAM chips to disturbance errors. By
-              reading from the same address in DRAM, we show that it is possible
-              to corrupt data in nearby addresses. More specifically, activating
-              the same row in DRAM corrupts data in nearby rows. We demonstrate
-              this phenomenon on Intel and AMD systems using a malicious program
-              that generates many DRAM accesses. We induce errors in most DRAM
-              modules (110 out of 129) from three major DRAM manufacturers. From
-              this we conclude that many deployed systems are likely to be at
-              risk. We identify the root cause of disturbance errors as the
-              repeated toggling of a DRAM row's wordline, which stresses
-              inter-cell coupling effects that accelerate charge leakage from
-              nearby rows. We provide an extensive characterization study of
-              disturbance errors and their behavior using an FPGA-based testing
-              platform. Among our key findings, we show that (i) it takes as few
-              as 139K accesses to induce an error and (ii) up to one in every
-              1.7K cells is susceptible to errors. After examining various
-              potential ways of addressing the problem, we propose a low-overhead
-              solution to prevent the errors},
-  author = {Kim, Yoongu and Daly, Ross and Kim, Jeremie and Fallin, Chris and
-            Lee, Ji Hye and Lee, Donghyuk and Wilkerson, Chris and Lai, Konrad
-            and Mutlu, Onur},
-  booktitle = {Computer architecture news},
-  issn = {0163-5964},
-  language = {eng},
-  number = {3},
-  pages = {361-372},
-  title = {Flipping bits in memory without accessing them: an experimental study
-           of DRAM disturbance errors},
-  volume = {42},
-  year = {2014},
+	abstract = {Memory isolation is a key property of a reliable and secure
+	            computing system--an access to one memory address should not have
+	            unintended side effects on data stored in other addresses. However,
+	            as DRAM process technology scales down to smaller dimensions, it
+	            becomes more difficult to prevent DRAM cells from electrically
+	            interacting with each other. In this paper, we expose the
+	            vulnerability of commodity DRAM chips to disturbance errors. By
+	            reading from the same address in DRAM, we show that it is possible
+	            to corrupt data in nearby addresses. More specifically, activating
+	            the same row in DRAM corrupts data in nearby rows. We demonstrate
+	            this phenomenon on Intel and AMD systems using a malicious program
+	            that generates many DRAM accesses. We induce errors in most DRAM
+	            modules (110 out of 129) from three major DRAM manufacturers. From
+	            this we conclude that many deployed systems are likely to be at
+	            risk. We identify the root cause of disturbance errors as the
+	            repeated toggling of a DRAM row's wordline, which stresses
+	            inter-cell coupling effects that accelerate charge leakage from
+	            nearby rows. We provide an extensive characterization study of
+	            disturbance errors and their behavior using an FPGA-based testing
+	            platform. Among our key findings, we show that (i) it takes as few
+	            as 139K accesses to induce an error and (ii) up to one in every
+	            1.7K cells is susceptible to errors. After examining various
+	            potential ways of addressing the problem, we propose a low-overhead
+	            solution to prevent the errors},
+	author = {Kim, Yoongu and Daly, Ross and Kim, Jeremie and Fallin, Chris and
+	          Lee, Ji Hye and Lee, Donghyuk and Wilkerson, Chris and Lai, Konrad
+	          and Mutlu, Onur},
+	booktitle = {Computer architecture news},
+	issn = {0163-5964},
+	language = {eng},
+	number = {3},
+	pages = {361-372},
+	title = {Flipping bits in memory without accessing them: an experimental study
+	         of DRAM disturbance errors},
+	volume = {42},
+	year = {2014},
 }
 
 @inproceedings{RowhammerDefense,
-  abstract = {RowHammer is a circuit-level DRAM vulnerability, first rigorously
-              analyzed and introduced in 2014, where repeatedly accessing data in
-              a DRAM row can cause bit flips in nearby rows. The RowHammer
-              vulnerability has since garnered significant interest in both
-              computer architecture and computer security research communities
-              because it stems from physical circuit-level interference effects
-              that worsen with continued DRAM density scaling. As DRAM
-              manufacturers primarily depend on density scaling to increase DRAM
-              capacity, future DRAM chips will likely be more vulnerable to
-              RowHammer than those of the past. Many RowHammer mitigation
-              mechanisms have been proposed by both industry and academia, but it
-              is unclear whether these mechanisms will remain viable solutions
-              for future devices, as their overheads increase with DRAM's
-              vulnerability to RowHammer. In order to shed more light on how
-              RowHammer affects modern and future devices at the circuit-level,
-              we first present an experimental characterization of RowHammer on
-              1580 DRAM chips (408x DDR3, 652x DDR4, and 520x LPDDR4) from 300
-              DRAM modules (60x DDR3, 110x DDR4, and 130x LPDDR4) with RowHammer
-              protection mechanisms disabled, spanning multiple different
-              technology nodes from across each of the three major DRAM
-              manufacturers. Our studies definitively show that newer DRAM chips
-              are more vulnerable to RowHammer: as device feature size reduces,
-              the number of activations needed to induce a RowHammer bit flip
-              also reduces, to as few as 9.6k (4.8k to two rows each) in the most
-              vulnerable chip we tested. We evaluate five state-of-the-art
-              RowHammer mitigation mechanisms using cycle-accurate simulation in
-              the context of real data taken from our chips to study how the
-              mitigation mechanisms scale with chip vulnerability. We find that
-              existing mechanisms either are not scalable or suffer from
-              prohibitively large performance overheads in projected future
-              devices given our observed trends of RowHammer vulnerability. Thus,
-              it is critical to research more effective solutions to RowHammer.},
-  author = {Kim, Jeremie S. and Patel, Minesh and Yağlıkçı, A. Giray and Hassan,
-            Hasan and Azizi, Roknoddin and Orosa, Lois and Mutlu, Onur},
-  address = {Piscataway, NJ, USA},
-  booktitle = {2020 ACM/IEEE 47th Annual International Symposium on Computer
-               Architecture (ISCA)},
-  isbn = {1728146615},
-  keywords = {Hardware},
-  language = {eng},
-  pages = {638-651},
-  publisher = {IEEE Press},
-  title = {Revisiting RowHammer: an experimental analysis of modern DRAM devices
-           and mitigation techniques},
-  year = {2020},
+	abstract = {RowHammer is a circuit-level DRAM vulnerability, first rigorously
+	            analyzed and introduced in 2014, where repeatedly accessing data in
+	            a DRAM row can cause bit flips in nearby rows. The RowHammer
+	            vulnerability has since garnered significant interest in both
+	            computer architecture and computer security research communities
+	            because it stems from physical circuit-level interference effects
+	            that worsen with continued DRAM density scaling. As DRAM
+	            manufacturers primarily depend on density scaling to increase DRAM
+	            capacity, future DRAM chips will likely be more vulnerable to
+	            RowHammer than those of the past. Many RowHammer mitigation
+	            mechanisms have been proposed by both industry and academia, but it
+	            is unclear whether these mechanisms will remain viable solutions
+	            for future devices, as their overheads increase with DRAM's
+	            vulnerability to RowHammer. In order to shed more light on how
+	            RowHammer affects modern and future devices at the circuit-level,
+	            we first present an experimental characterization of RowHammer on
+	            1580 DRAM chips (408x DDR3, 652x DDR4, and 520x LPDDR4) from 300
+	            DRAM modules (60x DDR3, 110x DDR4, and 130x LPDDR4) with RowHammer
+	            protection mechanisms disabled, spanning multiple different
+	            technology nodes from across each of the three major DRAM
+	            manufacturers. Our studies definitively show that newer DRAM chips
+	            are more vulnerable to RowHammer: as device feature size reduces,
+	            the number of activations needed to induce a RowHammer bit flip
+	            also reduces, to as few as 9.6k (4.8k to two rows each) in the most
+	            vulnerable chip we tested. We evaluate five state-of-the-art
+	            RowHammer mitigation mechanisms using cycle-accurate simulation in
+	            the context of real data taken from our chips to study how the
+	            mitigation mechanisms scale with chip vulnerability. We find that
+	            existing mechanisms either are not scalable or suffer from
+	            prohibitively large performance overheads in projected future
+	            devices given our observed trends of RowHammer vulnerability. Thus,
+	            it is critical to research more effective solutions to RowHammer.},
+	author = {Kim, Jeremie S. and Patel, Minesh and Yağlıkçı, A. Giray and Hassan,
+	          Hasan and Azizi, Roknoddin and Orosa, Lois and Mutlu, Onur},
+	address = {Piscataway, NJ, USA},
+	booktitle = {2020 ACM/IEEE 47th Annual International Symposium on Computer
+	             Architecture (ISCA)},
+	isbn = {1728146615},
+	keywords = {Hardware},
+	language = {eng},
+	pages = {638-651},
+	publisher = {IEEE Press},
+	title = {Revisiting RowHammer: an experimental analysis of modern DRAM devices
+	         and mitigation techniques},
+	year = {2020},
 }
 
 @inproceedings{LLCSideChannel,
-  abstract = {We present an effective implementation of the Prime+Probe
-              side-channel attack against the last-level cache. We measure the
-              capacity of the covert channel the attack creates and demonstrate a
-              cross-core, cross-VM attack on multiple versions of GnuPG. Our
-              technique achieves a high attack resolution without relying on
-              weaknesses in the OS or virtual machine monitor or on sharing
-              memory between attacker and victim.},
-  author = {Fangfei Liu and Yarom, Yuval and Qian Ge and Heiser, Gernot and Lee,
-            Ruby B.},
-  booktitle = {2015 IEEE Symposium on Security and Privacy},
-  isbn = {1467369497},
-  issn = {1081-6011},
-  keywords = {Cryptography ; Indexes ; Monitoring},
-  language = {eng},
-  pages = {605-622},
-  publisher = {IEEE},
-  title = {Last-Level Cache Side-Channel Attacks are Practical},
-  year = {2015},
+	abstract = {We present an effective implementation of the Prime+Probe
+	            side-channel attack against the last-level cache. We measure the
+	            capacity of the covert channel the attack creates and demonstrate a
+	            cross-core, cross-VM attack on multiple versions of GnuPG. Our
+	            technique achieves a high attack resolution without relying on
+	            weaknesses in the OS or virtual machine monitor or on sharing
+	            memory between attacker and victim.},
+	author = {Fangfei Liu and Yarom, Yuval and Qian Ge and Heiser, Gernot and Lee,
+	          Ruby B.},
+	booktitle = {2015 IEEE Symposium on Security and Privacy},
+	isbn = {1467369497},
+	issn = {1081-6011},
+	keywords = {Cryptography ; Indexes ; Monitoring},
+	language = {eng},
+	pages = {605-622},
+	publisher = {IEEE},
+	title = {Last-Level Cache Side-Channel Attacks are Practical},
+	year = {2015},
 }
 
 @inproceedings{Spectre,
-  abstract = {Modern processors use branch prediction and speculative execution
-              to maximize performance. For example, if the destination of a
-              branch depends on a memory value that is in the process of being
-              read, CPUs will try to guess the destination and attempt to execute
-              ahead. When the memory value finally arrives, the CPU either
-              discards or commits the speculative computation. Speculative logic
-              is unfaithful in how it executes, can access the victim's memory
-              and registers, and can perform operations with measurable side
-              effects. Spectre attacks involve inducing a victim to speculatively
-              perform operations that would not occur during correct program
-              execution and which leak the victim's confidential information via
-              a side channel to the adversary. This paper describes practical
-              attacks that combine methodology from side channel attacks, fault
-              attacks, and return-oriented programming that can read arbitrary
-              memory from the victim's process. More broadly, the paper shows
-              that speculative execution implementations violate the security
-              assumptions underpinning numerous software security mechanisms,
-              including operating system process separation, containerization,
-              just-in-time (JIT) compilation, and countermeasures to cache timing
-              and side-channel attacks. These attacks represent a serious threat
-              to actual systems since vulnerable speculative execution
-              capabilities are found in microprocessors from Intel, AMD, and ARM
-              that are used in billions of devices. While makeshift
-              processor-specific countermeasures are possible in some cases,
-              sound solutions will require fixes to processor designs as well as
-              updates to instruction set architectures (ISAs) to give hardware
-              architects and software developers a common understanding as to
-              what computation state CPU implementations are (and are not)
-              permitted to leak.},
-  author = {Kocher, Paul and Horn, Jann and Fogh, Anders and Genkin, Daniel and
-            Gruss, Daniel and Haas, Werner and Hamburg, Mike and Lipp, Moritz and
-            Mangard, Stefan and Prescher, Thomas and Schwarz, Michael and Yarom,
-            Yuval},
-  booktitle = {2019 IEEE Symposium on Security and Privacy (SP)},
-  isbn = {9781538666609},
-  issn = {2375-1207},
-  keywords = {Hardware ; Registers},
-  language = {eng},
-  pages = {1-19},
-  publisher = {IEEE},
-  title = {Spectre Attacks: Exploiting Speculative Execution},
-  year = {2019},
+	abstract = {Modern processors use branch prediction and speculative execution
+	            to maximize performance. For example, if the destination of a
+	            branch depends on a memory value that is in the process of being
+	            read, CPUs will try to guess the destination and attempt to execute
+	            ahead. When the memory value finally arrives, the CPU either
+	            discards or commits the speculative computation. Speculative logic
+	            is unfaithful in how it executes, can access the victim's memory
+	            and registers, and can perform operations with measurable side
+	            effects. Spectre attacks involve inducing a victim to speculatively
+	            perform operations that would not occur during correct program
+	            execution and which leak the victim's confidential information via
+	            a side channel to the adversary. This paper describes practical
+	            attacks that combine methodology from side channel attacks, fault
+	            attacks, and return-oriented programming that can read arbitrary
+	            memory from the victim's process. More broadly, the paper shows
+	            that speculative execution implementations violate the security
+	            assumptions underpinning numerous software security mechanisms,
+	            including operating system process separation, containerization,
+	            just-in-time (JIT) compilation, and countermeasures to cache timing
+	            and side-channel attacks. These attacks represent a serious threat
+	            to actual systems since vulnerable speculative execution
+	            capabilities are found in microprocessors from Intel, AMD, and ARM
+	            that are used in billions of devices. While makeshift
+	            processor-specific countermeasures are possible in some cases,
+	            sound solutions will require fixes to processor designs as well as
+	            updates to instruction set architectures (ISAs) to give hardware
+	            architects and software developers a common understanding as to
+	            what computation state CPU implementations are (and are not)
+	            permitted to leak.},
+	author = {Kocher, Paul and Horn, Jann and Fogh, Anders and Genkin, Daniel and
+	          Gruss, Daniel and Haas, Werner and Hamburg, Mike and Lipp, Moritz and
+	          Mangard, Stefan and Prescher, Thomas and Schwarz, Michael and Yarom,
+	          Yuval},
+	booktitle = {2019 IEEE Symposium on Security and Privacy (SP)},
+	isbn = {9781538666609},
+	issn = {2375-1207},
+	keywords = {Hardware ; Registers},
+	language = {eng},
+	pages = {1-19},
+	publisher = {IEEE},
+	title = {Spectre Attacks: Exploiting Speculative Execution},
+	year = {2019},
+}
+
+	@misc{Meltdown,
+	title = {Meltdown},
+	author = {Moritz Lipp and Michael Schwarz and Daniel Gruss and Thomas Prescher
+	          and Werner Haas and Stefan Mangard and Paul Kocher and Daniel Genkin
+	          and Yuval Yarom and Mike Hamburg},
+	year = {2018},
+	eprint = {1801.01207},
+	archivePrefix = {arXiv},
+	primaryClass = {cs.CR},
+	url = {https://arxiv.org/abs/1801.01207},
 }
 
 @article{TikTag,
-  abstract = {ARM Memory Tagging Extension (MTE) is a new hardware feature
-              introduced in ARMv8.5-A architecture, aiming to detect memory
-              corruption vulnerabilities. The low overhead of MTE makes it an
-              attractive solution to mitigate memory corruption attacks in modern
-              software systems and is considered the most promising path forward
-              for improving C/C++ software security. This paper explores the
-              potential security risks posed by speculative execution attacks
-              against MTE. Specifically, this paper identifies new TikTag gadgets
-              capable of leaking the MTE tags from arbitrary memory addresses
-              through speculative execution. With TikTag gadgets, attackers can
-              bypass the probabilistic defense of MTE, increasing the attack
-              success rate by close to 100%. We demonstrate that TikTag gadgets
-              can be used to bypass MTE-based mitigations in real-world systems,
-              Google Chrome and the Linux kernel. Experimental results show that
-              TikTag gadgets can successfully leak an MTE tag with a success rate
-              higher than 95% in less than 4 seconds. We further propose new
-              defense mechanisms to mitigate the security risks posed by TikTag
-              gadgets.},
-  author = {Kim, Juhee and Park, Jinbum and Roh, Sihyeon and Chung, Jaeyoung and
-            Lee, Youngjoo and Kim, Taesoo and Lee, Byoungyoung},
-  copyright = {http://creativecommons.org/licenses/by/4.0},
-  language = {eng},
-  title = {TikTag: Breaking ARM's Memory Tagging Extension with Speculative
-           Execution},
-  year = {2024},
+	abstract = {ARM Memory Tagging Extension (MTE) is a new hardware feature
+	            introduced in ARMv8.5-A architecture, aiming to detect memory
+	            corruption vulnerabilities. The low overhead of MTE makes it an
+	            attractive solution to mitigate memory corruption attacks in modern
+	            software systems and is considered the most promising path forward
+	            for improving C/C++ software security. This paper explores the
+	            potential security risks posed by speculative execution attacks
+	            against MTE. Specifically, this paper identifies new TikTag gadgets
+	            capable of leaking the MTE tags from arbitrary memory addresses
+	            through speculative execution. With TikTag gadgets, attackers can
+	            bypass the probabilistic defense of MTE, increasing the attack
+	            success rate by close to 100%. We demonstrate that TikTag gadgets
+	            can be used to bypass MTE-based mitigations in real-world systems,
+	            Google Chrome and the Linux kernel. Experimental results show that
+	            TikTag gadgets can successfully leak an MTE tag with a success rate
+	            higher than 95% in less than 4 seconds. We further propose new
+	            defense mechanisms to mitigate the security risks posed by TikTag
+	            gadgets.},
+	author = {Kim, Juhee and Park, Jinbum and Roh, Sihyeon and Chung, Jaeyoung and
+	          Lee, Youngjoo and Kim, Taesoo and Lee, Byoungyoung},
+	copyright = {http://creativecommons.org/licenses/by/4.0},
+	language = {eng},
+	title = {TikTag: Breaking ARM's Memory Tagging Extension with Speculative
+	         Execution},
+	year = {2024},
 }
 
 @inproceedings{PACMan,
-  abstract = {This paper studies the synergies between memory corruption
-              vulnerabilities and speculative execution vulnerabilities. We
-              leverage speculative execution attacks to bypass an important
-              memory protection mechanism, ARM Pointer Authentication, a security
-              feature that is used to enforce pointer integrity. We present
-              PACMAN, a novel attack methodology that speculatively leaks PAC
-              verification results via micro-architectural side channels without
-              causing any crashes. Our attack removes the primary barrier to
-              conducting control-flow hijacking attacks on a platform protected
-              using Pointer Authentication. We demonstrate multiple
-              proof-of-concept attacks of PACMAN on the Apple M1 SoC, the first
-              desktop processor that supports ARM Pointer Authentication. We
-              reverse engineer the TLB hierarchy on the Apple M1 SoC and expand
-              micro-architectural side-channel attacks to Apple processors.
-              Moreover, we show that the PACMAN attack works across privilege
-              levels, meaning that we can attack the operating system kernel as
-              an unprivileged user in userspace.},
-  author = {Ravichandran, Joseph and Na, Weon Taek and Lang, Jay and Yan,
-            Mengjia},
-  address = {New York, NY, USA},
-  booktitle = {Proceedings of the 49th Annual International Symposium on
-               Computer Architecture},
-  copyright = {2022 Owner/Author},
-  isbn = {9781450386104},
-  language = {eng},
-  pages = {685-698},
-  publisher = {ACM},
-  title = {PACMAN: attacking ARM pointer authentication with speculative
-           execution},
-  year = {2022},
+	abstract = {This paper studies the synergies between memory corruption
+	            vulnerabilities and speculative execution vulnerabilities. We
+	            leverage speculative execution attacks to bypass an important
+	            memory protection mechanism, ARM Pointer Authentication, a security
+	            feature that is used to enforce pointer integrity. We present
+	            PACMAN, a novel attack methodology that speculatively leaks PAC
+	            verification results via micro-architectural side channels without
+	            causing any crashes. Our attack removes the primary barrier to
+	            conducting control-flow hijacking attacks on a platform protected
+	            using Pointer Authentication. We demonstrate multiple
+	            proof-of-concept attacks of PACMAN on the Apple M1 SoC, the first
+	            desktop processor that supports ARM Pointer Authentication. We
+	            reverse engineer the TLB hierarchy on the Apple M1 SoC and expand
+	            micro-architectural side-channel attacks to Apple processors.
+	            Moreover, we show that the PACMAN attack works across privilege
+	            levels, meaning that we can attack the operating system kernel as
+	            an unprivileged user in userspace.},
+	author = {Ravichandran, Joseph and Na, Weon Taek and Lang, Jay and Yan,
+	          Mengjia},
+	address = {New York, NY, USA},
+	booktitle = {Proceedings of the 49th Annual International Symposium on
+	             Computer Architecture},
+	copyright = {2022 Owner/Author},
+	isbn = {9781450386104},
+	language = {eng},
+	pages = {685-698},
+	publisher = {ACM},
+	title = {PACMAN: attacking ARM pointer authentication with speculative
+	         execution},
+	year = {2022},
 }
 
 @article{SPAM,
-  abstract = {Last-level cache (LLC) covert-channels exploit the cache timing
-              differences to transmit information. In recent works, the attacks
-              rely on a single sender and a single receiver. Streamline is the
-              state-of-the-art cache covert channel attack that uses a shared
-              array of addresses mapped to the payload bits, allowing
-              parallelization of the encoding and decoding of bits. As multi-core
-              systems are ubiquitous, multiple senders and receivers can be used
-              to create a high bandwidth cache covert channel. However, this is
-              not the case, and the bandwidth per thread is limited by various
-              factors. We extend Streamline to a multi-threaded Streamline, where
-              the senders buffer a few thousand bits at the LLC for the receivers
-              to decode. We observe that these buffered bits are prone to
-              eviction by the co-running processes before they are decoded. We
-              propose SPAM, a multi-threaded covert-channel at the LLC. SPAM
-              shows that fewer but faster senders must encode for more receivers
-              to reduce this time frame. This ensures resilience to noise coming
-              from cache activities of co-running applications. SPAM uses two
-              different access patterns for the sender(s) and the receiver(s).
-              The sender access pattern of the addresses is modified to leverage
-              the hardware prefetchers to accelerate the loads while encoding.
-              The receiver access pattern circumvents the hardware prefetchers
-              for accurate load latency measurements. We demonstrate SPAM on a
-              six-core (12-threaded) system, achieving a bit-rate of 12.21 MB/s
-              at an error rate of 9.02% which is an improvement of over 70% over
-              the state-of-the-art multi-threaded Streamline for comparable error
-              rates when 50% of the co-running threads stress the cache system.},
-  author = {Kritheesh, E. and Panda, Biswabandan},
-  issn = {1556-6056},
-  journal = {IEEE computer architecture letters},
-  keywords = {Hardware ; Noise ; Receivers},
-  language = {eng},
-  number = {1},
-  pages = {25-28},
-  publisher = {IEEE},
-  title = {SPAM: Streamlined Prefetcher-Aware Multi-Threaded Cache
-           Covert-Channel Attack},
-  volume = {24},
-  year = {2025},
+	abstract = {Last-level cache (LLC) covert-channels exploit the cache timing
+	            differences to transmit information. In recent works, the attacks
+	            rely on a single sender and a single receiver. Streamline is the
+	            state-of-the-art cache covert channel attack that uses a shared
+	            array of addresses mapped to the payload bits, allowing
+	            parallelization of the encoding and decoding of bits. As multi-core
+	            systems are ubiquitous, multiple senders and receivers can be used
+	            to create a high bandwidth cache covert channel. However, this is
+	            not the case, and the bandwidth per thread is limited by various
+	            factors. We extend Streamline to a multi-threaded Streamline, where
+	            the senders buffer a few thousand bits at the LLC for the receivers
+	            to decode. We observe that these buffered bits are prone to
+	            eviction by the co-running processes before they are decoded. We
+	            propose SPAM, a multi-threaded covert-channel at the LLC. SPAM
+	            shows that fewer but faster senders must encode for more receivers
+	            to reduce this time frame. This ensures resilience to noise coming
+	            from cache activities of co-running applications. SPAM uses two
+	            different access patterns for the sender(s) and the receiver(s).
+	            The sender access pattern of the addresses is modified to leverage
+	            the hardware prefetchers to accelerate the loads while encoding.
+	            The receiver access pattern circumvents the hardware prefetchers
+	            for accurate load latency measurements. We demonstrate SPAM on a
+	            six-core (12-threaded) system, achieving a bit-rate of 12.21 MB/s
+	            at an error rate of 9.02% which is an improvement of over 70% over
+	            the state-of-the-art multi-threaded Streamline for comparable error
+	            rates when 50% of the co-running threads stress the cache system.},
+	author = {Kritheesh, E. and Panda, Biswabandan},
+	issn = {1556-6056},
+	journal = {IEEE computer architecture letters},
+	keywords = {Hardware ; Noise ; Receivers},
+	language = {eng},
+	number = {1},
+	pages = {25-28},
+	publisher = {IEEE},
+	title = {SPAM: Streamlined Prefetcher-Aware Multi-Threaded Cache
+	         Covert-Channel Attack},
+	volume = {24},
+	year = {2025},
 }
 
 @inproceedings{LeakyWay,
-  abstract = {Modern x86 processors feature many prefetch instructions that
-              developers can use to enhance performance. However, with some
-              prefetch instructions, users can more directly manipulate cache
-              states which may result in powerful cache covert channel and side
-              channel attacks. In this work, we reverse-engineer the detailed
-              cache behavior of PREFETCHNTA on various Intel processors. Based on
-              the results, we first propose a new conflict-based cache covert
-              channel named NTP+NTP. Prior conflict-based channels often require
-              priming the cache set in order to cause cache conflicts. In
-              contrast, in NTP+NTP, the data of the sender and receiver can
-              compete for one specific way in the cache set, achieving cache
-              conflicts without cache set priming for the first time. As a result
-              , NTP+NTP has higher bandwidth than prior conflict-based channels
-              such as Prime+Probe. The channel capacity of NTP+NTP is 302 KB/s.
-              Second, we found that PREFETCHNTA can also be used to boost the
-              performance of existing side channel attacks that utilize cache
-              replacement states, making those attacks much more efficient than
-              before.},
-  author = {Guo, Yanan and Xin, Xin and Zhang, Youtao and Yang, Jun},
-  address = {Piscataway, NJ, USA},
-  booktitle = {2022 55th IEEE/ACM International Symposium on Microarchitecture
-               (MICRO)},
-  isbn = {9781665462723},
-  keywords = {Hardware},
-  language = {eng},
-  pages = {646-661},
-  publisher = {IEEE Press},
-  title = {Leaky Way: A Conflict-Based Cache Covert Channel Bypassing Set
-           Associativity},
-  year = {2022},
+	abstract = {Modern x86 processors feature many prefetch instructions that
+	            developers can use to enhance performance. However, with some
+	            prefetch instructions, users can more directly manipulate cache
+	            states which may result in powerful cache covert channel and side
+	            channel attacks. In this work, we reverse-engineer the detailed
+	            cache behavior of PREFETCHNTA on various Intel processors. Based on
+	            the results, we first propose a new conflict-based cache covert
+	            channel named NTP+NTP. Prior conflict-based channels often require
+	            priming the cache set in order to cause cache conflicts. In
+	            contrast, in NTP+NTP, the data of the sender and receiver can
+	            compete for one specific way in the cache set, achieving cache
+	            conflicts without cache set priming for the first time. As a result
+	            , NTP+NTP has higher bandwidth than prior conflict-based channels
+	            such as Prime+Probe. The channel capacity of NTP+NTP is 302 KB/s.
+	            Second, we found that PREFETCHNTA can also be used to boost the
+	            performance of existing side channel attacks that utilize cache
+	            replacement states, making those attacks much more efficient than
+	            before.},
+	author = {Guo, Yanan and Xin, Xin and Zhang, Youtao and Yang, Jun},
+	address = {Piscataway, NJ, USA},
+	booktitle = {2022 55th IEEE/ACM International Symposium on Microarchitecture
+	             (MICRO)},
+	isbn = {9781665462723},
+	keywords = {Hardware},
+	language = {eng},
+	pages = {646-661},
+	publisher = {IEEE Press},
+	title = {Leaky Way: A Conflict-Based Cache Covert Channel Bypassing Set
+	         Associativity},
+	year = {2022},
 }
 
 @inproceedings{Streamline,
-  abstract = {Covert-channel attacks exploit contention on shared hardware
-              resources such as processor caches to transmit information between
-              colluding processes on the same system. In recent years, covert
-              channels leveraging cacheline-flush instructions, such as
-              Flush+Reload and Flush+Flush, have emerged as the fastest
-              cross-core attacks. However, current attacks are limited in their
-              applicability and bit-rate not due to any fundamental hardware
-              limitations, but due to their protocol design requiring flush
-              instructions and tight synchronization between sender and receiver,
-              where both processes synchronize every bit-period to maintain low
-              error-rates. In this paper, we present Streamline, a flush-less
-              covert-channel attack faster than all prior known attacks. The key
-              insight behind the higher channel bandwidth is asynchronous
-              communication. Streamline communicates over a sequence of shared
-              addresses (larger than the cache size), where the sender can move
-              to the next address after transmitting each bit without waiting for
-              the receiver. Furthermore, it ensures that addresses accessed by
-              the sender are preserved in the cache until the receiver has
-              accessed them. Finally, by the time the sender accesses the entire
-              sequence and wraps around, the cache-thrashing property ensures
-              that the previously transmitted addresses are automatically evicted
-              from the cache without any cacheline flushes, which ensures
-              functional correctness while simultaneously improving channel
-              bandwidth. To orchestrate Streamline on a real system, we overcome
-              multiple challenges, such as circumventing hardware optimizations
-              (prefetching and replacement policy), and ensuring that the sender
-              and receiver have similar execution rates. We demonstrate
-              Streamline on an Intel Skylake CPU and show that it achieves a
-              bit-rate of 1801 KB/s, which is 3x to 3.6x faster than the previous
-              fastest Take-a-Way (588 KB/s) and Flush+Flush (496 KB/s) attacks,
-              at comparable error rates. Unlike prior attacks, Streamline only
-              relies on generic properties of caches and is applicable to
-              processors of all ISAs (x86, ARM, etc.) and micro-architectures
-              (Intel, AMD, etc.).},
-  author = {Saileshwar, Gururaj and Fletcher, Christopher W. and Qureshi,
-            Moinuddin},
-  address = {New York, NY, USA},
-  booktitle = {Proceedings of the 26th ACM International Conference on
-               Architectural Support for Programming Languages and Operating
-               Systems},
-  copyright = {2021 ACM},
-  isbn = {9781450383172},
-  language = {eng},
-  pages = {1077-1090},
-  publisher = {ACM},
-  title = {Streamline: a fast, flushless cache covert-channel attack by enabling
-           asynchronous collusion},
-  year = {2021},
+	abstract = {Covert-channel attacks exploit contention on shared hardware
+	            resources such as processor caches to transmit information between
+	            colluding processes on the same system. In recent years, covert
+	            channels leveraging cacheline-flush instructions, such as
+	            Flush+Reload and Flush+Flush, have emerged as the fastest
+	            cross-core attacks. However, current attacks are limited in their
+	            applicability and bit-rate not due to any fundamental hardware
+	            limitations, but due to their protocol design requiring flush
+	            instructions and tight synchronization between sender and receiver,
+	            where both processes synchronize every bit-period to maintain low
+	            error-rates. In this paper, we present Streamline, a flush-less
+	            covert-channel attack faster than all prior known attacks. The key
+	            insight behind the higher channel bandwidth is asynchronous
+	            communication. Streamline communicates over a sequence of shared
+	            addresses (larger than the cache size), where the sender can move
+	            to the next address after transmitting each bit without waiting for
+	            the receiver. Furthermore, it ensures that addresses accessed by
+	            the sender are preserved in the cache until the receiver has
+	            accessed them. Finally, by the time the sender accesses the entire
+	            sequence and wraps around, the cache-thrashing property ensures
+	            that the previously transmitted addresses are automatically evicted
+	            from the cache without any cacheline flushes, which ensures
+	            functional correctness while simultaneously improving channel
+	            bandwidth. To orchestrate Streamline on a real system, we overcome
+	            multiple challenges, such as circumventing hardware optimizations
+	            (prefetching and replacement policy), and ensuring that the sender
+	            and receiver have similar execution rates. We demonstrate
+	            Streamline on an Intel Skylake CPU and show that it achieves a
+	            bit-rate of 1801 KB/s, which is 3x to 3.6x faster than the previous
+	            fastest Take-a-Way (588 KB/s) and Flush+Flush (496 KB/s) attacks,
+	            at comparable error rates. Unlike prior attacks, Streamline only
+	            relies on generic properties of caches and is applicable to
+	            processors of all ISAs (x86, ARM, etc.) and micro-architectures
+	            (Intel, AMD, etc.).},
+	author = {Saileshwar, Gururaj and Fletcher, Christopher W. and Qureshi,
+	          Moinuddin},
+	address = {New York, NY, USA},
+	booktitle = {Proceedings of the 26th ACM International Conference on
+	             Architectural Support for Programming Languages and Operating
+	             Systems},
+	copyright = {2021 ACM},
+	isbn = {9781450383172},
+	language = {eng},
+	pages = {1077-1090},
+	publisher = {ACM},
+	title = {Streamline: a fast, flushless cache covert-channel attack by enabling
+	         asynchronous collusion},
+	year = {2021},
 }
 
 @inproceedings{CacheCovertDetection,
-  abstract = {Cache-based covert channel attacks use highly-tuned shared-cache
-              conflict misses to pass information from a trojan to a spy process.
-              Detecting such attacks is very challenging. State of the art
-              detection mechanisms do not consider the general characteristics of
-              such attacks and, instead, focus on specific communication
-              protocols. As a result, they fail to detect attacks using different
-              protocols and, hence, have limited coverage. In this paper, we make
-              the following observation about these attacks: not only are the
-              malicious accesses highly tuned to the mapping of addresses to the
-              caches; they also follow a distinctive cadence as bits are being
-              received. Changing the mapping of addresses to the caches
-              substantially disrupts the conflict miss patterns, but retains the
-              cadence. This is in contrast to benign programs. Based on this
-              observation, we propose a novel, high-coverage approach to detect
-              cache-based covert channel attacks. It is called ReplayConfusion,
-              and is based on Record and deterministic Replay (RnR). After a
-              program's execution is recorded, it is deterministically replayed
-              using a different mapping of addresses to the caches. We then
-              analyze the difference between the cache miss rate timelines of the
-              two runs. If the difference function is both sizable and exhibits a
-              periodic pattern, it indicates that there is an attack. This paper
-              also introduces a new taxonomy of cache-based covert channel
-              attacks, and shows that ReplayConfusion uncovers examples from all
-              the categories. Finally, ReplayConfusion only needs simple
-              hardware.},
-  author = {Yan, Mengjia and Shalabi, Yasser and Torrellas, Josep},
-  booktitle = {2016 49th Annual IEEE/ACM International Symposium on
-               Microarchitecture (MICRO)},
-  isbn = {9781509035083},
-  keywords = {Hardware ; Indexes ; Receivers},
-  language = {eng},
-  pages = {1-14},
-  publisher = {IEEE},
-  title = {ReplayConfusion: Detecting cache-based covert channel attacks using
-           record and replay},
-  year = {2016},
+	abstract = {Cache-based covert channel attacks use highly-tuned shared-cache
+	            conflict misses to pass information from a trojan to a spy process.
+	            Detecting such attacks is very challenging. State of the art
+	            detection mechanisms do not consider the general characteristics of
+	            such attacks and, instead, focus on specific communication
+	            protocols. As a result, they fail to detect attacks using different
+	            protocols and, hence, have limited coverage. In this paper, we make
+	            the following observation about these attacks: not only are the
+	            malicious accesses highly tuned to the mapping of addresses to the
+	            caches; they also follow a distinctive cadence as bits are being
+	            received. Changing the mapping of addresses to the caches
+	            substantially disrupts the conflict miss patterns, but retains the
+	            cadence. This is in contrast to benign programs. Based on this
+	            observation, we propose a novel, high-coverage approach to detect
+	            cache-based covert channel attacks. It is called ReplayConfusion,
+	            and is based on Record and deterministic Replay (RnR). After a
+	            program's execution is recorded, it is deterministically replayed
+	            using a different mapping of addresses to the caches. We then
+	            analyze the difference between the cache miss rate timelines of the
+	            two runs. If the difference function is both sizable and exhibits a
+	            periodic pattern, it indicates that there is an attack. This paper
+	            also introduces a new taxonomy of cache-based covert channel
+	            attacks, and shows that ReplayConfusion uncovers examples from all
+	            the categories. Finally, ReplayConfusion only needs simple
+	            hardware.},
+	author = {Yan, Mengjia and Shalabi, Yasser and Torrellas, Josep},
+	booktitle = {2016 49th Annual IEEE/ACM International Symposium on
+	             Microarchitecture (MICRO)},
+	isbn = {9781509035083},
+	keywords = {Hardware ; Indexes ; Receivers},
+	language = {eng},
+	pages = {1-14},
+	publisher = {IEEE},
+	title = {ReplayConfusion: Detecting cache-based covert channel attacks using
+	         record and replay},
+	year = {2016},
 }
 
 @article{TransientAttackSurvey,
-  abstract = {Transient execution attacks, also known as speculative execution
-              attacks, have drawn much interest in the last few years as they can
-              cause critical data leakage. Since the first disclosure of Spectre
-              and Meltdown attacks in January 2018, a number of new transient
-              execution attack types have been demonstrated targeting different
-              processors. A transient execution attack consists of two main
-              components: transient execution itself and a covert channel that is
-              used to actually exfiltrate the information.Transient execution is
-              a result of the fundamental features of modern processors that are
-              designed to boost performance and efficiency, while covert channels
-              are unintended information leakage channels that result from
-              temporal and spatial sharing of the micro-architectural components.
-              Given the severity of the transient execution attacks, they have
-              motivated computer architects in both industry and academia to
-              rethink the design of the processors and to propose hardware
-              defenses. To help understand the transient execution attacks, this
-              survey summarizes the phases of the attacks and the security
-              boundaries across which the information is leaked in different
-              attacks.This survey further analyzes the causes of transient
-              execution as well as the different types of covert channels and
-              presents a taxonomy of the attacks based on the causes and types.
-              This survey in addition presents metrics for comparing different
-              aspects of the transient execution attacks and uses them to
-              evaluate the feasibility of the different attacks. This survey
-              especially considers both existing attacks and potential new
-              attacks suggested by our analysis. This survey finishes by
-              discussing different mitigations that have so far been proposed at
-              the micro-architecture level and discusses their benefits and
-              limitations.},
-  author = {Xiong, Wenjie and Szefer, Jakub},
-  address = {Baltimore},
-  copyright = {Copyright Association for Computing Machinery Apr 2022},
-  issn = {0360-0300},
-  journal = {ACM computing surveys},
-  keywords = {Channels ; Classification ; Computer architecture ; Computer
-              science},
-  language = {eng},
-  number = {3},
-  pages = {1-36},
-  publisher = {Association for Computing Machinery},
-  title = {Survey of Transient Execution Attacks and Their Mitigations},
-  volume = {54},
-  year = {2022},
+	abstract = {Transient execution attacks, also known as speculative execution
+	            attacks, have drawn much interest in the last few years as they can
+	            cause critical data leakage. Since the first disclosure of Spectre
+	            and Meltdown attacks in January 2018, a number of new transient
+	            execution attack types have been demonstrated targeting different
+	            processors. A transient execution attack consists of two main
+	            components: transient execution itself and a covert channel that is
+	            used to actually exfiltrate the information.Transient execution is
+	            a result of the fundamental features of modern processors that are
+	            designed to boost performance and efficiency, while covert channels
+	            are unintended information leakage channels that result from
+	            temporal and spatial sharing of the micro-architectural components.
+	            Given the severity of the transient execution attacks, they have
+	            motivated computer architects in both industry and academia to
+	            rethink the design of the processors and to propose hardware
+	            defenses. To help understand the transient execution attacks, this
+	            survey summarizes the phases of the attacks and the security
+	            boundaries across which the information is leaked in different
+	            attacks.This survey further analyzes the causes of transient
+	            execution as well as the different types of covert channels and
+	            presents a taxonomy of the attacks based on the causes and types.
+	            This survey in addition presents metrics for comparing different
+	            aspects of the transient execution attacks and uses them to
+	            evaluate the feasibility of the different attacks. This survey
+	            especially considers both existing attacks and potential new
+	            attacks suggested by our analysis. This survey finishes by
+	            discussing different mitigations that have so far been proposed at
+	            the micro-architecture level and discusses their benefits and
+	            limitations.},
+	author = {Xiong, Wenjie and Szefer, Jakub},
+	address = {Baltimore},
+	copyright = {Copyright Association for Computing Machinery Apr 2022},
+	issn = {0360-0300},
+	journal = {ACM computing surveys},
+	keywords = {Channels ; Classification ; Computer architecture ; Computer
+	            science},
+	language = {eng},
+	number = {3},
+	pages = {1-36},
+	publisher = {Association for Computing Machinery},
+	title = {Survey of Transient Execution Attacks and Their Mitigations},
+	volume = {54},
+	year = {2022},
 }
 
 --------------------------------
@@ -884,40 +925,77 @@ Architectures
 --------------------------------
 
 @article{NewCache,
-  abstract = {Newcache is a secure cache that can thwart cache side-channel
-              attacks to prevent the leakage of secret information. All caches
-              today are susceptible to cache side-channel attacks, despite
-              software isolation of memory pages in virtual address spaces or
-              virtual machines. These cache attacks can leak secret encryption
-              keys or private identity keys, nullifying any protection provided
-              by strong cryptography. Newcache uses a novel dynamic, randomized
-              memory-to-cache mapping to thwart contention-based side-channel
-              attacks, rather than the static mapping used by conventional
-              set-associative caches. In this article, the authors present an
-              improved design of Newcache, in terms of security, circuit design
-              and simplicity. They show Newcache's security against a suite of
-              cache side-channel attacks. They evaluate Newcache's system
-              performance for cloud computing, smartphone, and SPEC benchmarks
-              and find that Newcache performs as well as conventional
-              set-associative caches, and sometimes better. They also designed a
-              VLSI test chip with a 32-Kbyte Newcache and a 32-Kbyte, eight-way,
-              set-associative cache and verified that the access latency, power,
-              and area of the two caches are comparable. These results show that
-              Newcache can be used as L1 data and instruction caches to improve
-              security without impacting performance.},
-  author = {Fangfei Liu and Hao Wu and Mai, Kenneth and Lee, Ruby B.},
-  address = {Los Alamitos},
-  copyright = {Copyright The Institute of Electrical and Electronics Engineers ,
-               Inc. (IEEE) Sep-Oct 2016},
-  issn = {0272-1732},
-  journal = {IEEE MICRO},
-  keywords = {Cache memory ; Cloud computing ; Cryptography ; Memory ; Software},
-  language = {eng},
-  number = {5},
-  pages = {8-16},
-  publisher = {IEEE},
-  title = {Newcache: Secure Cache Architecture Thwarting Cache Side-Channel
-           Attacks},
-  volume = {36},
-  year = {2016},
+	abstract = {Newcache is a secure cache that can thwart cache side-channel
+	            attacks to prevent the leakage of secret information. All caches
+	            today are susceptible to cache side-channel attacks, despite
+	            software isolation of memory pages in virtual address spaces or
+	            virtual machines. These cache attacks can leak secret encryption
+	            keys or private identity keys, nullifying any protection provided
+	            by strong cryptography. Newcache uses a novel dynamic, randomized
+	            memory-to-cache mapping to thwart contention-based side-channel
+	            attacks, rather than the static mapping used by conventional
+	            set-associative caches. In this article, the authors present an
+	            improved design of Newcache, in terms of security, circuit design
+	            and simplicity. They show Newcache's security against a suite of
+	            cache side-channel attacks. They evaluate Newcache's system
+	            performance for cloud computing, smartphone, and SPEC benchmarks
+	            and find that Newcache performs as well as conventional
+	            set-associative caches, and sometimes better. They also designed a
+	            VLSI test chip with a 32-Kbyte Newcache and a 32-Kbyte, eight-way,
+	            set-associative cache and verified that the access latency, power,
+	            and area of the two caches are comparable. These results show that
+	            Newcache can be used as L1 data and instruction caches to improve
+	            security without impacting performance.},
+	author = {Fangfei Liu and Hao Wu and Mai, Kenneth and Lee, Ruby B.},
+	address = {Los Alamitos},
+	copyright = {Copyright The Institute of Electrical and Electronics Engineers ,
+	             Inc. (IEEE) Sep-Oct 2016},
+	issn = {0272-1732},
+	journal = {IEEE MICRO},
+	keywords = {Cache memory ; Cloud computing ; Cryptography ; Memory ; Software},
+	language = {eng},
+	number = {5},
+	pages = {8-16},
+	publisher = {IEEE},
+	title = {Newcache: Secure Cache Architecture Thwarting Cache Side-Channel
+	         Attacks},
+	volume = {36},
+	year = {2016},
 }
+
+--------------------------------
+Benchmarks
+--------------------------------
+
+@inproceedings{Parsec,
+	abstract = {This paper presents and characterizes the Princeton Application
+	            Repository for Shared-Memory Computers (PARSEC), a benchmark suite
+	            for studies of Chip-Multiprocessors (CMPs). Previous available
+	            benchmarks for multiprocessors have focused on high-performance
+	            computing applications and used a limited number of synchronization
+	            methods. PARSEC includes emerging applications in recognition,
+	            mining and synthesis (RMS) as well as systems applications which
+	            mimic large-scale multithreaded commercial programs. Our
+	            characterization shows that the benchmark suite covers a wide
+	            spectrum of working sets, locality, data sharing, synchronization
+	            and off-chip traffic. The benchmark suite has been made available
+	            to the public.},
+	author = {Bienia, Christian and Kumar, Sanjeev and Singh, Jaswinder Pal and Li
+	          , Kai},
+	address = {New York, NY, USA},
+	booktitle = {2008 International Conference on Parallel Architectures and
+	             Compilation Techniques (PACT)},
+	copyright = {2008 ACM},
+	isbn = {9781605582825},
+	issn = {1089-795X},
+	keywords = {Animation ; Computer science ; Computers ; Synchronization ;
+	            Technology},
+	language = {eng},
+	organization = {ACM},
+	pages = {72-81},
+	publisher = {ACM},
+	title = {The PARSEC benchmark suite: characterization and architectural
+	         implications},
+	year = {2008},
+}
+

@@ -1,13 +1,19 @@
-\documentclass[letterpaper, twocolumn]{article}
+\documentclass[letterpaper]{article}
 % \usepackage{usenix2019_v3}
 
 % to be able to draw some self-contained figs
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric}
+\usetikzlibrary{positioning}
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage{algpseudocode}
 \usepackage{algorithm}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{svg}
+\graphicspath{ {./diagrams/} }
+\doublespacing
 
 % inlined bib file
 % \usepackage{filecontents}
@@ -43,7 +49,35 @@ Dartmouth College
 \begin{abstract}
 %-------------------------------------------------------------------------------
 
-I'll write this when I'm done with the rest of the paper as a summary of everything
+  Eviction sets are fundamental to cache-enabled attacks such as Rowhammer
+  and Prime+Probe style side channel attacks.
+  Previous work focuses on defending against finding eviction sets for one or many
+  of a cache's sets ("mapping" the cache).
+
+  In this paper we present the replacement policy of a CPU cache as a defense against
+  % Possibly: add mapping as a defense target too
+  the use of already-found eviction sets to occupy cache sets ("priming" the cache),
+	and against the use of eviction sets to induce targeted electrical interference in DRAM cells.
+  In particular, we establish a relation between the cache replacement policy and the
+  maximum data leakage throughput of a Prime+Probe style attack as well as the
+  maximum DRAM access in Rowhammer style attacks.
+
+	Finally, we present three novel CPU cache replacement algorithms:
+	SIEVE, based on the software SIEVE algorithm,
+	2Tree, based on the TwoQ and SLRU software algorithms,
+	and 3Tree, an enhancement of 2Tree.
+	Many variants of 2Tree and 3Tree are presented and tested, including
+	set dueling used to switch between two variants of 3Tree.
+  A CPU implementation of SLRU (along with many performance-enhancing variations) has
+  already been introduced, and 3Tree is competitive in performance.
+  In gem5 PARSEC simulations, 3Tree incurs a 1.7\% miss ratio penalty
+  compared to fixed SLRU while using 86\% less per-line metadata and no bypass table for line aging.
+  Most importantly, 3Tree algorithm significantly enhances the security against eviction set
+  % Possibly: add mapping as a defense target too
+  cache priming and cache bypass..
+  3Tree shows a 92.6\% reduction in the data leakage throughput through Prime+Probe attacks,
+	and an X\% reduction in the number of DRAM hits induced in Rowhammer attacks.
+
 \end{abstract}
 
 %-------------------------------------------------------------------------------
@@ -59,6 +93,7 @@ This includes attacks that use this form as their foundation,
 such as speculative execution attacks
 \cite{Gofetch}
 \cite{Spectre}
+\cite{Meltdown}
 \cite{TikTag}
 \cite{PACMan}
 \cite{SPAM}
@@ -101,7 +136,7 @@ whether for a single cache set \cite{TPFES}
 or for a majority of the cache \cite{EvictionSetsAtScale}.
 However, these algorithms make assumptions about the architecture,
 including the use of LRU or Random replacement algorithms
-and, critically, the lack of modern CPU features like 
+and, critically, the lack of modern CPU features like skewed caches
 % TODO: get examples of cache randomization from Prune+PlumTree
 \cite{EvictionSetsAtScale}.
 Additionally, these algorithms enable or enhance the setup for cache attacks,
@@ -113,8 +148,6 @@ performance enhancement over other very commonly used algorithms,
 and we implement a variation of the algorithm in hardware
 with these performance characteristics in mind
 and with an emphasis on security against cache priming.
-
-% Write about the impacts of the results of this research
 
 \section{Background}
 % Introduce the concepts of caches and eviction sets
@@ -130,7 +163,7 @@ CPU memory caches are divided into \textit{cache lines}, usually 64 bytes long,
 grouped into \textit{sets} usually of 1-16 lines.
 The number of lines per set is called the associativity, which we hence call $a$.
 Modern CPUs use multiple levels of caches, including an L1, L2, and optional L3 cache
-in order of increasing size and distance from the ALU.
+in order of increasing size and distance from the CPU.
 The Last Level Cache (LLC) is often shared among all CPU cores, and may further group
 cache sets into \textit{slices}, with one or two slices placed physically on each core.
 Smaller caches tend to have lower associativity values of 2 or 4, and larger caches and LLCs
@@ -183,15 +216,15 @@ and not updating the tree upon subsequent address touches.
 %----------------
 % TreePLRU Diagram
 %----------------
-\begin{figure}
+\begin{figure*}
 \begin{center}
 \begin{tikzpicture} [
-  every node/.style={draw},
+  every node/.style={draw,distance=12mm},
   level 0/.style={circle},
-  level 1/.style={circle,sibling distance=40mm},
-  level 2/.style={circle,sibling distance=20mm},
-  level 3/.style={circle,sibling distance=10mm},
-  level 4/.style={rectangle,minimum size=5mm,inner sep=0,sibling distance=5mm}
+  level 1/.style={circle,sibling distance=56mm},
+  level 2/.style={circle,sibling distance=28mm},
+  level 3/.style={circle,sibling distance=14mm},
+  level 4/.style={rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm}
   ]
   \node (n0) [circle] {0}
     child {
@@ -286,9 +319,12 @@ and not updating the tree upon subsequent address touches.
     };
 \end{tikzpicture}
 \end{center}
-  \caption{TreePLRU metadata structure}
+  \caption{
+		TreePLRU metadata structure. In this cache state, $s_6$ will be the first cache object evicted,
+		followed by $s_{11}$. $s_{13}$ is in the MRU position and the farthest from eviction.
+	}
   \label{fig:treeplru}
-\end{figure}
+\end{figure*}
 
 In Figure \ref{fig:treeplru}, 
 $s_{13}$ is in the MRU position and is safest from eviction.
@@ -311,9 +347,9 @@ As this algorithm does not attempt to evaluate cache lines for recency of use
 or predict their next use, it suffers from a higher miss ratio than many other algorithms.
 However, since it requires no cache metadata and no algorithm logic,
 it uses very little energy and incurs no extra latency.
-For this reason, Random Replacement is sometimes used in L1 caches,
-The low latency of these caches, which is usually around 1-2ns for L1
-and 4-5ns for L2 to fulfill a memory request,
+For this reason, Random Replacement is sometimes used in L1 caches.
+The low latency of these caches, which is usually around 1-2 nanoseconds for L1
+and 4-5 nanoseconds for L2 to fulfill a memory request,
 means that the more common cache misses do not add too much latency to memory requests
 but may save a lot of energy.
 Most ARM processors equip Random Replacement algorithms in some of their CPU caches.
@@ -345,12 +381,12 @@ Later variations of SLRU have been introduced \cite{SSLRU},
 including hardware implementations for CPU caches
 \cite{DuelingSLRU}\cite{LimitedSLRU}\cite{FixedSLRU}\cite{FixedSLRUEnhancements}.
 These algorithms perform well but introduce significant overhead in hardware complexity,
-using bypass tables \dots
+using bypass tables.
 
 \subsection{SIEVE}
 
 SIEVE is a simple algorithm used for large software caches as both an eviction algorithm
-and as a cache primitive used as a foundation for other, more complicated algorithms.
+and as a cache primitive used as a foundation for other, more complicated algorithms. \cite{SIEVE}
 It improves upon LRU and FIFO Reinsertion,
 in which elements are placed in a FIFO queue with a \textit{safe} boolean:
 upon a touch, the element is marked as safe, and upon eviction,
@@ -425,7 +461,8 @@ repeated RAM hits can encourage bitflips in victim memory.
 \subsection{Cache-enabled Attacks}
 Caches are mostly well-protected against direct attacks;
 users are prevented from accessing memory placed in the cache by another process.
-However, the cache can serve as a tool to enable other attacks.
+However, the cache can serve as a tool to enable other attacks,
+especially as a side channel with a timing oracle to leak information.
 
 \subsubsection{Transient Attacks and Forms}
 Transient attacks, also called speculative execution attacks, take advantage of modern CPUs' speculative execution pipeline.
@@ -453,7 +490,7 @@ An attacker decodes the information leaked into the covert channel during the Tr
 \end{enumerate}
 
 As the CPU cache is too large to fully roll back upon a speculative miss, this is a common side of transient information leakage.
-Previous hardware solutions to transient attacks include MuonTrap,
+Previous hardware solutions to transient attacks include MuonTrap \cite{MuonTrap},
 which introduces an additional L0-level cache that catches all speculative memory accesses
 and can easily roll back upon a speculative miss.
 
@@ -484,13 +521,35 @@ We aim to prevent or slow the use of eviction sets in the \textit{setup phase} o
 
 \subsubsection{Rowhammer}
 
+Rowhammer takes advantage of electromagnetic coupling
+between increasingly small and densely compacted DRAM cells.
+DRAM consists of memory cells, and modern chip design techniques attempt to compact these cells
+very close together to maximize energy efficiency and memory capacity.
+The extreme proximity of these cells and the necessity of charge refreshing
+due to the lack of charge persistence means many accesses to a memory address
+in quick succession can spontaneously induce charge interference \em a bit flip \em
+in adjacent memory rows in a cell bank.
+Rowhammer attacks use repeated targeted memory accesses to induce bitflips in specific memory locations,
+and may result in consequences like incorrect privilege elevation.
+
+Notably, this attack requires a method of bypassing the cache.
+As write-back caches store all memory requests and prevent DRAM access for addresses contained in the cache,
+directly repeated accesses to a single target address would simply touch the cache
+and have no effect on the RAM cells.
+In systems that have the \texttt{clflush} instruction enabled,
+attackers may flush the cache after each access,
+thus requiring the memory request to fetch from DRAM.
+In systems where this instruction is disabled or does not exist,
+attacks often use eviction sets to force DRAM access.
+
+
 \subsection{Eviction Sets}
 Eviction sets are an attack primitive used in many cache-based hardware attacks.
 They are used to prime a cache by ensuring that a target object is removed from its cache set.
 An eviction set is a group of virtual addresses that are all congruent: they all map to the same cache set.
 For a cache set with associativity $a$, an eviction set $S$ must contain $|S| \geq a$ addresses.
-In a system without cache scrambling (**check on the name of this + source**), congruent addresses share index bits in their
-corresponding physical address. (**check on virtual vs. physical**)
+In a system that does not use pseudo-random mapping from physical addresses to cache sets,
+congruent addresses share index bits in their corresponding physical address.
 
 % An attacker may use an eviction set to fill a target cache set with attacker-provided objects; we refer to this process as \textit{occupation} of an eviction set.
 
@@ -531,20 +590,35 @@ using hardware-level cache eviction algorithms.
 Additionally, we aim to accomplish this security without inducing a significant performance hit in the cache of either miss rate or latency.
 
 \subsection{Expected Difficulty of an Eviction Algorithm}
-We define the difficulty of occupying a cache set with a certain touching pattern as the total number of memory touches
-required to overwrite all lines in the cache with addresses from an eviction set.
-With this measurement, we evaluate the LRU (and its variants) and Random Replacement eviction algorithms for their security against cache set occupation.
-We use these measurements as baselines of comparisons for our own cache eviction algorithm.
+We define the difficulty $D$ of occupying a cache set with a certain touching pattern
+as the total number of memory touches required to overwrite all lines in the cache
+with addresses from an eviction set.
 
-For the minimum difficulty, we assume an optimal attacker;
-for each eviction algorithm, there exists a memory touching pattern that most effectively fills a cache set.
-We define the minimum difficulty of an eviction algorithm as the number of optimally-ordered touches required to fill a cache set.
+For the minimum difficulty $D_m$, we assume an optimal attacker;
+for each eviction algorithm, there exists a memory touching pattern that
+most effectively primes a cache set.
+In this case, an optimal attacker does not know the state of the cache,
+but may optionally use a timing oracle to determine if a previously touched address
+is still in the cache.
+This timing oracle incurs an extra counted touch, but we ignore the cost of
+the added conditional.
 
 Additionally, randomness is a factor in some of these eviction algorithms.
 We assume a uniform random distribution of initial cache states;
-for some algorithms, the initial state into which an attacker would start placing eviction set objects affects the order of evictions.
-Additionally, some algorithms use randomness in selecting an eviction candidate.
-We define the expected minimum difficulty of an eviction algorithm as the mean number of optimally-ordered touches required to fill a cache set.
+We define the expected minimum difficulty $D_{Em}$ of an eviction algorithm
+as the mean number of optimally-ordered touches required to fill a cache set.
+
+Finally, SLRU and our implementation of 3Tree splits the cache into segments,
+which may mean that the attacker can guarantee that a victim overwrites
+an attacker-primed address without the attacker filling the entire cache set,
+and thus that the minimum expected difficulty may be higher than the true value
+when used in an attack.
+We define the guarantee difficulty $D_g$ as the minimum expected number of touches
+required to guarantee an attacker access to an accurate timing oracle.
+For replacement algorithms where new objects may be placed in any index in the cache,
+$D_g = D_{Em}$, as an attacker must fill every cache line to guarantee
+that a victim touch will overwrite an eviction set address.
+We separately define $D_g$ for 2Tree.
 
 \subsubsection{LRU, TreePLRU, and FIFO}
 % Derive expected difficulty, no choice or permutation randomness
@@ -559,7 +633,7 @@ $a$ sequential touches to fill a cache set.
 As these algorithms are deterministic, the expected difficulty is the same value.
 
 \begin{equation}\label{LRUExpectedD}
-  D_g(LRU) = D_{m}(LRU) = D_{Em}(LRU) = a
+  D_g(\text{LRU}) = D_m(\text{LRU}) = D_{Em}(\text{LRU}) = a
 \end{equation}
 
 \subsubsection{Random Replacement}
@@ -579,7 +653,7 @@ Then, the expected value of the total number of unique touches to occupy an evic
 
 % If they have an issue with this not being fully simplified they can take that up in review
 \begin{equation}\label{RandomExpected}
-    D_g(Random) = D_{Em}(Random) = \sum_{i=0}^{a-1}{\frac{a}{a-i}}
+    D_g(\text{Random}) = D_{Em}(\text{Random}) = \sum_{i=0}^{a-1}{\frac{a}{a-i}}
 \end{equation}
 
 \subsection{Preventing Eviction Set Occupation}
@@ -616,6 +690,14 @@ we analyze and evaluate our eviction algorithm qualitatively.
 
 \subsection{Miss Rate Cost}
 
+Finally, we try to optimize our algorithms for cache miss rate.
+Miss ratios in the CPU are usually quite low,
+given the high spatial and temporal locality of memory accesses
+and the need for extreme speed in these caches.
+We use TreePLRU as a baseline for performance,
+as it is likely the most commonly used CPU replacement algorithm
+and performs reasonably well in most workloads.
+
 \section{Implementation}
 
 As discussed in 3.3, due to the hardware requirements and parallel nature of circuits,
@@ -634,16 +716,53 @@ Along with an increased hardware footprint, this would result in immense energy 
 especially compared to other algorithms like TreePLRU that select an eviction candidate
 without sequential logic at all.
 
+\begin{figure*}
+	\begin{center}
+		% \includesvg{diagrams/Sieve.svg}
+	\end{center}
+	\caption{SIEVE metadata structure}
+	\label{fig:sieve}
+\end{figure*}
+
+
+We implement SIEVE in the cache by dividing the cache objects into four groups with two boolean tags.
+First, we use a \textit{safe} bit analogous to the position of the cursor in software SIEVE.
+In the software version, objects to the right of the cursor are the closest to being checked for the visited bit,
+and objects to the left of the cursor are relatively safe from being checked.
+We represent an object to the left of the cursor with an enabled safe bit
+and objects to the right of the cursor with a disabled safe bit.
+Then, we use a \textit{visited} bit very similar to the software implementation of SIEVE,
+which is set to 1 when a cache object is added or touched.
+The algorithm first makes checks to ensure that there will be a valid eviction candidate.
+It determines if all of the objects are safe,
+and in this case disables all of the safe bits.
+This is analogous to the cursor in software SIEVE traversing the whole cache and looping back to the beginning of the array.
+It also checks if all of the objects are visited,
+and in this case disables all of the visited bits.
+This is analogous to the cursor traversing an entirely visited array and looping back to its start position,
+resetting all of the \textit{visited} booleans along the way,
+before continuing on.
+Checking these boundaries is possible in hardware and prevents the algorithm from
+searching for an eviction candidate while changing values
+and having to make a second pass to find a valid eviction candidate based on the changed values.
+Then, the algorithm marches through the cache lines in the order of their position in the cache
+and checks each element.
+The first cache object that is not marked \textit{visited} is evicted,
+and the lines before it are all marked as unsafe.
+
+Unlike a raw implementation of SIEVE, this algorithm can be implemented using a Priority Encoder
+to search along the cache lines without requiring registers or extra clock cycles.
+
 \subsection{2Tree}
 
 TwoQ does not rely on sequential logic nearly as much as SIEVE,
 but there are multiple possible ways to implement the dual-queue structure.
-I implement TwoQ as a tree structure very similar to TreePLRU.
+I implement TwoQ as a tree structure very similar to TreePLRU, as shown in figure \ref{fig:2tree}.
 The cache is split into two smaller queues, each with their own subtree:
 the \textit{cold} queue, containing $\frac{1}{4}$ of the elements,
 and the \textit{hot} queue, containing $\frac{3}{4}$ of the elements.
 The hot queue, having a multiple of 3 elements,
-is further split into
+is further marked with
 a \textit{probation} segment, containing $\frac{1}{4}$ of the total elements,
 and a \textit{safe} segment, containing the remaining $\frac{1}{2}$ of the elements.
 We choose a tree-based replacement policy for each of the two subtrees,
@@ -667,13 +786,140 @@ The entire cache line of $a$ is swapped with that of $b$,
 and $a$, now in the hot queue, is promoted according to the hot queue's replacement policy.
 $b$, now in the cold queue, is not promoted.
 
-\begin{algorithmic}
-  \State $i \gets 10$
-\end{algorithmic}
+%----------------
+% 2Tree Diagram
+%----------------
+\begin{figure*}
+\begin{center}
+\begin{tikzpicture} [
+  every node/.style={draw,distance=12mm},
+  level 0/.style={circle},
+  level 1/.style={circle,sibling distance=56mm},
+  level 2/.style={circle,sibling distance=28mm},
+  level 3/.style={circle,sibling distance=14mm},
+  level 4/.style={rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm}
+  ]
+  \node (n0) [circle, label=above:Hot] {0}
+		child [circle, sibling distance=28mm] {
+			node [
+				left=22mm of n5,
+				label=left:Probation
+			] (n4) {1}
+				child [circle,sibling distance=14mm] {
+          node (n9) {1}
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
+            node (n19) {$s_4$}
+          }
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+            node (n20) {$s_5$}
+          edge from parent [double]}
+        }
+				child [circle,sibling distance=14mm] {
+          node (n10) {0}
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+            node (n21) {$s_6$}
+          edge from parent [double]}
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+            node (n22) {$s_7$}
+          }
+        edge from parent [double]}
+      edge from parent [double]}
+    child {
+			node [label=above:Safe] (n2) {0}
+      child {
+        node (n5) {1}
+        child {
+          node (n11) {0}
+          child {
+            node (n23) {$s_8$}
+          edge from parent [double]}
+          child {
+            node (n24) {$s_9$}
+          }
+        }
+        child {
+          node (n12) {1}
+          child {
+            node (n25) {$s_{10}$}
+          }
+          child {
+            node (n26) {$s_{11}$}
+          edge from parent [double]}
+        edge from parent [double]}
+      edge from parent [double]}
+      child {
+        node (n6) {1}
+        child {
+          node (n13) {0}
+          child {
+            node (n27) {$s_{12}$}
+          edge from parent [double]}
+          child {
+            node (n28) {$s_{13}$}
+          }
+        }
+        child {
+          node (n14) {0}
+          child {
+            node (n29) {$s_{14}$}
+          edge from parent [double]}
+          child {
+            node (n30) {$s_{15}$}
+          }
+        edge from parent [double]}
+      }
+    };
+	\node [left=22mm of n4, circle, label=above:Cold](n3) {0}
+		child [circle, sibling distance=14mm] {
+				node (n7) {1}
+				child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
+					node (n15) {$s_0$}
+				edge from parent [double]}
+				child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
+					node (n16) {$s_1$}
+				}
+			edge from parent [double]}
+			child [circle, sibling distance=14mm]{
+			node (n8) {1}
+			child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+				node (n17) {$s_2$}
+			}
+			child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+				node (n18) {$s_3$}
+			edge from parent [double]}
+		};
+\end{tikzpicture}
+\end{center}
+  \caption{
+		2Tree metadata structure, with Cold, Probation, and Hot subtrees.
+		If the cold subtree is chosen for eviction with probability $c$,
+		$s_1$ will be the evicted.
+		If the probation subtree is chosen for eviction with probability $1 - c$,
+		$s_6$ will be evicted.
+		Because of its place in the labeled 'Safe' subtree,
+		$s_11$ is the object safest from eviction.
+	}
+  \label{fig:2tree}
+\end{figure*}
+
+We recognize several different variants according to the the replacement algorithms
+selected for each subtree and the choice probability $c$.
+For the hot and cold subtrees, we separately select replacement algorithms
+and call the specific variant according to its cold queue replacement algorithm,
+hot queue replacement algorithm, and then its choice probability.
+We note random replacement as $r$,
+LRU as $l$,
+and FIFO as $f$,
+and we note $c=0$ as $n$,
+$c=0.125$ as $e$,
+$c=0.25$ as $q$,
+and $c=0.5$ as $h$.
+For example, a 2Tree variant with a random-replacement cold queue
+and an LRU hot queue with $c=0.25$ is hence written as 2Tree-rlq.
 
 \subsection{3Tree}
 
-We implement 3Tree with three tree structures similar to 2Tree and TreePLRU.
+We implement 3Tree with three tree structures similar to 2Tree and TreePLRU, as shown in figure \ref{fig:3tree}.
 The cache is split into three separate subtrees:
 \begin{itemize}
 \item the \textit{cold} queue, containing $\frac{1}{4}$ of the elements
@@ -685,11 +931,160 @@ and define choice probabilities $c_{cold}$, $c_{prob}$, and $c_{hot}$ as paramet
 with $c_{cold} + c_{prob} + c_{hot} = 1$.
 Like 2Tree, the smaller trees prevent use of the algorithm for $a < 4$.
 
-When adding a new element $a$, one of the subtrees is chosen according to their choice probabilities.
-We choose $c_{cold} = \frac{1}{2}$, $c_{prob} = \frac{3}{8}$ and $c_{hot} = \frac{1}{8}$
+When adding a new element $e$, one of the subtrees $t$ is chosen according to their choice probabilities.
+We choose $c_{cold} = \frac{5}{8}$, $c_{prob} = \frac{1}{4}$ and $c_{hot} = \frac{1}{8}$
 for all implementations and testing.
-Then, an eviction candidate $b$ is selected from this subtree according to its replacement policy
-and a 
+Then, an eviction candidate $b$ is selected from $t$ according to its replacement policy.
+If the selected subtree is not the lowest level of subtree (i.e. if the probation hot queues was chosen),
+then an additional eviction candidate $x$ is chosen from the tree directly under $t$.
+For example, if $t$ is the probation queue, $x$ is chosen from the cold queue,
+and if $t$ is the hot queue, $x$ is chosen from the probation queue.
+Then, $x$ is evicted, $b$ is swapped from its queue to $x$'s position, and $e$ is placed into $b$'s position.
+If $t$ is chosen as the cold queue and there is no $x$ line, then $b$ is evicted and $e$ is placed into this space.
+Finally, $e$ is touched in its new subtree according to the subtree's replacement algorithm.
+
+When touching an element $e$ in subtree $t$,
+an eviction candidate $b$ is chosen in the next subtree $t_n$ according to its replacement algorithm.
+Then, $e$ is swapped with $b$ and $e$ is touched in $t_n$.
+For example, if $t$ is the cold queue, $e$ is swapped with an element from the probation queue,
+and if $t$ is the probation queue, $e$ is swapped with an element from the hot queue.
+If $t$ is the hot queue, $e$ is simply touched according to the replacement algorithm in the hot queue subtree.
+
+Finally, we recognize three hot-cold variants of 3Tree beyond the possible variation of replacement algorithms of the subtrees.
+\begin{itemize}
+	\item \textit{3Tree-h}: Hot-heavy 3Tree uses a hot queue holding $\frac{1}{2}$ of the cache lines
+		and a cold queue holding $\frac{1}{4}$ of the lines.
+	\item \textit{3Tree-c}: Cold-heavy 3Tree uses a hot queue holding $\frac{1}{4}$ of the cache lines
+		and a cold queue holding $\frac{1}{2}$ of the lines.
+	\item \textit{3Tree-d}: Dueling 3Tree uses set dueling on 3Tree-c and 3Tree-h.
+		This dynamically chooses one of the two variants based on the performance of 
+		\textit{leader sets} \cite{DuelingSLRU}.
+		% TODO: Fix the citation for this
+\end{itemize}
+We label experimental variants of 3Tree like 2Tree,
+with the replacement algorithm of the cold queue and the hot queue,
+and then the hot-cold variant of the whole cache set.
+
+Although there are many different possible values for $c_{cold}$, $c_{prob}$, and $c_{hot}$,
+we only show results for $c_{cold} = \frac{5}{8}$, $c_{prob} = \frac{1}{4}$ and $c_{hot} = \frac{1}{8}$.
+We choose these values based on desired performance characteristics:
+we want new objects to be relatively isolated to one place,
+so we give the higher probabilities to the lower level, more volatile subtrees.
+As elements are promoted to higher level subtrees based on higher use,
+they should be relatively safer from random eviction, and they are given a lower choice probability.
+This aligns with the cache performance goals of retaining commonly used objects
+and evicting less commonly used objects.
+Keeping a nonzero choice probability for the higher level subtrees has a positive side effect:
+it increases the chances of removing cache objects that were once accessed commonly but are now stale,
+which would otherwise occupy a space in the safest levels of the cache long beyond their use.
+Testing performance and security characteristics of all possible values
+is out of scope of this research.
+
+%----------------
+% 3Tree Diagram
+%----------------
+\begin{figure*}
+\begin{center}
+\begin{tikzpicture} [
+  every node/.style={draw,distance=12mm},
+  level 0/.style={circle},
+  level 1/.style={circle,sibling distance=28mm},
+  level 2/.style={circle,sibling distance=14mm},
+  level 3/.style={rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm}
+  ]
+  % \node (n0) [circle, label=left:Hot] {0}
+		% child [circle, sibling distance=28mm] {
+		\node [circle, label=above:Hot] (n2) {0}
+      child {
+        node (n5) {1}
+        child {
+          node (n11) {0}
+          child {
+            node (n23) {$s_8$}
+          edge from parent [double]}
+          child {
+            node (n24) {$s_9$}
+          }
+        }
+        child {
+          node (n12) {1}
+          child {
+            node (n25) {$s_{10}$}
+          }
+          child {
+            node (n26) {$s_{11}$}
+          edge from parent [double]}
+        edge from parent [double]}
+      edge from parent [double]}
+      child {
+        node (n6) {1}
+        child {
+          node (n13) {0}
+          child {
+            node (n27) {$s_{12}$}
+          edge from parent [double]}
+          child {
+            node (n28) {$s_{13}$}
+          }
+        }
+        child {
+          node (n14) {0}
+          child {
+            node (n29) {$s_{14}$}
+          edge from parent [double]}
+          child {
+            node (n30) {$s_{15}$}
+          }
+        edge from parent [double]}
+      };
+			\node [
+				circle,
+				left=22mm of n5,
+				label=above:Probation
+			] (n4) {1}
+				child [circle,sibling distance=14mm] {
+          node (n9) {1}
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
+            node (n19) {$s_4$}
+          }
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+            node (n20) {$s_5$}
+          edge from parent [double]}
+        }
+				child [circle,sibling distance=14mm] {
+          node (n10) {0}
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+            node (n21) {$s_6$}
+          edge from parent [double]}
+					child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+            node (n22) {$s_7$}
+          }
+        edge from parent [double]};
+	\node [left=22mm of n4, circle, label=above:Cold](n3) {0}
+		child [circle, sibling distance=14mm] {
+				node (n7) {1}
+				child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
+					node (n15) {$s_0$}
+				edge from parent [double]}
+				child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
+					node (n16) {$s_1$}
+				}
+			edge from parent [double]}
+			child [circle, sibling distance=14mm]{
+			node (n8) {1}
+			child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+				node (n17) {$s_2$}
+			}
+			child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm]{
+				node (n18) {$s_3$}
+			edge from parent [double]}
+		};
+\end{tikzpicture}
+\end{center}
+  \caption{3Tree metadata structure, with separated Cold, Probation, and Hot subtrees}
+  \label{fig:3tree}
+\end{figure*}
+
 
 \section{Experiment Methodology}
 
@@ -697,22 +1092,314 @@ and a
 To evaluate 3Tree in comparison to other algorithms in their defense
 against eviction set-based cache priming, % TODO: maybe change this to "eviction set function"
 we implement a cache simulator to represent an attacker.
+We simulate a single cache set to replicate a single target for an attacker,
+and we assume that the attacker has already discovered and minimized an eviction set
+of addresses for this cache set.
+For a given cache replacement policy and a memory access pattern,
+we touch addresses in the cache until the cache is full of attacker-provided memory,
+and we record the number of touches required to do this.
+As some touching patterns are never able to fill caches with certain replacement
+algorithms, we limit the simulator to 100,000 touches and record this as DNF
+(did not finish).
+Additionally, as most replacement algorithms choose an eviction candidate
+based on the cache state, we assume a uniform distribution of possible cache states
+and choose one at random.
+We conduct 64 trials for each algorithm-pattern pair to account for this randomness.
+For each replacement algorithm, we take the touching pattern with the least
+required address touches as the experimental difficulty of the algorithm.
+
+Notably, this simulator counts the number of memory accesses required to prime the cache set
+but does not include checks an attacker may use during the priming to determine whether
+the cache set is fully occupied.
+Periodically checking the cache state greatly increases the number of memory accesses required
+and strategic checking algorithms are beyond the scope of this research.
+Our results provide a confidence interval within which an attacker may reasonably assume
+that a cache is filled.
+% What's the p of this confidence interval? figure out when data scripts done
 
 % Performance
 To evaluate the performance of 3Tree, we implement the algorithm in the
-cycle-accurate gem5 CPU simulator on the SPEC2017 suite of benchmarks
-to reflect common computing workloads.
+cycle-accurate gem5 CPU simulator on the PARSEC suite of benchmarks \cite{Parsec}
+to reflect common modern computing workloads.
 Some of these workloads depend on the memory subsystem more than others,
 but we take the benchmark suite as generally representative
 of cache workloads.
+These benchmarks are evaluated on a simulation of a full Linux system,
+which includes syscalls and full operating system interaction.
+However, the simulator excludes the memory accesses from the boot process
+to isolate the cache access counts to the benchmarks themselves.
 
 \section{Results}
 
+\begin{figure*}
+	\begin{center}
+		\includegraphics[scale=0.45]{minimum_difficulty}
+	\end{center}
+  \caption{Expected minimum difficulties of various cache replacement algorithms}
+  \label{fig:expected_difficulties}
+\end{figure*}
+
+\subsection{SIEVE Performance}
+
+% Occupation
+% Best touch strategy and why
+% Comment on low efficacy of SIEVE
+% Comment on low efficacy of similar caching strategies
+
+SIEVE performs quite well in both miss ratio and eviction set security.
+The experimental expected difficulty is consistently higher than most other cache replacement algorithms,
+although it does not match the DNF algorithms and filling a cache set
+is only shown to be statistically impossible for a 16-way cache.
+
+
+Part of its advantage is that it is spatially random.
+The selected eviction candidate is dependent on the order of the cache lines;
+the specific order of the cache lines and thus the cache state is very difficult to determine
+and can change drastically upon any cache operation.
+For this reason, SIEVE has a "soft" security advantage against other algorithms,
+because an attacker has very little knowledge of whether the cache state is
+is in a good or bad position to be primed.
+Although specific testing of the probability distribution of 'good' and 'bad' cache states
+and thus the expected number of touches an attacker should make to confidently fill the cache
+is out of scope for this project,
+SIEVE would perform quite well in this regard compared to TreePLRU.
+
+This version of SIEVE does not suffer against Rowhammer attacks, either.
+Notably, if new cache objects are added with the visited bit unset, SIEVE would peform exceptionally poorly.
+This is because an attacker only needs a target address
+$s_t$ and a congruent address $s_c$ to carry out the attack.
+First, they touch $s_t$, which finds the first unvisited line and evicts it.
+Then, they touch $s_c$, which finds $s_t$ as the new first unvisited line and evicts it.
+Then, they repeat these two touches alternatingly, which makes Rowhammer possible
+with only twice as many memory accesses as DRAM hits.
+Luckily, we do not use this variant of SIEVE in our testing.
+
+Although calculating the exact expected difficulty is not easy,
+we include an upper bound for the difficulty.
+This is based on the theoretical best touching pattern
+on the rare worst possible cache state,
+where each of an attacker's accesses evicts their previous access.
+This can be handled by touching an address $s_1$,
+touching $s_2$ to evict $s_1$ and then touching $s_1$ again to put it back into the cache,
+and so on for each of the addresses in the eviction set.
+This results in $\frac{a^2}{2}$ accesses to fill the cache set.
+Notably, implementing this algorithm is out of scope of this research project.
+
+\begin{equation}
+  O(D_g(\text{SIEVE})) = O(D_{Em}(\text{SIEVE})) = a^2
+  \label{eq:sieveed}
+\end{equation}
+
+% Performance
+
+\subsection{2Tree Performance}
+
+% Occupation
+% Best touch strategy and why
+% Comment on decent efficacy of 2Tree in full occupation
+% Comment on slashed efficacy of 2Tree in actual timing oracle prevention
+% Comment on slashed efficacy of split queues
+
+2Tree performs reasonably well against \textit{full} occupation,
+because of the choice probability $c$.
+This is because even 
+
+Calculating the specific expected difficulty is a long combinatorial problem
+that can be modeled as a finite state automata.
+Calculating these finite states is infeasible by hand,
+and modeling them mathematically or in a simulation is out of scope of this research project.
+
+However, 2Tree and other strictly segmented replacement algorithms like TwoQ
+suffer in actual performance against timing oracles.
+Additionally, 2Tree performs especially poorly against Rowhammer for the same reason.
+An attacker may only fill up the cold queue with eviction set addresses
+and, depending on the $c$ value of the probation queue, will have a
+$1 - c$ chance of a subsequent touch selecting the cold queue as the target location
+in the cache.
+In this case, a touch of the target address would result in a cache miss and a DRAM hit,
+as required by the Rowhammer attack.
+For low $c$, it is possible to have a higher cache bypass rate than by filling the whole cache,
+as well as a higher rate than simpler algorithms like LRU, given the smaller size of the
+cold queue compared to the whole cache set.
+
+Thus, we calculate the guarantee difficulty $D_g$ for 2Tree:
+
+\begin{equation}
+	D_g(\text{2Tree}) = \frac{a}{4c} + \frac{a}{4(1-c)}
+	\label{eq:2treegd}
+\end{equation}
+
+This decreased security holds for any replacement algorithm where new elements can only go
+into a subset of the cache lines.
+To prime the cache set and form a timing oracle,
+an attacker only needs to occupy this subset of the cache with their own newly-placed objects.
+To incur cache bypass for Rowhammer, an attacker again only needs to occupy this subset
+of the cache to guarantee that their next touch will be a RAM access.
+
+In miss ratio performance, the segmented nature of 2Tree provides interesting performance characteristics.
+
+Finally, although this is outside the scope of this work,
+it would be simple to implement set dueling with a switch between different $c$ values.
+The performance difference between caches with $c=0$ and $c=0.5$ and intermediate values
+differs between different benchmarks, as seen in figure [cite].%cite figure when I get it.
+As a hardware implementation, this would not introduce any complexity within the cache set,
+instead requiring a global switch affecting the random value generator.
+It would not be difficult to implement a similar switch for the replacement algorithms used,
+although this introduces more complexity than altering $c$.
+FIFO and PLRU only differ in the logic of touching an element already in the cache,
+and Random Replacement alters the use of the tree altogether,
+meaning a set dueling architecture would have to introduce considerable hardware logic
+into each cache set, increasing hardware footprint and energy usage.
+Furthermore, this would not be useful for performance.
+Across different workloads,
+PLRU is consistently shown to be dominant for performance when used in the hot queue,
+as shown in figure [cite].
+In the cold queue, PLRU is shown to be more performant in some workloads,
+and FIFO more dominant in others.
+However, the performance difference is minimal:
+in workloads where FIFO was better, it was better by an average of X\%,
+and in workloads where PLRU was better, it was better by an average of Y\%.
+With such a small difference, it may be counterproductive to introduce cold queue-specific set dueling
+and its subsequent increase in energy and space usage.
+
+\subsection{3Tree Performance}
+
+% Best touch strategy and why
+% Comment on fixing problem with fully-segmented 2Tree
+% Performance
+
+3Tree fixes the security issue present in 2Tree and other segmented caches
+by allowing new cache objects to be placed in any of the cache lines,
+albeit with different probabilities for the probation and hot queues.
+Thus, for an attacker priming the cache, all cache lines must be filled to guarantee
+that a subsequent access by a victim will be detected with the timing oracle.
+
+Using set dueling on this algorithm can add to the security performance of the algorithm.
+The optimal memory access pattern changes is different between the two variants,
+which introduces difficulty in the cache priming process \cite{EvictionSetsAtScale}
+as there is no trivial way for an attacker to determine the cache replacement algorithm variant.
+
+Additionally, set dueling greatly increases the miss rate performance of the replacement algorithm.
+Dynamically switching between a variant with a big cold queue and one with a big hot queue
+allows the cache to react to different workloads.
+Processes that access many objects a few times each may better benefit from a big cold queue,
+and processes that access a few objects many time benefit from a big hot queue.
+
+
+% Some analysis on confidence intervals for cache priming and rowhammer
+% Especially for priming: confidence of validity of leaked data
+
 \section{Discussion}
 
+This defense is not meant to work alone.
+3Tree cannot completely prevent transient execution attacks or Rowhammer,
+nor can any alteration of cache replacement policies
+without severely impacting the performance of innocuous processes.
+Instead, increasing the difficulty of a cache replacement algorithm
+and "making it harder" to complete these attacks
+is only meant to make these eviction set-based attacks take longer.
+Then, a full attack sequence that relies on eviction sets and often uses them
+thousands of time in series \cite{Gofetch} should take considerably longer
+and the rate of information leakage should be lower according to the
+inverse of the increased difficulty value.
+
+Rowhammer is unique in this regard, as the electromagnetic interference effect
+it relies on to flip memory bits depend on very fast repeated DRAM access.
+The exact speed of these accesses required to flip bits is inconsistent between
+different RAM architectures,
+but in all architectures there is a certain access frequency threshold
+which the attack requires.
+Then, reducing the frequency of cache bypass and DRAM access may reduce the access frequency
+below the threshold.
+Testing of this effect on actual hardware was out of scope of this research project,
+given the need to test many different DRAM architectures.
+Additionally, there is room for other similar algorithms and advancements.
+For example, modern rowhammer defenses may raise the access frequency threshold
+using better electromagnetic isolation techniques,
+or another DRAM access reduction technique may better isolate memory accesses to the cache.
+In either case, this defense may work well with others
+to ensure the maximum expected access frequency is below the frequency required for the attack.
+
+This defense also suffers from adoptibility in real computing systems.
+As a hardware defense, it is impossible to inject into existing insecure systems
+without completely replacing CPUs with new ones, which is often untenable.
+Software defenses are often more powerful and feasible in this regard,
+as they can be downloaded in a software update while providing similar security guarantees.
+However, cache replacement policies like these are specifically usitable to on-the-fly editing.
+2Tree and 3Tree are both based on tree structures with some nodes removed,
+so it would be possible to dynamically change the behaviour of each tree node
+on insertion and eviction according to these algorithms or other tree-based variants.
+This can be used to switch between FIFO, LRU, and Random replacement policies
+in each of the subtrees of 2Tree and 3Tree according to the workload presented.
+However, the feasibility of these options is questionable,
+as caches are made to be as fast as possible,
+and the introduction of additional per-set hardware
+could greatly increase the latency of the replacement algorithm
+and the power draw of the cache set circuit.
+However, other than in new CPUs, this defense excels in protecting old, large software systems
+that cannot be updated.
+In this case, the hardware may be the only component that can be updated for security,
+and altering CPUs and their replacement policies around the software they run
+may be the only option.
+
+The lack of a specific target for this defense is both a strength and a weakness.
+Many other defenses have been created around specific attacks,
+including mitigations for Spectre, Meltdown, and Spectre v2.
+These defenses are often specifically suited to the attacks they target,
+and struggle to defend against other attacks that are made to circumvent them.
+By contrast, this defense attempts to defend against the whole class of
+eviction set-based attacks instead of a specific one,
+and thus proactively affects attacks beyond the currently existing ones.
+The Prime+Probe, Evict+Time, and Evict+Reload attack foundations
+are the basis of many current attacks and will be used for many attacks in the future.
+Decreasing the strength of these attack fundamentals impacts
+future cyberattacks in a way that targeted defenses cannot.
+
+Finally, the introduction of extra hardware into the very commonly-used cache circuit
+arises questions of the performance characteristics of CPUs that use this.
+Although we cannot make specific claims on the performance without energy-measuring models
+and more robust latency measurements,
+we analyze performance claims in comparison with existing architectures.
+In both 2Tree and 3Tree, the use of set dueling to choose between different subtree replacement algorithms
+is simple and requires little hardware cost, given that the tree structure is maintained
+among the different variants.
+Existing Intel processors often use set dueling between the TreePLRU and QLRU algorithms
+\cite{EvictionSetsAtScale}, despite the two algorithms being very different from one another.
+TreePLRU uses a tree structure very similar to 2Tree and 3Tree,
+but QLRU uses per-line metadata similar to SIEVE,
+along with very similar sequential logic likely also based on a priority encoder.
+Because this is viable in commercial CPUs, we deem our use of set dueling for subtree algorithms
+as an insignificant factor in performance.
+
+However, our implementations of 2Tree and 3Tree suffer compared to TreePLRU
+because they swap cache objects between different lines to move data to a more or less safe subtree.
+This requires a 64 byte bus connected to each of the 64 byte cache lines
+to allow them to transport data to a hub which should connect each of the busses to each of the others.
+Compared to the rest of the circuit requirements of these algorithms,
+this is not an insignificant added complexity, and may add to the power draw of the cache.
+
+Despite the performance concerns,
+replacement algorithm latency is still not a large factor in the performance of the CPU.
+Modern compiler techniques such as prefetching can heavily diminish the importance
+of a performant replacement algorithm.
+They may request data in memory long before it is used to ensure it is in the cache when it is needed,
+which reduces the cost of a cache miss
+and may completely remove the cost of a replacement algorithm circuit with a longer critical path.
+Prefetching may additionally have implications in the security against both Rowhammer
+and other eviction set attacks,
+but study of these effects is beyond the scope of this study.
+Additionally, most modern CPUs fetch the data from the cache before updating the replacement policy metadata
+according to the touch.
+This completely removes the cost of a replacement algorithm's longer critical path
+for single memory accesses
+and may still reduce the latency for repeated accesses of the same data,
+depending on the speed of these accesses.
+
+% performance implications
+  % prefetching, etc. to diminish the importance of cache misses
+  % photonics and in-memory compute as an additional solution, bypassing cache requirement
+
 % PARSEC
-% SPEC, if I can get it working
-% Custom/synthetic workloads
 
 %-------------------------------------------------------------------------------
 \bibliographystyle{acm}
