@@ -38,6 +38,8 @@ scons build/X86/gem5.opt -j`nproc`
 ```
 """
 
+import argparse
+from m5.objects import *
 from gem5.utils.requires import requires
 from gem5.components.boards.x86_board import X86Board
 from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
@@ -54,6 +56,10 @@ from gem5.simulate.simulator import Simulator
 from gem5.simulate.exit_event import ExitEvent
 from gem5.resources.workload import Workload
 
+from gem5.components.cachehierarchies.classic.private_l1_cache_hierarchy import (
+    PrivateL1CacheHierarchy,
+)
+
 # This simulation requires using KVM with gem5 compiled for X86 simulation
 # and with MESI_Two_Level cache coherence protocol.
 requires(
@@ -62,19 +68,55 @@ requires(
     kvm_required=True,
 )
 
-from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
-    MESITwoLevelCacheHierarchy,
-)
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="gem5 config file to run SPEC benchmarks"
+    )
+    parser.add_argument(
+        "--assoc",
+        type=int,
+        required=True,
+        help="Associativity of cache",
+        choices=[1, 2, 4, 8, 16, 32],
+    )
+    parser.add_argument(
+        "--repl",
+        type=str,
+        required=True,
+        help="Replacement Policy of cache",
+    )
+    args = parser.parse_args()
+    return args
 
-cache_hierarchy = MESITwoLevelCacheHierarchy(
-    l1d_size="32KiB",
-    l1d_assoc=8,
-    l1i_size="32KiB",
-    l1i_assoc=8,
-    l2_size="512KiB",
-    l2_assoc=16,
-    num_l2_banks=1,
-)
+def create_cache_hierarchy(assoc: int, repl: str):
+    # For simplicity, we only use one level of cache hierarchy
+    # Create an L1 instruction and data cache
+    ret = None
+    match repl:
+        case "sieve":
+            ret = SIEVERP()
+        case "rr":
+            ret = RandomRP()
+        case "fifo":
+            ret = FIFORP()
+        case "lru":
+            ret = LRURP()
+        case "second-chance":
+            ret = SecondChanceRP()
+        case "tree-plru":
+            ret = TreePLRURP()
+
+    cache_hierarchy = PrivateL1CacheHierarchy(
+        l1d_size="32KiB",
+        l1i_size="32KiB",
+        assoc=assoc,
+        repl=ret,
+    )
+    return cache_hierarchy
+
+args = parse_arguments()
+assoc = args.assoc
+repl = args.repl
 
 # Main memory
 memory = SingleChannelDDR4_2400(size="3GiB")
@@ -101,7 +143,7 @@ board = X86Board(
     clk_freq="3GHz",
     processor=processor,
     memory=memory,
-    cache_hierarchy=cache_hierarchy,
+    cache_hierarchy=create_cache_hierarchy(assoc, repl),
 )
 
 # Here we set the Full System workload.
