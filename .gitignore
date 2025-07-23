@@ -49,3 +49,4 @@ config.4.19.83
 **.zip
 **.cut
 writing/micro58-latex-template
+bench/traces/dpc3.compas.cs.stonybrook.edu/champsim-traces/speccpu
