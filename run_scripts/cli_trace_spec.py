@@ -62,23 +62,24 @@ build/ARM/gem5.opt --outdir=m5out/bbench \
 ./configs/deprecated/example/fs.py [fs.py options] \
 --benchmark bbench-ics
 """
-for benchmark in benchmarks:
-    labels.append(
-        f"================================\n\
-SPEC 2017 TRACE CHECKPOINT GENERATION\n\
-Benchmark:     {benchmark}\n\n"
-    )
+# for benchmark in benchmarks:
+#     labels.append(
+#         f"================================\n\
+# SPEC 2017 TRACE CHECKPOINT GENERATION\n\
+# Benchmark:     {benchmark}\n\n"
+#     )
 
-    commands.append(
-        " ".join([
-            "gem5/build/X86/gem5.fast",
-            "--outdir=out/trace",
-            "run_scripts/bench/spec_trial.py",
-            "--image benchmark/spec-2017/spec-2017-image/spec-2017",
-            "--size ref",
-            f"--benchmark {benchmark}",
-        ])
-    )
+#     commands.append(
+#         " ".join([
+#             "gem5/build/X86/gem5.fast",
+#             "--outdir=out/trace",
+#             "run_scripts/bench/spec_trace_generate.py",
+#             "--image benchmark/spec-2017/spec-2017-image/spec-2017",
+#             "--size ref",
+#             f"--benchmark {benchmark}",
+#         ])
+#     )
+# p = subprocess.Popen("gem5/build")
 
 # Add FS checkpoint restore workloads
 """
@@ -101,7 +102,7 @@ Benchmark:     {benchmark}\n\n"
         " ".join([
                      "gem5/build/X86/gem5.fast",
                      "--outdir=out/trace/capture",
-                     "run_scripts/bench/spec_trial.py",
+                     "run_scripts/bench/spec_trace.py",
                     "--image benchmark/spec-2017/spec-2017-image/spec-2017",
                     "--size ref",
                     f"--benchmark {benchmark}",

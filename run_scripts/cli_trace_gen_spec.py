@@ -38,7 +38,7 @@ for assoc in assocs:
             " ".join([
                 "gem5/build/X86/gem5.fast",
                 f"--outdir=out/trace/{repl}-{assoc}",
-                "run_scripts/bench/spec_trace_generate.py",
+                "run_scripts/bench/spec_trace_gen_config.py",
                 f"--assoc {assoc}",
                 f"--repl {repl}",
             ])

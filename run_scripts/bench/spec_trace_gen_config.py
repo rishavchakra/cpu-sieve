@@ -110,7 +110,7 @@ def create_cache_hierarchy(assoc: int, repl: str):
         l1d_size="32KiB",
         l1i_size="32KiB",
         assoc=assoc,
-        repl=ret,
+        replacement_policy=ret,
     )
     return cache_hierarchy
 
