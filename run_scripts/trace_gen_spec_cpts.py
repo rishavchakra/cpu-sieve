@@ -39,8 +39,6 @@ for assoc in assocs:
                 "gem5/build/X86/gem5.fast",
                 f"--outdir=out/trace/{repl}-{assoc}",
                 "run_scripts/bench/spec_trace_generate.py",
-                "--image benchmark/spec-2017/spec-2017-image/spec-2017",
-                "--size ref",
                 f"--assoc {assoc}",
                 f"--repl {repl}",
             ])
