@@ -60,7 +60,7 @@ build/ARM/gem5.opt --outdir=m5out/bbench/capture_10M \
 for benchmark in benchmarks:
     labels.append(
         f"================================\n\
-SPEC 2017 TRACE CHECKPOINT RESTORE\n\
+PARSEC TRACE CHECKPOINT RESTORE\n\
 Benchmark:     {benchmark}\n\n"
     )
 
@@ -69,17 +69,16 @@ Benchmark:     {benchmark}\n\n"
             [
                 "gem5/build/X86/gem5.fast",
                 f"--outdir=out/trace/{benchmark}",
-                "run_scripts/bench/spec_trace.py",
-                "--image benchmark/spec-2017/spec-2017-image/spec-2017",
-                "--size ref",
+                "run_scripts/bench/parsec_trace.py",
+                "--size simsmall",
                 f"--benchmark {benchmark}",
-                "--cpu-type=arm_detailed",
+                "--cpu-type=o3",
                 "--caches",
                 "--elastic-trace-en",
                 f"--data-trace-file=out/trace/{benchmark}/deptrace.proto.gz",
                 f"--inst-trace-file=out/trace/{benchmark}/fetchtrace.proto.gz",
                 "--mem-type=SimpleMemory",
-                "--checkpoint-dir=out/trace/capture",
+                "--checkpoint-dir=out/trace/checkpt-parsec",
                 "-r 0",
             ]
         )
