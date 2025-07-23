@@ -107,7 +107,6 @@ parser.add_argument(
     help="Input the benchmark program to execute.",
     choices=benchmark_choices,
 )
-
 parser.add_argument(
     "--size",
     type=str,
@@ -115,6 +114,25 @@ parser.add_argument(
     help="Simulation size the benchmark program.",
     choices=size_choices,
 )
+parser.add_argument(
+    "--inst-trace-file",
+    action="store",
+    type=str,
+    help="""Instruction fetch trace file input to
+            Elastic Trace probe in a capture simulation and
+            Trace CPU in a replay simulation""",
+    default="fetchtrace.proto.gz",
+)
+parser.add_argument(
+    "--data-trace-file",
+    action="store",
+    type=str,
+    help="""Data dependency trace file input to
+            Elastic Trace probe in a capture simulation and
+            Trace CPU in a replay simulation""",
+    default="deptrace.proto.gz",
+)
+
 args = parser.parse_args()
 
 # Setting up all the fixed system parameters here
@@ -152,6 +170,7 @@ processor = SimpleSwitchableProcessor(
     isa=ISA.X86,
     num_cores=2,
 )
+processor.switch.attach_probe_listener(args.inst_trace_file, args.data_trace_file)
 
 # Here we tell the KVM CPU (the starting CPU) not to use perf.
 for proc in processor.start:
