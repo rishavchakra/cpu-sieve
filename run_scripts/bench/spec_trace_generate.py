@@ -1,4 +1,4 @@
-# Copyright (c) 2021 The Regents of the University of California
+# Copyright (c) 2023 The Regents of the University of California
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,23 +26,24 @@
 
 """
 
-This script shows an example of running a full system Ubuntu boot simulation
-using the gem5 library. This simulation boots Ubuntu 18.04 using 2 KVM CPU
-cores. The simulation then switches to 2 Timing CPU cores before running an
-echo statement.
+This script demonstrates how to use KVM CPU without perf.
+This simulation boots Ubuntu 18.04 using 2 KVM CPUs without using perf.
 
 Usage
 -----
 
 ```
-scons build/X86/gem5.opt
-./build/X86/gem5.opt configs/example/gem5_library/x86-ubuntu-run-with-kvm.py
+scons build/X86/gem5.opt -j`nproc`
+./build/X86/gem5.opt configs/example/gem5_library/x86-ubuntu-run-with-kvm-no-perf.py
 ```
 """
 
 from gem5.utils.requires import requires
 from gem5.components.boards.x86_board import X86Board
-from gem5.components.memory.single_channel import SingleChannelDDR3_1600
+from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
+    MESITwoLevelCacheHierarchy,
+)
+from gem5.components.memory.single_channel import SingleChannelDDR4_2400
 from gem5.components.processors.simple_switchable_processor import (
     SimpleSwitchableProcessor,
 )
@@ -53,45 +54,45 @@ from gem5.simulate.simulator import Simulator
 from gem5.simulate.exit_event import ExitEvent
 from gem5.resources.workload import Workload
 
-from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
-    MESITwoLevelCacheHierarchy,
-)
-
-# This runs a check to ensure the gem5 binary is compiled to X86 and to the
-# MESI Two Level coherence protocol.
+# This simulation requires using KVM with gem5 compiled for X86 simulation
+# and with MESI_Two_Level cache coherence protocol.
 requires(
     isa_required=ISA.X86,
     coherence_protocol_required=CoherenceProtocol.MESI_TWO_LEVEL,
     kvm_required=True,
 )
 
-# Here we setup a MESI Two Level Cache Hierarchy.
+from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
+    MESITwoLevelCacheHierarchy,
+)
+
 cache_hierarchy = MESITwoLevelCacheHierarchy(
-    l1d_size="16kB",
+    l1d_size="32KiB",
     l1d_assoc=8,
-    l1i_size="16kB",
+    l1i_size="32KiB",
     l1i_assoc=8,
-    l2_size="256kB",
+    l2_size="512KiB",
     l2_assoc=16,
     num_l2_banks=1,
 )
 
-# Setup the system memory.
-memory = SingleChannelDDR3_1600(size="3GB")
+# Main memory
+memory = SingleChannelDDR4_2400(size="3GiB")
 
-# Here we setup the processor. This is a special switchable processor in which
-# a starting core type and a switch core type must be specified. Once a
-# configuration is instantiated a user may call `processor.switch()` to switch
-# from the starting core types to the switch core types. In this simulation
-# we start with KVM cores to simulate the OS boot, then switch to the Timing
-# cores for the command we wish to run after boot.
+# This is a switchable CPU. We first boot Ubuntu using KVM, then the guest
+# will exit the simulation by calling "m5 exit" (see the `command` variable
+# below, which contains the command to be run in the guest after booting).
+# Upon exiting from the simulation, the Exit Event handler will switch the
+# CPU type (see the ExitEvent.EXIT line below, which contains a map to
+# a function to be called when an exit event happens).
 processor = SimpleSwitchableProcessor(
     starting_core_type=CPUTypes.KVM,
-    switch_core_type=CPUTypes.KVM,
+    switch_core_type=CPUTypes.TIMING,
     isa=ISA.X86,
     num_cores=2,
 )
 
+# Here we tell the KVM CPU (the starting CPU) not to use perf.
 for proc in processor.start:
     proc.core.usePerf = False
 
