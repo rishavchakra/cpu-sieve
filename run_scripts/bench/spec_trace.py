@@ -40,9 +40,9 @@ scons build/X86/gem5.opt -j`nproc`
 
 import argparse
 import os
-from os import warn
 import time
 import m5
+from m5.util import warn
 from gem5.utils.requires import requires
 from gem5.components.boards.x86_board import X86Board
 from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
