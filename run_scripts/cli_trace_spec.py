@@ -99,17 +99,28 @@ Benchmark:     {benchmark}\n\n"
     )
 
     commands.append(
-        " ".join([
-                     "gem5/build/X86/gem5.fast",
-                     "--outdir=out/trace/capture",
-                     "run_scripts/bench/spec_trace.py",
-                    "--image benchmark/spec-2017/spec-2017-image/spec-2017",
-                    "--size ref",
-                    f"--benchmark {benchmark}",
-                 ])
+        " ".join(
+            [
+                "gem5/build/X86/gem5.fast",
+                f"--outdir=out/trace/{benchmark}",
+                "run_scripts/bench/spec_trace.py",
+                "--image benchmark/spec-2017/spec-2017-image/spec-2017",
+                "--size ref",
+                f"--benchmark {benchmark}",
+                "--cpu-type=arm_detailed",
+                "--caches",
+                "--elastic-trace-en",
+                f"--data-trace-file=out/trace/{benchmark}/deptrace.proto.gz",
+                f"--inst-trace-file=out/trace/{benchmark}/fetchtrace.proto.gz",
+                "--mem-type=SimpleMemory",
+                "--checkpoint-dir=out/trace/capture",
+                "-r 0",
+            ]
+        )
     )
 
 runs = list(zip(commands, labels))
+
 
 def run_command_synchronous(command: str, label: str):
     print(label)
@@ -117,26 +128,29 @@ def run_command_synchronous(command: str, label: str):
     p = subprocess.Popen(command, shell=True)
     p.wait()
 
+
 start = time.perf_counter()
 
 with ProcessPoolExecutor(max_workers=16) as executor:
-    run_futures = [executor.submit(run_command_synchronous, run[0], run[1]) for run in runs]
+    run_futures = [
+        executor.submit(run_command_synchronous, run[0], run[1]) for run in runs
+    ]
 
 finish = time.perf_counter()
-print(f'SPEC CPU finished tracing in {(finish - start):.2f} seconds')
+print(f"SPEC CPU finished tracing in {(finish - start):.2f} seconds")
 
 # cpus = 4
 
 # group_runs = []
 # while len(runs) > 0:
-    # group_runs.append(runs[:num_threads])
-    # runs = runs[num_threads:]
-# 
+# group_runs.append(runs[:num_threads])
+# runs = runs[num_threads:]
+#
 # while len(group_runs) > 0:
-    # group_batch = group_runs[:num_thread_groups]
-    # group_runs = group_runs[num_thread_groups:]
-    # for group in group_runs:
-        # 
+# group_batch = group_runs[:num_thread_groups]
+# group_runs = group_runs[num_thread_groups:]
+# for group in group_runs:
+#
 
 # while runs:
 #     run_batch = runs[:cpus]

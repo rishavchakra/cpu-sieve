@@ -39,7 +39,10 @@ scons build/X86/gem5.opt -j`nproc`
 """
 
 import argparse
-from m5.objects import *
+import os
+from os import warn
+import time
+import m5
 from gem5.utils.requires import requires
 from gem5.components.boards.x86_board import X86Board
 from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
@@ -49,16 +52,16 @@ from gem5.components.memory.single_channel import SingleChannelDDR4_2400
 from gem5.components.processors.simple_switchable_processor import (
     SimpleSwitchableProcessor,
 )
+from gem5.resources.resource import (
+    DiskImageResource,
+    obtain_resource,
+)
 from gem5.components.processors.cpu_types import CPUTypes
 from gem5.isas import ISA
 from gem5.coherence_protocol import CoherenceProtocol
 from gem5.simulate.simulator import Simulator
 from gem5.simulate.exit_event import ExitEvent
 from gem5.resources.workload import Workload
-
-from gem5.components.cachehierarchies.classic.private_l1_cache_hierarchy import (
-    PrivateL1CacheHierarchy,
-)
 
 # This simulation requires using KVM with gem5 compiled for X86 simulation
 # and with MESI_Two_Level cache coherence protocol.
@@ -68,55 +71,111 @@ requires(
     kvm_required=True,
 )
 
+benchmark_choices = [
+    "500.perlbench_r",
+    "502.gcc_r",
+    "503.bwaves_r",
+    "505.mcf_r",
+    "507.cactusBSSN_r",
+    "508.namd_r",
+    "510.parest_r",
+    "511.povray_r",
+    "519.lbm_r",
+    "520.omnetpp_r",
+    "521.wrf_r",
+    "523.xalancbmk_r",
+    "525.x264_r",
+    "527.cam4_r",
+    "531.deepsjeng_r",
+    "538.imagick_r",
+    "541.leela_r",
+    "544.nab_r",
+    "548.exchange2_r",
+    "549.fotonik3d_r",
+    "554.roms_r",
+    "557.xz_r",
+    "600.perlbench_s",
+    "602.gcc_s",
+    "603.bwaves_s",
+    "605.mcf_s",
+    "607.cactusBSSN_s",
+    "608.namd_s",
+    "610.parest_s",
+    "611.povray_s",
+    "619.lbm_s",
+    "620.omnetpp_s",
+    "621.wrf_s",
+    "623.xalancbmk_s",
+    "625.x264_s",
+    "627.cam4_s",
+    "631.deepsjeng_s",
+    "638.imagick_s",
+    "641.leela_s",
+    "644.nab_s",
+    "648.exchange2_s",
+    "649.fotonik3d_s",
+    "654.roms_s",
+    "996.specrand_fs",
+    "997.specrand_fr",
+    "998.specrand_is",
+    "999.specrand_ir",
+]
+
+size_choices = ["test", "train", "ref"]
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="gem5 config file to run SPEC benchmarks"
+        description="SPEC benchmark trace generation arguments"
     )
     parser.add_argument(
-        "--assoc",
-        type=int,
-        required=True,
-        help="Associativity of cache",
-        choices=[1, 2, 4, 8, 16, 32],
-    )
-    parser.add_argument(
-        "--repl",
+        "--image",
         type=str,
         required=True,
-        help="Replacement Policy of cache",
+        help="Input the full path to the built spec-2017 disk-image.",
+    )
+    parser.add_argument(
+        "--partition",
+        type=str,
+        required=False,
+        default=None,
+        help='Input the root partition of the SPEC disk-image. If the disk is \
+        not partitioned, then pass "".',
+    )
+    parser.add_argument(
+        "--benchmark",
+        type=str,
+        required=True,
+        help="Input the benchmark program to execute.",
+        choices=benchmark_choices,
+    )
+    parser.add_argument(
+        "--size",
+        type=str,
+        required=True,
+        help="Sumulation size the benchmark program.",
+        choices=size_choices,
     )
     args = parser.parse_args()
     return args
 
-def create_cache_hierarchy(assoc: int, repl: str):
-    # For simplicity, we only use one level of cache hierarchy
-    # Create an L1 instruction and data cache
-    ret = None
-    match repl:
-        case "sieve":
-            ret = SIEVERP()
-        case "rr":
-            ret = RandomRP()
-        case "fifo":
-            ret = FIFORP()
-        case "lru":
-            ret = LRURP()
-        case "second-chance":
-            ret = SecondChanceRP()
-        case "tree-plru":
-            ret = TreePLRURP()
 
-    cache_hierarchy = PrivateL1CacheHierarchy(
-        l1d_size="32KiB",
-        l1i_size="32KiB",
-        assoc=assoc,
-        replacement_policy=ret,
-    )
-    return cache_hierarchy
+cache_hierarchy = MESITwoLevelCacheHierarchy(
+    l1d_size="32KiB",
+    l1d_assoc=8,
+    l1i_size="32KiB",
+    l1i_assoc=8,
+    l2_size="256KiB",
+    l2_assoc=16,
+    num_l2_banks=2,
+)
 
 args = parse_arguments()
-assoc = args.assoc
-repl = args.repl
+
+if args.image[0] != "/":
+    # We need to get the absolute path to this file. We assume that the file is
+    # present on the current working directory.
+    args.image = os.path.abspath(args.image)
 
 # Main memory
 memory = SingleChannelDDR4_2400(size="3GiB")
@@ -131,7 +190,7 @@ processor = SimpleSwitchableProcessor(
     starting_core_type=CPUTypes.KVM,
     switch_core_type=CPUTypes.TIMING,
     isa=ISA.X86,
-    num_cores=2,
+    num_cores=1,
 )
 
 # Here we tell the KVM CPU (the starting CPU) not to use perf.
@@ -140,10 +199,7 @@ for proc in processor.start:
 
 # Here we setup the board. The X86Board allows for Full-System X86 simulations.
 board = X86Board(
-    clk_freq="3GHz",
-    processor=processor,
-    memory=memory,
-    cache_hierarchy=create_cache_hierarchy(assoc, repl),
+    clk_freq="3GHz", processor=processor, memory=memory, cache_hierarchy=cache_hierarchy
 )
 
 # Here we set the Full System workload.
@@ -156,17 +212,34 @@ board = X86Board(
 # then, again, call `m5 exit` to terminate the simulation. After simulation
 # has ended you may inspect `m5out/system.pc.com_1.device` to see the echo
 # output.
-command = (
-    "m5 checkpoint;"
-    + "m5 exit;"
-    + "echo 'This is running on Timing CPU cores.';"
-    + "sleep 1;"
-    + "m5 exit;"
-)
+# command = (
+#     "m5 checkpoint;"
+#     + "m5 exit;"
+#     + "echo 'This is running on Timing CPU cores.';"
+#     + "sleep 1;"
+#     + "m5 exit;"
+# )
 
-workload = Workload("x86-ubuntu-18.04-boot")
-workload.set_parameter("readfile_contents", command)
-board.set_workload(workload)
+output_dir = "speclogs_" + "".join(x.strip() for x in time.asctime().split())
+output_dir = output_dir.replace(":", "")
+
+# We create this folder if it is absent.
+try:
+    os.makedirs(os.path.join(m5.options.outdir, output_dir))
+except FileExistsError:
+    warn("output directory already exists!")
+
+command = f"{args.benchmark} {args.size} {output_dir}"
+
+board.set_kernel_disk_workload(
+    # The x86 linux kernel will be automatically downloaded to the
+    # `~/.cache/gem5` directory if not already present.
+    # SPEC CPU2017 benchamarks were tested with kernel version 4.19.83
+    kernel=obtain_resource("x86-linux-kernel-4.19.83"),
+    # The location of the x86 SPEC CPU 2017 image
+    disk_image=DiskImageResource(args.image, root_partition=args.partition),
+    readfile_contents=command,
+)
 
 simulator = Simulator(
     board=board,
