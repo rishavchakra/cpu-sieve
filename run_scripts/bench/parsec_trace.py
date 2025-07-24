@@ -49,11 +49,15 @@ import argparse
 import time
 
 import m5
-from m5.object import *
+from m5.objects import *
 
 from gem5.coherence_protocol import CoherenceProtocol
 from gem5.components.boards.x86_board import X86Board
 from gem5.components.memory import DualChannelDDR4_2400
+from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
+    MESITwoLevelCacheHierarchy,
+)
+from gem5.components.cachehierarchies.classic.no_cache import NoCache
 from gem5.components.processors.cpu_types import CPUTypes
 from gem5.components.processors.simple_processor import (
     SimpleProcessor,
@@ -143,15 +147,12 @@ parser.add_argument(
     help="CPU Type (either switch or o3)",
     default="switch",
 )
+parser.add_argument("--trace", action="store_true", default=False)
 
 args = parser.parse_args()
 
 # Setting up all the fixed system parameters here
 # Caches: MESI Two Level Cache Hierarchy
-
-from gem5.components.cachehierarchies.ruby.mesi_two_level_cache_hierarchy import (
-    MESITwoLevelCacheHierarchy,
-)
 
 cache_hierarchy = MESITwoLevelCacheHierarchy(
     l1d_size="32KiB",
@@ -162,6 +163,9 @@ cache_hierarchy = MESITwoLevelCacheHierarchy(
     l2_assoc=16,
     num_l2_banks=2,
 )
+if args.trace:
+    cache_hierarchy = NoCache()
+
 
 # Memory: Dual Channel DDR4 2400 DRAM device.
 # The X86 board only supports 3 GiB of main memory.
@@ -187,12 +191,13 @@ for proc in processor.start:
 
 if args.cpu_type == "o3":
     processor = SimpleProcessor(cpu_type=CPUTypes.O3, isa=ISA.X86, num_cores=1)
-    for core in processor.get_cores():
-        core.core.traceListener = m5.object.ElasticTrace(
-            instFetchTraceFile=args.inst_trace_file,
-            dataDepTraceFile=args.data_trace_file,
-            depWindowSize=3 * 512,
-        )
+    if args.trace:
+        for core in processor.get_cores():
+            core.core.traceListener = m5.object.ElasticTrace(
+                instFetchTraceFile=args.inst_trace_file,
+                dataDepTraceFile=args.data_trace_file,
+                depWindowSize=3 * 512,
+            )
 
 
 # Here we setup the board. The X86Board allows for Full-System X86 simulations
