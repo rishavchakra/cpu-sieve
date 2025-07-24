@@ -47,6 +47,7 @@ scons build/X86/gem5.opt
 
 import argparse
 import time
+import os
 
 import m5
 from m5.objects import *
@@ -194,8 +195,8 @@ if args.cpu_type == "o3":
     if args.trace:
         for core in processor.get_cores():
             core.core.traceListener = m5.objects.ElasticTrace(
-                instFetchTraceFile=args.inst_trace_file,
-                dataDepTraceFile=args.data_trace_file,
+                instFetchTraceFile=os.path.abspath(args.inst_trace_file),
+                dataDepTraceFile=os.path.abspath(args.data_trace_file),
                 depWindowSize=3 * 512,
             )
 
