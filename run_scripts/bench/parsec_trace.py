@@ -193,7 +193,7 @@ if args.cpu_type == "o3":
     processor = SimpleProcessor(cpu_type=CPUTypes.O3, isa=ISA.X86, num_cores=1)
     if args.trace:
         for core in processor.get_cores():
-            core.core.traceListener = m5.object.ElasticTrace(
+            core.core.traceListener = m5.objects.ElasticTrace(
                 instFetchTraceFile=args.inst_trace_file,
                 dataDepTraceFile=args.data_trace_file,
                 depWindowSize=3 * 512,
