@@ -49,12 +49,15 @@ import argparse
 import time
 
 import m5
-from m5.objects import Root
+from m5.object import *
 
 from gem5.coherence_protocol import CoherenceProtocol
 from gem5.components.boards.x86_board import X86Board
 from gem5.components.memory import DualChannelDDR4_2400
 from gem5.components.processors.cpu_types import CPUTypes
+from gem5.components.processors.simple_processor import (
+    SimpleProcessor,
+)
 from gem5.components.processors.simple_switchable_processor import (
     SimpleSwitchableProcessor,
 )
@@ -132,6 +135,14 @@ parser.add_argument(
             Trace CPU in a replay simulation""",
     default="deptrace.proto.gz",
 )
+parser.add_argument(
+    "--cpu-type",
+    action="store",
+    type=str,
+    choices=["switch", "o3"],
+    help="CPU Type (either switch or o3)",
+    default="switch",
+)
 
 args = parser.parse_args()
 
@@ -168,13 +179,21 @@ processor = SimpleSwitchableProcessor(
     starting_core_type=CPUTypes.KVM,
     switch_core_type=CPUTypes.TIMING,
     isa=ISA.X86,
-    num_cores=2,
+    num_cores=1,
 )
-processor.switch.attach_probe_listener(args.inst_trace_file, args.data_trace_file)
-
 # Here we tell the KVM CPU (the starting CPU) not to use perf.
 for proc in processor.start:
     proc.core.usePerf = False
+
+if args.cpu_type == "o3":
+    processor = SimpleProcessor(cpu_type=CPUTypes.O3, isa=ISA.X86, num_cores=1)
+    for core in processor.get_cores():
+        core.core.traceListener = m5.object.ElasticTrace(
+            instFetchTraceFile=args.inst_trace_file,
+            dataDepTraceFile=args.data_trace_file,
+            depWindowSize=3 * 512,
+        )
+
 
 # Here we setup the board. The X86Board allows for Full-System X86 simulations
 
