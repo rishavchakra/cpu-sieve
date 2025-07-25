@@ -17,6 +17,14 @@ benchmarks = [
     "vips",
     "x264",
 ]
+assocs = [16]
+replacement_policies = [
+    "sieve",
+    "rr",
+    "treeplru",
+    "3tree",
+    "rrip",
+]
 
 labels = []
 commands = []
@@ -34,7 +42,7 @@ build/ARM/gem5.opt --outdir=m5out/bbench \
 # SPEC 2017 TRACE CHECKPOINT GENERATION\n\
 # Benchmark:     {benchmark}\n\n"
 #     )
-
+#
 #     commands.append(
 #         " ".join([
 #             "gem5/build/X86/gem5.fast",
@@ -57,32 +65,27 @@ build/ARM/gem5.opt --outdir=m5out/bbench/capture_10M \
 --mem-type=SimpleMemory \
 --checkpoint-dir=m5out/bbench -r 0 --benchmark bbench-ics -I 10000000
 """
-for benchmark in benchmarks:
-    labels.append(
-        f"================================\n\
+for assoc in assocs:
+    for repl_policy in replacement_policies:
+        for benchmark in benchmarks:
+            labels.append(
+                f"================================\n\
 PARSEC TRACE CHECKPOINT RESTORE\n\
 Benchmark:     {benchmark}\n\n"
-    )
+            )
 
-    commands.append(
-        " ".join(
-            [
-                "gem5/build/X86/gem5.fast",
-                f"--outdir=out/trace/{benchmark}",
-                "run_scripts/bench/parsec_trace.py",
-                "--size simsmall",
-                f"--benchmark {benchmark}",
-                "--cpu-type=o3",
-                "--caches",
-                "--elastic-trace-en",
-                f"--data-trace-file=out/trace/{benchmark}/deptrace.proto.gz",
-                f"--inst-trace-file=out/trace/{benchmark}/fetchtrace.proto.gz",
-                "--mem-type=SimpleMemory",
-                "--checkpoint-dir=out/trace/checkpt-parsec",
-                "-r 0",
-            ]
-        )
-    )
+            commands.append(
+                " ".join(
+                    [
+                        "gem5/build/X86/gem5.fast",
+                        "run_scripts/bench/parsec_trace.py",
+                        f"--outjson out/trace/{benchmark}",
+                        f"--benchmark {benchmark}",
+                        "--checkpoint-dir=out/trace/checkpt-parsec",
+                        "-r 0",
+                    ]
+                )
+            )
 
 runs = list(zip(commands, labels))
 
