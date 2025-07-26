@@ -22,7 +22,7 @@ replacement_policies = [
     "sieve",
     "rr",
     "treeplru",
-    "3tree",
+    # "3tree",
     "rrip",
 ]
 
