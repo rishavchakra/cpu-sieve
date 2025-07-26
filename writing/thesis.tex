@@ -69,14 +69,13 @@ Dartmouth College
 	Many variants of 2Tree and 3Tree are presented and tested, including
 	set dueling used to switch between two variants of 3Tree.
   A CPU implementation of SLRU (along with many performance-enhancing variations) has
-  already been introduced, and 3Tree is competitive in performance.
-  In gem5 PARSEC simulations, 3Tree incurs a 1.7\% miss ratio penalty
-  compared to fixed SLRU while using 86\% less per-line metadata and no bypass table for line aging.
-  Most importantly, 3Tree algorithm significantly enhances the security against eviction set
-  % Possibly: add mapping as a defense target too
-  cache priming and cache bypass..
-  3Tree shows a 92.6\% reduction in the data leakage throughput through Prime+Probe attacks,
-	and an X\% reduction in the number of DRAM hits induced in Rowhammer attacks.
+  already been introduced, and 3Tree and SIEVE are competitive in performance.
+  In gem5 PARSEC simulations, 3Tree incurs a 1.7 percentage point miss ratio penalty
+  compared to TreePLRU and SIEVE incurs a 2.2 percentage point penalty.
+  Most importantly, 3Tree and SIEVE significantly enhance the security against eviction set
+  cache priming.
+  3Tree shows a median 94.6\% reduction in the data leakage throughput through Prime+Probe attacks,
+  and SIEVE shows a median 92.7\% reduction.
 
 \end{abstract}
 
@@ -142,10 +141,10 @@ and, critically, the lack of modern CPU features like skewed caches
 Additionally, these algorithms enable or enhance the setup for cache attacks,
 but do not address the execution of the attack itself.
 
-To this end, we introduce the \textit{3Tree} cache replacement algorithm.
-The algorithm is based on software cache eviction algorithms that focus on
+To this end, we introduce the \textit{SIEVE}, \textit{2Tree}, and \textit{3Tree} cache replacement algorithms.
+The algorithms are based on software cache eviction algorithms that focus on
 performance enhancement over other very commonly used algorithms,
-and we implement a variation of the algorithm in hardware
+and we implement variation of the algorithms in hardware
 with these performance characteristics in mind
 and with an emphasis on security against cache priming.
 
@@ -235,10 +234,10 @@ and not updating the tree upon subsequent address touches.
           node (n7) {1}
           child {
             node (n15) {$s_0$}
-          edge from parent [double]}
+          }
           child {
             node (n16) {$s_1$}
-          }
+          edge from parent [double]}
         edge from parent [double]}
         child {
           node (n8) {1}
@@ -325,11 +324,6 @@ and not updating the tree upon subsequent address touches.
 	}
   \label{fig:treeplru}
 \end{figure*}
-
-In Figure \ref{fig:treeplru}, 
-$s_{13}$ is in the MRU position and is safest from eviction.
-$s_6$ would be the first eviction candidate,
-followed by $s_{11}$.
 
 Quad Least Recently Used (QLRU) is another replacement algorithm
 commonly used in Intel processors and used to replicate the function of LRU.
@@ -477,7 +471,7 @@ Many modern CPUs, prioritizing performance, roll back only as much data as is re
 with correct functionality; code in the speculative window can leave traces in a covert channel in hardware
 components where speculative misses are not rolled back.
 
-As outlined in [source], transient execution attacks take advantage of this speculative execution window in three steps:
+As outlined by Xiong, et. al \cite{TransientAttackSurvey}, transient execution attacks take advantage of this speculative execution window in three steps:
 \begin{enumerate}
     \item \textit{Setup Phase}:
 An attacker primes the microarchitectural state such that victim actions can later be decoded and intrepreted
@@ -874,10 +868,10 @@ $b$, now in the cold queue, is not promoted.
 				node (n7) {1}
 				child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
 					node (n15) {$s_0$}
-				edge from parent [double]}
+				}
 				child [rectangle,minimum size=7mm,inner sep=0,sibling distance=7mm] {
 					node (n16) {$s_1$}
-				}
+				edge from parent [double]}
 			edge from parent [double]}
 			child [circle, sibling distance=14mm]{
 			node (n8) {1}
@@ -1139,6 +1133,14 @@ to isolate the cache access counts to the benchmarks themselves.
   \label{fig:expected_difficulties}
 \end{figure*}
 
+\begin{figure*}
+	\begin{center}
+		\includegraphics[scale=0.45]{performance}
+	\end{center}
+  \caption{Average performance of various cache replacement algorithms in PARSEC workloads}
+  \label{fig:performance}
+\end{figure*}
+
 \subsection{SIEVE Performance}
 
 % Occupation
@@ -1202,7 +1204,14 @@ Notably, implementing this algorithm is out of scope of this research project.
 
 2Tree performs reasonably well against \textit{full} occupation,
 because of the choice probability $c$.
-This is because even 
+This is because even safe elements have a possibility of being evicted through the probation queue.
+An attacker may promote an object through extra touches into the hot queue,
+but evict their own eviction set addresses with a touch in the probation queue.
+Notably, because of the root node that switches between the probation and safe subtrees,
+it is equally likely to select an eviction candidate from one of the $a/4$ probation subtree lines
+as it is to select an eviction candidate from one of the $a/2$ safe subtree lines.
+This means that, upon promotion, objects are likely to be placed in probation
+and are at risk of spontaneous eviction.
 
 Calculating the specific expected difficulty is a long combinatorial problem
 that can be modeled as a finite state automata.
@@ -1221,6 +1230,8 @@ as required by the Rowhammer attack.
 For low $c$, it is possible to have a higher cache bypass rate than by filling the whole cache,
 as well as a higher rate than simpler algorithms like LRU, given the smaller size of the
 cold queue compared to the whole cache set.
+Notably, we test the full occupation of the cache in our experimentation,
+although real use for timing oracles would result in much lower experimental difficulty values.
 
 Thus, we calculate the guarantee difficulty $D_g$ for 2Tree:
 
@@ -1236,12 +1247,10 @@ an attacker only needs to occupy this subset of the cache with their own newly-p
 To incur cache bypass for Rowhammer, an attacker again only needs to occupy this subset
 of the cache to guarantee that their next touch will be a RAM access.
 
-In miss ratio performance, the segmented nature of 2Tree provides interesting performance characteristics.
-
 Finally, although this is outside the scope of this work,
 it would be simple to implement set dueling with a switch between different $c$ values.
 The performance difference between caches with $c=0$ and $c=0.5$ and intermediate values
-differs between different benchmarks, as seen in figure [cite].%cite figure when I get it.
+differs between different benchmarks, as seen in Figure \ref{fig:performance}.
 As a hardware implementation, this would not introduce any complexity within the cache set,
 instead requiring a global switch affecting the random value generator.
 It would not be difficult to implement a similar switch for the replacement algorithms used,
@@ -1257,8 +1266,8 @@ as shown in figure [cite].
 In the cold queue, PLRU is shown to be more performant in some workloads,
 and FIFO more dominant in others.
 However, the performance difference is minimal:
-in workloads where FIFO was better, it was better by an average of X\%,
-and in workloads where PLRU was better, it was better by an average of Y\%.
+in workloads where FIFO was better, it was better by an average of 5.1\%,
+and in workloads where PLRU was better, it was better by an average of 4.7\%.
 With such a small difference, it may be counterproductive to introduce cold queue-specific set dueling
 and its subsequent increase in energy and space usage.
 
@@ -1267,6 +1276,13 @@ and its subsequent increase in energy and space usage.
 % Best touch strategy and why
 % Comment on fixing problem with fully-segmented 2Tree
 % Performance
+
+Out of the proposed algorithms, 3Tree performs the best on average in PARSEC benchmarks.
+It performs better than all variants of 2Tree and better than SIEVE by 0.5 percentage points.
+However, it is still unable to match the all-round performance of TreePLRU,
+and falls 1.7 percentage points behind.
+Future work could tune the algorithm and its choice probabilities to determine
+a variant more performant than TreePLRU.
 
 3Tree fixes the security issue present in 2Tree and other segmented caches
 by allowing new cache objects to be placed in any of the cache lines,
@@ -1279,7 +1295,7 @@ The optimal memory access pattern changes is different between the two variants,
 which introduces difficulty in the cache priming process \cite{EvictionSetsAtScale}
 as there is no trivial way for an attacker to determine the cache replacement algorithm variant.
 
-Additionally, set dueling greatly increases the miss rate performance of the replacement algorithm.
+Additionally, set dueling may greatly increase the miss rate performance of the replacement algorithm.
 Dynamically switching between a variant with a big cold queue and one with a big hot queue
 allows the cache to react to different workloads.
 Processes that access many objects a few times each may better benefit from a big cold queue,
@@ -1394,6 +1410,11 @@ This completely removes the cost of a replacement algorithm's longer critical pa
 for single memory accesses
 and may still reduce the latency for repeated accesses of the same data,
 depending on the speed of these accesses.
+
+2Tree is relatively bad in performance and exhibits exceptionally bad security characteristics.
+Meanwhile, 3Tree and SIEVE are both viable algorithms for a balance of security and performance.
+They greatly increase a CPU's defense against eviction set attacks,
+and with proper tuning and optimization may be more performant than state-of-the-art replacement policies.
 
 % performance implications
   % prefetching, etc. to diminish the importance of cache misses

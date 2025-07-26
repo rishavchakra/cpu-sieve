@@ -106,35 +106,6 @@ def parse_arguments():
         fatal(f"The disk-image is not found at {args.image}")
 
     return args
-    # parser.add_argument("kernel", type=str, help="Path to vmlinux")
-    # parser.add_argument(
-    #     "disk", type=str, help="Path to the disk image containing SPEC benchmarks"
-    # )
-    # parser.add_argument("cpu", type=str, help="Name of the detailed CPU")
-    # parser.add_argument("benchmark", type=str, help="Name of the SPEC benchmark")
-    # parser.add_argument("size", type=str, help="Available sizes: test, train, ref")
-    # parser.add_argument(
-    #     "-k",
-    #     "--kernel",
-    #     type=str,
-    #     default="linux-4.19.83/vmlinux-4.19.83",
-    #     help="Path to vmlinux",
-    # )
-    # parser.add_argument(
-    #     "-l",
-    #     "--no-copy-logs",
-    #     default=False,
-    #     action="store_true",
-    #     help="Not copy SPEC run logs to the host system;" "Logs are copied by default",
-    # )
-    # parser.add_argument(
-    #     "-z",
-    #     "--allow-listeners",
-    #     default=False,
-    #     action="store_true",
-    #     help="Turn on ports;" "The ports are off by default",
-    # )
-    # return parser.parse_args()
 
 
 def create_cache_hierarchy(assoc: int, repl: str):
@@ -173,6 +144,7 @@ def handle_finish_boot():
     print("Dump stats at end fo ROI")
     m5.stats.dump()
     yield True
+
 
 def handle_exit():
     print("Done bootling Linux")

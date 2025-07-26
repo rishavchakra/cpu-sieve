@@ -66,24 +66,26 @@ for assoc in assocs:
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
             command = [
                 "gem5/gem5_build/X86/gem5.fast",
-                f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
-                "run_scripts/bench/parsec_trial.py",
+                # f"-d out/parsec/{benchmark}/{repl_policy}/{assoc}",
+                "run_scripts/bench/parsec.py",
                 "--image benchmark/parsec/parsec-image",
-                "--size simsmall",
+                f"--outjson out/parsec/{benchmark}/{repl_policy}-{assoc}.json",
                 f"--benchmark {benchmark}",
                 f"--assoc {str(assoc)}",
                 f"--repl {repl_policy}",
+                "--restore-checkpoint",
             ]
-            if len(repl_args) > 0:
-                for repl_arg in repl_args:
-                    arg_command = command[:]
-                    arg_command[
-                        1
-                    ] = f"-d out/parsec/{benchmark}/{repl_policy}-{repl_arg}/{assoc}"
-                    arg_command.append(f"--variant {repl_arg}")
-                    commands.append(" ".join(arg_command))
-            else:
-                commands.append(" ".join(command))
+            commands.append(" ".join(command))
+            # if len(repl_args) > 0:
+            #     for repl_arg in repl_args:
+            #         arg_command = command[:]
+            #         arg_command[3] = (
+            #             f"--outjson out/parsec/{benchmark}/{repl_policy}-{repl_arg}-{assoc}.json"
+            #         )
+            #         arg_command.append(f"--variant {repl_arg}")
+            #         commands.append(" ".join(arg_command))
+            # else:
+            #     commands.append(" ".join(command))
 
 
 runs = list(zip(commands, labels))

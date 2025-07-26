@@ -1,0 +1,163 @@
+\documentclass[letterpaper, twocolumn]{article}
+% \usepackage{usenix2019_v3}
+
+% to be able to draw some self-contained figs
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+% inlined bib file
+% \usepackage{filecontents}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%-------------------------------------------------------------------------------
+\begin{document}
+%-------------------------------------------------------------------------------
+
+%don't want date printed
+\date{}
+
+\subsection{Eviction Sets}
+Eviction sets are an attack primitive used in many cache-based hardware attacks.
+They are used to prime a cache by ensuring that a target object is removed from its cache set.
+An eviction set is a group of virtual addresses that are all congruent: they all map to the same cache set.
+For a cache set with associativity $a$, an eviction set $S$ must contain $|S| \geq a$ addresses.
+In a system without pseudo-random mapping of addresses to cache sets, congruent addresses share index bits in their
+corresponding physical address.
+
+% An attacker may use an eviction set to fill a target cache set with attacker-provided objects; we refer to this process as \textit{occupation} of an eviction set.
+
+Eviction sets are used in the following steps:
+
+\begin{enumerate}
+    \item \textit{Creation:} An attacker finds a set of congruent virtual addresses $S$ for $a$-associativity cache with $|S| \geq a$. Optionally, the attacker may choose a minimal eviction set with $|S|=a$.
+    Although minimizing the eviction set can simplify the accurate detection of information leakage,
+    many attacks are successful with eviction sets larger than their target caches.
+
+    \item \textit{Occupation:} An attacker touches the memory addresses in the eviction set until the target cache is entirely filled with memory addresses from the eviction set.
+    Anything previously in the cache set should be evicted through this process.
+    This step is often called \textit{priming the cache} – we refer to this process as cache set \textit{occupation}.
+\end{enumerate}
+
+In rowhammer attacks, eviction sets are used to ensure that an attacker's memory request reaches DRAM.
+The attacker repeatedly touches a target address, evicts the target address so subsequent accesses will not be caught by the cache,
+and re-references the target address.
+
+In transient attacks, a target address is usually evicted as part of a timing attack, as a memory request to an evicted object
+must take time to travel to and from DRAM, and this timing difference is significant enough to be measured
+by high-performance counters or simply by a continuously incrementing variable.
+In Prime+Probe, the attacker occupies the cache set of a target address, executes the victim program, and re-references
+all the addresses in the eviction set; an increase in the time taken implies that the target address was referenced and evicted
+one of the objects of the eviction set.
+In Evict+Reload and Evict+Time, the attacker measures the victim's runtime before and after occupying a cache set,
+with a longer re-run time implying a reference of an evicted cache object.
+
+We primarily aim to slow cache set \textit{occupation}.
+Most eviction set attacks create eviction sets once but use them for occupation many times;
+by slowing occupation, we reduce the information leakage throughput of these attacks
+and possibly reduce the likelihood of rowhammer bitflips.
+
+\section{Design}
+
+We seek to make rowhammer-style and transient execution attacks more difficult by preventing or slowing the use of eviction sets
+using hardware-level cache eviction algorithms.
+Additionally, we aim to accomplish this security without inducing a significant performance hit in the cache of either miss rate or latency.
+
+\subsection{Expected Difficulty of an Eviction Algorithm}
+We define the difficulty $D$ of occupying a cache set with a certain touching pattern
+as the total number of memory touches required to overwrite all lines in the cache
+with addresses from an eviction set.
+
+For the minimum difficulty $D_m$, we assume an optimal attacker;
+for each eviction algorithm, there exists a memory touching pattern that
+most effectively primes a cache set.
+In this case, an optimal attacker does not know the state of the cache,
+but may optionally use a timing oracle to determine if a previously touched address
+is still in the cache.
+This timing oracle incurs an extra counted touch, but we ignore the cost of
+the added conditional.
+
+Additionally, randomness is a factor in some of these eviction algorithms.
+We assume a uniform random distribution of initial cache states;
+We define the expected minimum difficulty $D_{Em}$ of an eviction algorithm
+as the mean number of optimally-ordered touches required to fill a cache set.
+
+Finally, SLRU and our implementation of 3Tree splits the cache into segments,
+which may mean that the attacker can guarantee that a victim overwrites
+an attacker-primed address without the attacker filling the entire cache set,
+and thus that the minimum expected difficulty may be higher than the true value
+when used in an attack.
+We define the guarantee difficulty $D_g$ as the minimum expected number of touches
+required to guarantee an attacker access to an accurate timing oracle.
+For replacement algorithms where new objects may be placed in any index in the cache,
+$D_g = D_{Em}$, as an attacker must fill every cache line to guarantee
+that a victim touch will overwrite an eviction set address.
+
+\subsubsection{LRU, TreePLRU, and FIFO}
+% Derive expected difficulty, no choice or permutation randomness
+LRU, TreePLRU, and FIFO pose little defense against cache priming.
+In both FIFO and LRU caches, new cache objects are instantly promoted to the head of the queue.
+In LRU, new objects are marked as the most recently updated and thus the last to be evicted,
+and the FIFO queue means new objects are evicted after objects added earlier.
+Although TreePLRU does not follow the same linear structure,
+it is similarly trivial to occupy a cache set.
+Thus, for an $a$-way associativity LRU, FIFO, or TreePLRU cache, an attacker only needs
+$a$ sequential touches to fill a cache set.
+As these algorithms are deterministic, the expected difficulty is the same value.
+
+\begin{equation}\label{LRUExpectedD}
+  D_g(\text{LRU}) = D_m(\text{LRU}) = D_{Em}(\text{LRU}) = a
+\end{equation}
+
+\subsubsection{Random Replacement}
+Given a cache set with associativity $a$ in which an attacker has occupied $n$ addresses
+using some subset $S \subset E, |S| = n$ of eviction set $E$,
+a following touch on address $\alpha$ may be in $S$ or not.
+
+If $\alpha \in S$, there is no cache or per-line metadata to update, and the cache state does not change.
+
+If $\alpha \notin S$, the random replacement algorithm will evict an address $\beta$.
+This evicted address will occupy an unoccupied line with probability
+$P(\beta \notin S) = \frac{a-n}{a}$.
+
+Then, the probability occupying $n+1$ addresses in a cache set with $n$ addresses occupied is $P(n+1) = \frac{a-n}{a}$.
+The corresponding expected value is $EV(n+1) = \frac{1}{P(n+1)} = \frac{a}{a-n}$
+Then, the expected value of the total number of unique touches to occupy an eviction set is
+
+% If they have an issue with this not being fully simplified they can take that up in review
+\begin{equation}\label{RandomExpected}
+    D_g(\text{Random}) = D_{Em}(\text{Random}) = \sum_{i=0}^{a-1}{\frac{a}{a-i}}
+\end{equation}
+
+\subsection{Preventing Eviction Set Occupation}
+Attackers use eviction sets as attack primitives to guarantee that a target address is not present in the cache
+so a victim's memory request of the target address must travel to DRAM and back.
+Leaving at least one of the lines in a cache set open and unoccupied means that attackers have no guarantee that the target address is evicted.
+Thus, to slow the use of an eviction set in occupying a cache set, we must only increase the difficulty of the eviction algorithm used.
+
+\subsection{Latency and Energy Costs}
+
+As the CPU implements eviction algorithms in hardware, the function of some software-based algorithms
+may not be exactly reflected without inducing significant performance or complexity overhead.
+For example, LRU can be implemented in a software cache to add, update, and remove objects in $O(1)$ time.
+Although no such time complexity exists for algorithm circuitry that runs in parallel,
+exact LRU is complex in CPU caches and involves lots of metadata per cache line and lots of circuitry to
+determine an eviction candidate.
+Excessive circuitry introduces extra latency by increasing the critical path of the circuit
+and extra energy usage by requiring additional transistors.
+The LRU algorithm is thus commonly simplified to TreePLRU in the CPU, which requires much less hardware complexity
+but achieves a similar miss ratio.
+Although the energy usage can be significant, modern CPU features like prefetching largely
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%  LocalWords:  endnotes includegraphics fread ptr nobj noindent
+%%  LocalWords:  pdflatex acks

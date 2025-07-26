@@ -66,13 +66,10 @@
                   listening ports. Usually, the ports are opened for debugging
                   purposes. 
                   By default, the ports are off.
-                  
-    Outputs:
-    * TODO: simple performance statistics
 """
+
 import os
 import sys
-import time
 
 import m5
 import m5.ticks
@@ -83,15 +80,15 @@ import argparse
 from system import MySystem
 
 
-def writeBenchScript(dir, benchmark_name, size, repl, assoc, output_path):
+def writeBenchScript(dir, benchmark_name, size, output_path):
     """
     This method creates a script in dir which will be eventually
     passed to the simulated system (to run a specific benchmark
     at bootup).
     """
-    input_file_name = "{}/run_{}_{}_{}".format(dir, benchmark_name, assoc, repl)
+    input_file_name = "{}/run_{}_{}".format(dir, benchmark_name, size)
     with open(input_file_name, "w") as f:
-        f.write("{} {} {} {}".format(benchmark_name, repl, assoc, output_path))
+        f.write("{} {} {}".format(benchmark_name, size, output_path))
     return input_file_name
 
 
@@ -106,8 +103,6 @@ def parse_arguments():
     parser.add_argument("cpu", type=str, help="Name of the detailed CPU")
     parser.add_argument("benchmark", type=str, help="Name of the SPEC benchmark")
     parser.add_argument("size", type=str, help="Available sizes: test, train, ref")
-    parser.add_argument("repl", type=str, help="Replacement Algorithm")
-    parser.add_argument("assoc", type=int, help="Cache associativity")
     parser.add_argument(
         "-k",
         "--kernel",
@@ -158,7 +153,7 @@ def getBenchmarkName(benchmark_name):
     return benchmark_name
 
 
-def create_system(linux_kernel_path, disk_image_path, detailed_cpu_model, repl, assoc):
+def create_system(linux_kernel_path, disk_image_path, detailed_cpu_model, assoc, repl):
     # create the system we are going to simulate
     system = MySystem(
         kernel=linux_kernel_path,
@@ -166,8 +161,8 @@ def create_system(linux_kernel_path, disk_image_path, detailed_cpu_model, repl, 
         num_cpus=1,  # run the benchmark in a single thread
         no_kvm=False,
         TimingCPUModel=detailed_cpu_model,
-        repl=repl,
         assoc=assoc,
+        repl=repl,
     )
 
     # For workitems to work correctly
@@ -242,29 +237,32 @@ if __name__ == "__m5_main__":
     cpu_name = args.cpu
     benchmark_name = getBenchmarkName(args.benchmark)
     benchmark_size = args.size
+
+    # Testing variables
+    assoc = args.assoc
+    repl = args.repl
+
     linux_kernel_path = args.kernel
     disk_image_path = args.disk
     no_copy_logs = args.no_copy_logs
     allow_listeners = args.allow_listeners
-
-    repl = args.repl
-    repl = args.repl[0]
-    assoc = args.assoc
 
     output_dir = os.path.join(m5.options.outdir, "speclogs")
 
     # Get the DetailedCPU class from its name
     detailed_cpu = getDetailedCPUModel(cpu_name)
     if detailed_cpu == None:
-        print("'{}' is not define in the config script.".format(cpu_name))
+        print("'{}' is not defined in the config script.".format(cpu_name))
         print("Change getDeatiledCPUModel() in run_spec.py " "to add more CPU Models.")
         exit(1)
 
-    if not benchmark_size in ["ref", "train", "test"]:
+    if benchmark_size not in ["ref", "train", "test"]:
         print("Benchmark size must be one of the following: ref, train, test")
         exit(1)
 
-    root, system = create_system(linux_kernel_path, disk_image_path, detailed_cpu)
+    root, system = create_system(
+        linux_kernel_path, disk_image_path, detailed_cpu, assoc, repl
+    )
 
     # Create and pass a script to the simulated system to run the reuired
     # benchmark
@@ -276,15 +274,8 @@ if __name__ == "__m5_main__":
     if not allow_listeners:
         m5.disableAllListeners()
 
-    has_checkpoint = os.path.isfile("out/m5/boot_checkpoint")
-
     # instantiate all of the objects we've created above
-    if has_checkpoint:
-        print("Boot checkpoint found, restoring")
-        m5.instantiate("out/m5/boot_checkpoint")
-    else:
-        print("Boot checkpoint not found, starting new simulation")
-        m5.instantiate()
+    m5.instantiate()
 
     # booting linux
     success, exit_cause = boot_linux()
@@ -293,21 +284,18 @@ if __name__ == "__m5_main__":
     print("Reset stats")
     m5.stats.reset()
 
-    # if os.path.isfile('out/m5_checkpoint'):
-
     # switch from KVM to detailed CPU
     if not cpu_name == "kvm":
         print("Switching to detailed CPU")
         system.switchCpus(system.cpu, system.detailed_cpu)
         print("Switching done")
 
-    if has_checkpoint:
-        m5.checkpoint()
-    else:
-        m5.checkpoint("out/m5/boot_checkpoint")
-
     # running benchmark
-    print("Benchmark: {}; Size: {}".format(benchmark_name, benchmark_size))
+    print(
+        "Benchmark: {}; Size: {}\nEviction: {}; {}-way assoc".format(
+            benchmark_name, benchmark_size, repl, assoc
+        )
+    )
     success, exit_cause = run_spec_benchmark()
 
     # output the stats after the benchmark is complete

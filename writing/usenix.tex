@@ -1,0 +1,518 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Template for USENIX papers.
+%
+% History:
+%
+% - TEMPLATE for Usenix papers, specifically to meet requirements of
+%   USENIX '05. originally a template for producing IEEE-format
+%   articles using LaTeX. written by Matthew Ward, CS Department,
+%   Worcester Polytechnic Institute. adapted by David Beazley for his
+%   excellent SWIG paper in Proceedings, Tcl 96. turned into a
+%   smartass generic template by De Clarke, with thanks to both the
+%   above pioneers. Use at your own risk. Complaints to /dev/null.
+%   Make it two column with no page numbering, default is 10 point.
+%
+% - Munged by Fred Douglis <douglis@research.att.com> 10/97 to
+%   separate the .sty file from the LaTeX source template, so that
+%   people can more easily include the .sty file into an existing
+%   document. Also changed to more closely follow the style guidelines
+%   as represented by the Word sample file.
+%
+% - Note that since 2010, USENIX does not require endnotes. If you
+%   want foot of page notes, don't include the endnotes package in the
+%   usepackage command, below.
+% - This version uses the latex2e styles, not the very ancient 2.09
+%   stuff.
+%
+% - Updated July 2018: Text block size changed from 6.5" to 7"
+%
+% - Updated Dec 2018 for ATC'19:
+%
+%   * Revised text to pass HotCRP's auto-formatting check, with
+%     hotcrp.settings.submission_form.body_font_size=10pt, and
+%     hotcrp.settings.submission_form.line_height=12pt
+%
+%   * Switched from \endnote-s to \footnote-s to match Usenix's policy.
+%
+%   * \section* => \begin{abstract} ... \end{abstract}
+%
+%   * Make template self-contained in terms of bibtex entires, to allow
+%     this file to be compiled. (And changing refs style to 'plain'.)
+%
+%   * Make template self-contained in terms of figures, to
+%     allow this file to be compiled. 
+%
+%   * Added packages for hyperref, embedding fonts, and improving
+%     appearance.
+%   
+%   * Removed outdated text.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix2019_v3}
+
+% to be able to draw some self-contained figs
+\usepackage{tikz}
+\usepackage{amsmath}
+
+% inlined bib file
+\usepackage{filecontents}
+
+%-------------------------------------------------------------------------------
+\begin{filecontents}{\jobname.bib}
+%-------------------------------------------------------------------------------
+@Book{arpachiDusseau18:osbook,
+  author =       {Arpaci-Dusseau, Remzi H. and Arpaci-Dusseau Andrea C.},
+  title =        {Operating Systems: Three Easy Pieces},
+  publisher =    {Arpaci-Dusseau Books, LLC},
+  year =         2015,
+  edition =      {1.00},
+  note =         {\url{http://pages.cs.wisc.edu/~remzi/OSTEP/}}
+}
+@InProceedings{waldspurger02,
+  author =       {Waldspurger, Carl A.},
+  title =        {Memory resource management in {VMware ESX} server},
+  booktitle =    {USENIX Symposium on Operating System Design and
+                  Implementation (OSDI)},
+  year =         2002,
+  pages =        {181--194},
+  note =         {\url{https://www.usenix.org/legacy/event/osdi02/tech/waldspurger/waldspurger.pdf}}}
+\end{filecontents}
+
+%-------------------------------------------------------------------------------
+\begin{document}
+%-------------------------------------------------------------------------------
+
+%don't want date printed
+\date{}
+
+% make title bold and 14 pt font (Latex default is non-bold, 16 pt)
+\title{\Large \bf SIEVE in the CPU:\\
+  Securing the Cache against Primed Side Channel Attacks}
+
+%for single author (just remove % characters)
+\author{
+{\rm Rishav Chakravarty}\\
+Dartmouth College
+\and
+{\rm Second Name}\\
+Second Institution
+% copy the following lines to add more authors
+% \and
+% {\rm Name}\\
+%Name Institution
+} % end author
+
+\maketitle
+
+%-------------------------------------------------------------------------------
+\begin{abstract}
+%-------------------------------------------------------------------------------
+Your abstract text goes here. Just a few facts. Whet our appetites.
+Not more than 200 words, if possible, and preferably closer to 150.
+
+I'll write this when I'm done with the rest of the paper as a summary of everything
+\end{abstract}
+
+
+%-------------------------------------------------------------------------------
+\section{Introduction}
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+\section{Background}
+%-------------------------------------------------------------------------------
+
+\subsection{Caches and Eviction Algorithms}
+
+Caches are memory modules between processors and larger, slower memory modules.
+They trade size for speed; they usually contain a subset of the data of main memory that is most referenced but,
+due to their size, may be physically closer to a processor and greatly reduce latency.
+Caches are used in many computing environments where the latency of memory is a significant factor in performance,
+such as small databases between clients and CDNs, and in CPUs between the ALU and DRAM.
+
+(This isn't complete - something about higher level groups than sets, too)
+Modern CPUs use multiple levels of caches. In order, the L1, L2 and optional L3 cache are increasingly large and far from the ALU.
+The Last Level Cache (LLC) is often shared among all CPU cores, and each CPU core contains one of each of the smaller cache levels.
+Each cache is divided into sets, which each contain cache lines.
+The number of cache lines in each set is called the associativity of the cache;
+cache sets range from one line each (Direct Mapped) to the size of the entire cache (Fully Associative),
+although 2, 4, 8, and 16-way associativity caches are most common in CPUs.
+Caches close to the ALU tend to have lower associativity values of 2 or 4, and caches farther away
+tend to have higher values between 4 and 16.
+Each cache line is typically 64 bytes long.
+
+As caches have a limited size, replacement policies, also known as eviction algorithms,
+decide based on cache and per-object metadata which eviction candidates to remove to make space for new objects.
+The ideal eviction algorithm minimizes the number of cache misses, where a memory requests data not in the cache
+and must wait much longer for a response from main memory.
+An efficient eviction algorithm will retain objects that are commonly used or predicted to be used again in the near future,
+and will evict objects that are stale or not predicted to be used again.
+The miss ratio describes the efficiency of a cache:
+\begin{math}
+  miss\ rate = \frac{misses}{hits + misses}
+\end{math}
+
+A cache may also be measured by its latency, which describes the amount of time taken to fulfill a memory request.
+**Equation: cache request time**
+In a CPU cache, this is often measured as the time of the critical path of the circuit used to compute an eviction candidate.
+
+\subsubsection{TreePLRU}
+
+The Least Recently Used (LRU) algorithm is a common algorithm for caching eviction.
+Upon cache access, it promotes the requested memory to the Most Recently Used (MRU) in a queue;
+upon cache miss, it evicts the least recently used cache line from the end of this queue.
+However, in the hardware of a CPU, this algorithm introduces considerable complexity;
+the optimal implementation involves checking the cache state against each permutation of recency values to determine an eviction candidate.
+
+TreePLRU is a type of Pseudo-Least Recently Used (PLRU) algorithm that is very commonly used in CPU caches
+because it closely replicates the functionality of LRU with much less hardware complexity.
+It uses a tree structure to recursively separate hot object groups from cold groups.
+Each node in the tree uses one bit of metadata to point to either the left or right subtree; the whole tree for an a-way associativity cache
+only uses a-1 bits of metadata.
+Upon a cache hit, an object is promoted by tracing up the tree and setting the bit to point away from the hit object;
+upon a cache miss, the tree is recursively traced from the root following the direction of the bits, and the
+leaf node reached at the end is the cache line chosen as the eviction candidate.
+
+**Diagram**
+
+TreePLRU is commonly used in CPUs in L2 and (if the processor has it) larger L3 caches, as it is relatively simple to implement 
+and shows very good miss rates for common workloads.
+
+\subsubsection{Random Replacement}
+Random Replacement is an eviction algorithm sometimes used in CPU caches.
+Upon a cache miss, this algorithm simply chooses a cache line to evict at random.
+As this algorithm does not attempt to evaluate cache lines for recency of use or predict their next use,
+it suffers from a higher miss ratio than many other algorithms.
+However, since it requires no cache metadata and no algorithm logic to decide on an eviction candidate,
+it can have incredibly low latency.
+For this reason, Random Replacement is sometimes used in L1 caches, which have lower associativity
+and are thus less prone to (**what is it called when multiple addresses map to the same set?**).
+The low latency of these caches - often around **X** clock cycles to fulfill a memory request -
+minimizes energy usage and the expected response time (*reference figure*).
+
+\subsubsection{TwoQ}
+TwoQ is a cache eviction algorithm developed for large software caches like web and database caches.
+It improves upon LRU-k, which is a variant of LRU that evicts cache objects based on their kth previous access.
+
+(figure)
+
+TwoQ uses two queues, $Am$ and $A1$, to separate hot objects from cold ones.
+Upon a cache miss, new objects are added to the $A1$ FIFO queue.
+When rereferenced, they are moved to the head of $Am$, which is an LRU queue.
+Cache objects move from $A1$ to $Am$ to signify that they are hot objects, and are never moved back to $A1$ –
+they are removed when they reach the end of the LRU queue.
+
+A single buffer is subdivided to make $Am$ and $A1$.
+The algorithm requires tuning of the sizes of these subdivisions to make the cache as efficient as possible;
+if $Am$ is too small, the cache will not be able to hold hot objects for long enough before they are evicted,
+and if $A1$ is too small, certain access patterns will evict cold objects before they have a chance to be marked as hot.
+The original paper finds that an $Am$ three times as large as $A1$ (75\%-25\% split) is optimal for certain workloads.
+
+This version of the algorithm performs poorly in real traces of large software caches because
+it struggles with traces in which the locality changes quickly.
+A 'full' version of the algorithm with a third queue, $A1out$, is proposed to solve this problem.
+However, changing locality is not as much of an issue in CPU caches as in large software caches.
+If a popular set of addresses suddenly becomes unpopular compared to another set of addresses,
+the new set of addresses will most likely map to a different cache set and not interfere with the previous addresses.
+For the sake of simplicity, and given that small CPU caches would suffer from a small $Am$ if split among 3 queues,
+we ignore the TwoQ full version and focus on the simple version.
+
+\subsubsection{SIEVE}
+
+SIEVE is a simple algorithm used for large software caches as both an eviction algorithm
+and as a cache primitive used as a foundation for other, more complicated algorithms.
+It improves upon LRU and FIFO Reinsertion,
+in which elements are placed in a FIFO queue with a \textit{safe} boolean:
+upon a touch, the element is marked as safe, and upon eviction,
+the first non-safe object is evicted.
+
+SIEVE uses only one booleans of metadata per cache line, \textit{visited}
+as well as a \textit{hand} to trace through the cache.
+When touched, cache objects are marked as visited.
+Upon eviction, the hand marches through the cache array, returning to the head if at the tail;
+it evicts the first element that has its \textit{visited} bit unset,
+and unsets the \textit{visited} bits of any cache objects it traces through along the way.
+Instead of placing the new object at the eviction position,
+the algorithm always places new objects at the head of the queue,
+which prevents the new and the retained objects from being mixed together.
+The hand persists its position between cache operations,
+effectively resulting in a sliding window of objects at risk of eviction.
+
+This algorithm shows significant average improvements in CDN workflow miss ratio
+over many eviction algorithms,
+including LRU, FIFO, ARC, and TwoQ, while being simpler than these alternatives.
+It is based on principles of \textit{lazy promotion},
+in which objects are only promoted at eviction time,
+and \textit{quick demotion}, in which most new objects are removed quickly after their insertion.
+Additionally, it significantly improves over the data usage of other
+software caching algorithms, as the single boolean of metadata per line and the hand
+are small and constant in memory size regardless of the capacity of the cache,
+whereas timestamps for algorithms like LRU must each contain much more data,
+and other index-based ordering schemes must increase their memory footprint for increasing cache size.
+The algorithm also has an advantage in multithreaded software caches;
+since only the visited bit of an object is set upon a cache object touch,
+only cache evictions require a lock on the whole cache array.
+For multithreaded applications, this vastly improves throughput,
+as most other contemporary cache eviction algorithms require a whole-cache lock
+both evictions and touches.
+
+\subsection{Cache-enabled Attacks}
+Caches are mostly well-protected against direct attacks;
+users are prevented from accessing memory placed in the cache by another process.
+However, the cache can serve as a tool to enable other attacks.
+
+\subsubsection{Transient Attacks and Forms}
+Transient attacks, also called speculative execution attacks, take advantage of modern CPUs' speculative execution pipeline.
+Speculative execution increases performance by guessing uncertain values that take time to evaluate, such as branch destinations
+and conditions, and continuing execution under the assumption of the guess;
+if the guess is later found to be incorrect, the CPU flushes the pipeline and rolls back to the last checkpoint known to be correct.
+
+The speculative window - the period between a condition starting speculative execution and its value confirmation -
+introduces a vulnerability;
+If the guessed condition was incorrect, malicious code may be run in the speculative window.
+Many modern CPUs, prioritizing performance, roll back only as much data as is required to continue execution
+with correct functionality; code in the speculative window can leave traces in a covert channel in hardware
+components where speculative misses are not rolled back.
+
+As outlined in [source], transient execution attacks take advantage of this speculative execution window in three steps:
+\begin{enumerate}
+    \item \textit{Setup Phase}:
+An attacker primes the microarchitectural state such that victim actions can later be decoded and intrepreted
+    \item \textit{Transient Execution Phase}:
+Speculative execution takes place, usually induced in a victim process by the attacker using a disclosure gadget.
+The malicious code runs in the speculative window, quietly leaving a trace in the primed covert channel.
+This attacking code is then squashed by the speculative execution pipeline, but the trace remains.
+    \item \textit{Decoding Phase}:
+An attacker decodes the information leaked into the covert channel during the Transient Execution Phase.
+\end{enumerate}
+
+As the CPU cache is too large to fully roll back upon a speculative miss, this is a common side of transient information leakage.
+Previous hardware solutions to transient attacks include MuonTrap,
+which introduces an additional L0-level cache that catches all speculative memory accesses
+and can easily roll back upon a speculative miss.
+
+Spectre and Meltdown, with victim-executed speculative execution and exception-induced speculative execution respectively, 
+are early examples of transient attacks.
+New transient attacks like PACMAN, TikTag, GoFetch, and more, use other components and features of the CPU.
+These attacks follow many different forms depending on the capabilities of the hardware they run on and the
+nature of the process they seek to attack.
+We focus on defending against the following forms:
+\begin{enumerate}
+    \item \textit{Prime+Probe}:
+An attacker primes a known location in cache, executes a victim program, and determines 
+if the victim program accessed the primed location. This is a very common and relatively simple
+type of transient execution attack.
+    \item \textit{Evict+Reload}:
+An attacker loads a shared binary object into its address space and primes the cache for an address
+in the shared binary.
+After executing the victim program, the attacker determines if the victim program accessed the primed location.
+    \item \textit{Evict+Time}:
+An attacker first measures the execution time of a victim program.
+After priming the cache, the victim process is run and timed again.
+A timing difference implies that the victim process accessed the memory affected by the cache priming.
+\end{enumerate}
+
+These attack forms are applicable to transient attacks and many others to establish a covert channel in the cache for information leakage,
+and they all use eviction sets to prime the cache.
+We aim to prevent or slow the use of eviction sets in the \textit{setup phase} of the transient attack, which will decrease the throughput of information leakage.
+
+\subsubsection{Rowhammer}
+
+\subsection{Eviction Sets}
+Eviction sets are an attack primitive used in many cache-based hardware attacks.
+They are used to prime a cache by ensuring that a target object is removed from its cache set.
+An eviction set is a group of virtual addresses that are all congruent: they all map to the same cache set.
+For a cache set with associativity $a$, an eviction set $S$ must contain $|S| \geq a$ addresses.
+In a system without cache scrambling (**check on the name of this + source**), congruent addresses share index bits in their
+corresponding physical address. (**check on virtual vs. physical**)
+
+% An attacker may use an eviction set to fill a target cache set with attacker-provided objects; we refer to this process as \textit{occupation} of an eviction set.
+
+Eviction sets are used in the following steps:
+
+\begin{enumerate}
+    \item \textit{Creation:} An attacker finds a set of congruent virtual addresses $S$ for $a$-associativity cache with $|S| \geq a$. Optionally, the attacker may choose a minimal eviction set with $|S|=a$.
+    Although minimizing the eviction set can simplify the accurate detection of information leakage,
+    many attacks are successful with eviction sets larger than their target caches.
+
+    \item \textit{Occupation:} An attacker touches the memory addresses in the eviction set until the target cache is entirely filled with memory addresses from the eviction set.
+    Anything previously in the cache set should be evicted through this process.
+    This step is often called \textit{priming the cache} – we refer to this process as cache set \textit{occupation}.
+\end{enumerate}
+
+In rowhammer attacks, eviction sets are used to ensure that an attacker's memory request reaches DRAM.
+The attacker repeatedly touches a target address, evicts the target address so subsequent accesses will not be caught by the cache,
+and re-references the target address.
+
+In transient attacks, a target address is usually evicted as part of a timing attack, as a memory request to an evicted object
+must take time to travel to and from DRAM, and this timing difference is significant enough to be measured
+by high-performance counters or simply by a continuously incrementing variable.
+In Prime+Probe, the attacker occupies the cache set of a target address, executes the victim program, and re-references
+all the addresses in the eviction set; an increase in the time taken implies that the target address was referenced and evicted
+one of the objects of the eviction set.
+In Evict+Reload and Evict+Time, the attacker measures the victim's runtime before and after occupying a cache set,
+with a longer re-run time implying a reference of an evicted cache object.
+
+We primarily aim to slow cache set \textit{occupation}.
+Most eviction set attacks create eviction sets once but use them for occupation many times;
+by slowing occupation, we reduce the information leakage throughput of these attacks
+and possibly reduce the likelihood of rowhammer bitflips.
+
+\section{Design}
+
+We seek to make rowhammer-style and transient execution attacks more difficult by preventing or slowing the use of eviction sets
+using hardware-level cache eviction algorithms.
+Additionally, we aim to accomplish this security without inducing a significant performance hit in the cache of either miss rate or latency.
+
+\subsection{Expected Difficulty of an Eviction Algorithm}
+We define the difficulty of occupying a cache set with a certain touching pattern as the total number of memory touches
+required to overwrite all lines in the cache with addresses from an eviction set.
+With this measurement, we evaluate the LRU (and its variants) and Random Replacement eviction algorithms for their security against cache set occupation.
+We use these measurements as baselines of comparisons for our own cache eviction algorithm.
+
+For the minimum difficulty, we assume an optimal attacker;
+for each eviction algorithm, there exists a memory touching pattern that most effectively fills a cache set.
+We define the minimum difficulty of an eviction algorithm as the number of optimally-ordered touches required to fill a cache set.
+
+Additionally, randomness is a factor in some of these eviction algorithms.
+We assume a uniform random distribution of initial cache states;
+for some algorithms, the initial state into which an attacker would start placing eviction set objects affects the order of evictions.
+Additionally, some algorithms use randomness in selecting an eviction candidate.
+We define the expected minimum difficulty of an eviction algorithm as the mean number of optimally-ordered touches required to fill a cache set.
+
+\subsubsection{LRU, TreePLRU, and FIFO}
+These eviction algorithms pose little defense against cache occupation.
+In both FIFO and LRU caches, new cache objects are instantly promoted to the head of the queue;
+in LRU, new objects are marked as the most recently updated and thus the last to be evicted,
+and the FIFO queue means new objects are evicted after objects added earlier.
+[Diagram]
+Although TreePLRU does not follow the same linear structure, it is similarly trivial to occupy a cache set.
+[Diagram]
+Thus, for an a-way associativity LRU, FIFO, or TreePLRU cache, an attacker only needs $a$ sequential touches to fill a cache set.
+
+\begin{equation}
+    \text{D}_{LRU}(a)=a
+\end{equation}
+
+As these algorithms are deterministic, the expected difficulty is the same value.
+[Equation]
+
+\subsubsection{Random Replacement}
+Given a cache set with associativity $a$ in which an attacker has occupied $n$ addresses using some subset $S \subset E, |S| = n$ of eviction set $E$, a following touch on address $\alpha$ may be in $S$ or not.
+
+If $\alpha \in S$, there is no cache or per-line metadata to update, and the cache state does not change.
+
+If $\alpha \notin S$, the random replacement algorithm will evict an address $\beta$.
+This evicted address will occupy an unoccupied line with probability
+$P(\beta \notin S) = \frac{a-n}{a}$.
+
+Then, the probability occupying $n+1$ addresses in a cache set with $n$ addresses occupied is $P(n+1) = \frac{a-n}{a}$.
+The corresponding expected value is $EV(n+1) = \frac{1}{P(n+1)} = \frac{a}{a-n}$
+
+Then, the expected value of the total number of unique touches to occupy an eviction set is
+
+% Can this be simplified? I can't think of anything right now
+\begin{equation}
+    \text{D}_{Random}(a) = \sum_{i=0}^{a-1}{\frac{a}{a-i}}
+\end{equation}
+
+\subsection{Preventing Eviction Set Occupation}
+Attackers use eviction sets as attack primitives to guarantee that a target address is not present in the cache
+so a victim's memory request of the target address must travel to DRAM and back.
+Leaving at least one of the lines in a cache set open and unoccupied means that attackers have no guarantee that the target address is evicted.
+Thus, to slow the use of an eviction set in occupying a cache set, we must only increase the difficulty of the eviction algorithm used.
+
+\subsection{Latency and Energy Costs}
+
+As the CPU implements eviction algorithms in hardware, the function of some software-based algorithms
+may not be exactly reflected without inducing significant performance or complexity overhead.
+For example, LRU can be implemented in a software cache to add, update, and remove objects in $O(1)$ time.
+Although no such time complexity exists for algorithm circuitry that runs in parallel,
+exact LRU is complex in CPU caches and involves lots of metadata per cache line and lots of circuitry to
+determine an eviction candidate.
+Excessive circuitry introduces extra latency by increasing the critical path of the circuit
+and extra energy usage by requiring additional transistors.
+The LRU algorithm is thus commonly simplified to TreePLRU in the CPU, which requires much less hardware complexity
+but achieves a similar miss ratio.
+Although the energy usage can be significant, modern CPU features like prefetching largely mitigate the latency factor of the algorithm.
+Additionally, many modern CPUs punt the cache eviction calculation to after fulfilling the memory request.
+
+Additionally, the cache - other than random replacement caches - may introduce registers for the cache metadata used in eviction.
+However, the amount of metadata is much smaller than the amount of data in a cache set:
+for an 8-way associative, 64-byte cache line, a TreePLRU replacement policy for the set uses
+$\frac{7}{512 \cdot 8}=0.17\%$ as much space as the data itself.
+Thus, within reason, we treat metadata usage as insignificant compared to the space and energy usage of the cache.
+
+For the sake of simplicity and due to the lack of comparison against proprietary CPU cache implementations,
+we analyze and evaluate our eviction algorithm qualitatively.
+% I mean to say that we only check that the value is reasonable and move on,
+% because that's all I can do
+
+\subsection{Miss Rate Cost}
+
+\section{Implementation}
+
+As discussed in 3.3, due to the hardware requirements and parallel nature of circuits,
+we implement our cache eviction algorithms as approximations of their software equivalents.
+We implement and discuss multiple variants of each algorithm.
+
+\subsection{SIEVE}
+
+SIEVE, as implemented in software, does not translate well to hardware.
+It relies on entirely sequential logic to determine an eviction candidate;
+additionally, it conditionally returns the hand to the beginning of the cache array.
+These two features imply the use of a register to keep track of the hand position,
+constant updating to reflect its marching through the cache array
+and its possibility of returning to the beginning of the array.
+Along with an increased hardware footprint, this would result in immense energy usage,
+especially compared to other algorithms like TreePLRU that select an eviction candidate
+without sequential logic at all.
+
+\subsubsection{Priority Encoder}
+
+\subsubsection{Shift Register}
+
+\subsection{TwoQ}
+
+TwoQ does not rely on sequential logic nearly as much as SIEVE,
+but there are multiple possible ways to implement the dual-queue structure.
+
+\subsubsection{Single Tree}
+
+\subsubsection{Dual Tree}
+
+\subsubsection{Tag Bits}
+
+\section{Experiment Methodology}
+
+We evaluate our eviction algorithms on their minimum expected difficulty and their cache performance by the miss ratio on common workloads.
+Additionally, we analyze the physical complexity of the algorithms for energy and space consumption.
+
+\subsection{Eviction Difficulty Testing}
+
+\subsection{Performance Testing}
+
+We use the gem5 CPU simulator to run binaries and full Linux systems on a virtual CPU with custom architectures.
+
+\section{Results}
+
+\section{Discussion}
+
+
+% PARSEC
+% SPEC, if I can get it working
+% Custom/synthetic workloads
+
+
+%-------------------------------------------------------------------------------
+\bibliographystyle{plain}
+\bibliography{\jobname}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%  LocalWords:  endnotes includegraphics fread ptr nobj noindent
+%%  LocalWords:  pdflatex acks

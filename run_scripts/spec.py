@@ -66,10 +66,10 @@ replacement_policies = [
 ]
 
 assocs = [
-    # 8,
-    # 16,
+    16,
+    8,
     4,
-    2,
+    # 2,
 ]
 
 labels = []
@@ -89,7 +89,7 @@ for assoc in assocs:
             # If linux with KVM enabled: switch 'atomic' 7 lines down to 'kvm'
             # Old command
             """
-            gem5/build/X86/gem5.opt \
+            gem5/build/X86/gem5.fast \
             -d out/spec-cpu/{benchmark}/{repl_policy}/{assoc} \
             run_scripts/spec/run.py \
             --kernel ../vmlinux-4.19.83 \

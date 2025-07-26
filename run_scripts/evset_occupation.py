@@ -18,13 +18,13 @@ access_patterns = {
 
 replacement_policies = {
     "s": [],  # SIEVE
-    "3": [],
-    # "2": [  # SPLRU
-    #     cold + hot + choice
-    #     for cold in ["r", "l", "f"]
-    #     for hot in ["r", "l", "f"]
-    #     for choice in ["h", "q", "e", "n"]
-    # ],
+    "3": ['l', 'f', 'r'],
+    "2": [  # SPLRU
+        cold + hot + choice
+        for cold in ['l', 'f', 'r']
+        for hot in ['l', 'f', 'r']
+        for choice in ["h", "q", "e", "n"]
+    ],
     "t": [],  # TreePLRU
     # "2": [],  # 2Q (defunct)
     "?": [],  # Random
