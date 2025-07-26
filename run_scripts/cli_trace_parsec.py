@@ -78,9 +78,10 @@ Benchmark:     {benchmark}\n\n"
                 " ".join(
                     [
                         "gem5/build/X86/gem5.fast",
-                        "run_scripts/bench/parsec_trace.py",
+                        "run_scripts/bench/parsec.py",
                         f"--outjson out/trace/{benchmark}",
                         f"--benchmark {benchmark}",
+                        "--restore-checkpoint",
                         "--checkpoint-dir=out/trace/checkpt-parsec",
                         "-r 0",
                     ]
